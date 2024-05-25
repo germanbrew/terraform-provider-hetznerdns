@@ -314,6 +314,7 @@ func (c *Client) CreateZone(ctx context.Context, opts CreateZoneOpts) (*Zone, er
 	if err != nil {
 		if resp != nil {
 			body, _ := readBody(resp)
+
 			return nil, fmt.Errorf("%w: %s", err, string(body))
 		}
 
