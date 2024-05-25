@@ -115,6 +115,12 @@ func resourceRecordRead(c context.Context, d *schema.ResourceData, m interface{}
 		return nil
 	}
 
+	if record.Type == "TXT" {
+		if strings.HasPrefix(record.Value, "\"") && strings.HasSuffix(record.Value, "\" ") {
+			record.Value = unescapeTXTRecordValue(record.Value)
+		}
+	}
+
 	d.SetId(record.ID)
 	d.Set("name", record.Name)
 	d.Set("zone_id", record.ZoneID)
@@ -125,10 +131,6 @@ func resourceRecordRead(c context.Context, d *schema.ResourceData, m interface{}
 		d.Set("ttl", record.TTL)
 	}
 	d.Set("value", record.Value)
-
-	if record.Type == "TXT" {
-		record.Value = prepareTXTRecordValue(record.Value)
-	}
 
 	return nil
 }
@@ -149,6 +151,13 @@ func resourceRecordUpdate(c context.Context, d *schema.ResourceData, m interface
 		return nil
 	}
 
+	if record.Type == "TXT" {
+		// Unescape the TXT record value if it is escaped
+		if strings.HasPrefix(record.Value, "\"") && strings.HasSuffix(record.Value, "\" ") {
+			record.Value = unescapeTXTRecordValue(record.Value)
+		}
+	}
+
 	if d.HasChanges("name", "ttl", "type", "value") {
 		record.Name = d.Get("name").(string)
 
@@ -159,13 +168,7 @@ func resourceRecordUpdate(c context.Context, d *schema.ResourceData, m interface
 			record.TTL = &ttl
 		}
 		record.Type = d.Get("type").(string)
-
-		value := d.Get("value").(string)
-		if record.Type == "TXT" {
-			value = prepareTXTRecordValue(value)
-		}
-		record.Value = value
-
+		record.Value = d.Get("value").(string)
 		_, err = client.UpdateRecord(*record)
 		if err != nil {
 			return diag.FromErr(err)
@@ -231,4 +234,10 @@ func splitStringBy255Bytes(value string) []string {
 		}
 	}
 	return parts
+}
+
+func unescapeTXTRecordValue(value string) string {
+	value = strings.ReplaceAll(value, "\" ", "")
+	value = strings.ReplaceAll(value, "\"", "")
+	return strings.TrimSpace(value)
 }
