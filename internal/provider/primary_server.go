@@ -4,10 +4,10 @@ import (
 	"context"
 	"log"
 
-	api2 "github.com/germanbrew/terraform-provider-hetznerdns/internal/provider/api"
-
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+
+	"github.com/germanbrew/terraform-provider-hetznerdns/internal/api"
 )
 
 func resourcePrimaryServer() *schema.Resource {
@@ -40,7 +40,7 @@ func resourcePrimaryServer() *schema.Resource {
 
 func resourcePrimaryServerCreate(c context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	log.Printf("[DEBUG] Creating primary server")
-	client := m.(*api2.Client)
+	client := m.(*api.Client)
 
 	zoneID, zoneIDNonEmpty := d.GetOk("zone_id")
 	if !zoneIDNonEmpty {
@@ -58,7 +58,7 @@ func resourcePrimaryServerCreate(c context.Context, d *schema.ResourceData, m in
 	}
 	portInt := port.(int)
 
-	opts := api2.CreatePrimaryServerRequest{
+	opts := api.CreatePrimaryServerRequest{
 		ZoneID:  zoneID.(string),
 		Address: address.(string),
 		Port:    &portInt,
@@ -76,7 +76,7 @@ func resourcePrimaryServerCreate(c context.Context, d *schema.ResourceData, m in
 
 func resourcePrimaryServerRead(c context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	log.Printf("[DEBUG] Reading primary server")
-	client := m.(*api2.Client)
+	client := m.(*api.Client)
 
 	id := d.Id()
 	record, err := client.GetPrimaryServer(id)
@@ -100,7 +100,7 @@ func resourcePrimaryServerRead(c context.Context, d *schema.ResourceData, m inte
 
 func resourcePrimaryServerUpdate(c context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	log.Printf("[DEBUG] Updating primary server")
-	client := m.(*api2.Client)
+	client := m.(*api.Client)
 
 	id := d.Id()
 	record, err := client.GetPrimaryServer(id)
@@ -131,7 +131,7 @@ func resourcePrimaryServerUpdate(c context.Context, d *schema.ResourceData, m in
 func resourcePrimaryServerDelete(c context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	log.Printf("[DEBUG] Deleting resource record")
 
-	client := m.(*api2.Client)
+	client := m.(*api.Client)
 	recordID := d.Id()
 
 	err := client.DeletePrimaryServer(recordID)

@@ -274,7 +274,7 @@ func (c *Client) GetZoneByName(name string) (*Zone, error) {
 // CreateZoneOpts covers all parameters used to create a new DNS zone
 type CreateZoneOpts struct {
 	Name string `json:"name"`
-	TTL  int    `json:"ttl"`
+	TTL  uint64 `json:"ttl"`
 }
 
 // CreateZone creates a new DNS zone

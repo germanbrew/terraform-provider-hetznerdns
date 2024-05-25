@@ -5,12 +5,13 @@ import (
 	"os"
 
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
+	"github.com/hashicorp/terraform-plugin-framework/function"
 	"github.com/hashicorp/terraform-plugin-framework/provider"
 	"github.com/hashicorp/terraform-plugin-framework/provider/schema"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 
-	"github.com/germanbrew/terraform-provider-hetznerdns/internal/provider/api"
+	"github.com/germanbrew/terraform-provider-hetznerdns/internal/api"
 )
 
 // Ensure ScaffoldingProvider satisfies various provider interfaces.
@@ -23,10 +24,6 @@ type hetznerDNSProvider struct {
 
 type hetznerDNSProviderModel struct {
 	ApiToken types.String `tfsdk:"apitoken"`
-}
-
-func New() provider.Provider {
-	return &hetznerDNSProvider{}
 }
 
 func (p *hetznerDNSProvider) Metadata(_ context.Context, _ provider.MetadataRequest, resp *provider.MetadataResponse) {
@@ -94,10 +91,11 @@ func (p *hetznerDNSProvider) Configure(ctx context.Context, req provider.Configu
 func (p *hetznerDNSProvider) Resources(ctx context.Context) []func() resource.Resource {
 	return []func() resource.Resource{
 		func() resource.Resource {
-			return resourceExample{}
+			return NewZoneResource()
 		},
 	}
 }
+
 func (p *hetznerDNSProvider) DataSources(ctx context.Context) []func() datasource.DataSource {
 	return []func() datasource.DataSource{
 		func() datasource.DataSource {
@@ -106,12 +104,14 @@ func (p *hetznerDNSProvider) DataSources(ctx context.Context) []func() datasourc
 	}
 }
 
+func (p *hetznerDNSProvider) Functions(ctx context.Context) []func() function.Function {
+	return []func() function.Function{}
+}
 
-ResourcesMap: map[string]*schema.Resource{
-"hetznerdns_zone":           resourceZone(),
-"hetznerdns_record":         resourceRecord(),
-"hetznerdns_primary_server": resourcePrimaryServer(),
-},
-DataSourcesMap: map[string]*schema.Resource{
-"hetznerdns_zone": dataSourceHetznerDNSZone(),
-},
+func New(version string) func() provider.Provider {
+	return func() provider.Provider {
+		return &hetznerDNSProvider{
+			version: version,
+		}
+	}
+}
