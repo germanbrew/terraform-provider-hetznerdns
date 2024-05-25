@@ -195,11 +195,13 @@ func resourceRecordDelete(c context.Context, d *schema.ResourceData, m interface
 // https://datatracker.ietf.org/doc/html/rfc4408#section-3.1.3
 func prepareTXTRecordValue(value string) string {
 	if len(value) < 255 {
+		log.Printf("[DEBUG] TXT record value is shorter than 255 bytes, no need to split it")
 		return value
 	}
 
 	// If the String is already in the correct format, return it as is
 	if strings.HasPrefix(value, "\"") && strings.HasSuffix(value, "\"") {
+		log.Printf("[DEBUG] TXT record value is already in the correct format")
 		return value
 	}
 
@@ -208,6 +210,9 @@ func prepareTXTRecordValue(value string) string {
 	for i, part := range parts {
 		parts[i] = "\"" + part + "\""
 	}
+
+	log.Printf("[DEBUG] TXT record value has been split into %d parts", len(parts))
+	log.Print(parts)
 	return strings.Join(parts, " ")
 }
 
