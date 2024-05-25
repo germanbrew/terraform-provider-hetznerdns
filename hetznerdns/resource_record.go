@@ -116,8 +116,8 @@ func resourceRecordRead(c context.Context, d *schema.ResourceData, m interface{}
 	}
 
 	if record.Type == "TXT" {
-		if strings.HasPrefix(record.Value, "\"") && strings.HasSuffix(record.Value, "\" ") {
-			record.Value = unescapeTXTRecordValue(record.Value)
+		if isEscapedString(record.Value) {
+			record.Value = unescapeString(record.Value)
 		}
 	}
 
@@ -153,8 +153,8 @@ func resourceRecordUpdate(c context.Context, d *schema.ResourceData, m interface
 
 	if record.Type == "TXT" {
 		// Unescape the TXT record value if it is escaped
-		if strings.HasPrefix(record.Value, "\"") && strings.HasSuffix(record.Value, "\" ") {
-			record.Value = unescapeTXTRecordValue(record.Value)
+		if isEscapedString(record.Value) {
+			record.Value = unescapeString(record.Value)
 		}
 	}
 
@@ -203,7 +203,7 @@ func prepareTXTRecordValue(value string) string {
 	}
 
 	// If the String is already in the correct format, return it as is
-	if strings.HasPrefix(value, "\"") && strings.HasSuffix(value, "\"") {
+	if strings.HasPrefix(value, "\"") && strings.HasSuffix(value, "\" ") {
 		log.Printf("[DEBUG] TXT record value is already in the correct format")
 		return value
 	}
@@ -236,8 +236,12 @@ func splitStringBy255Bytes(value string) []string {
 	return parts
 }
 
-func unescapeTXTRecordValue(value string) string {
+func unescapeString(value string) string {
 	value = strings.ReplaceAll(value, "\" ", "")
 	value = strings.ReplaceAll(value, "\"", "")
 	return strings.TrimSpace(value)
+}
+
+func isEscapedString(value string) bool {
+	return strings.HasPrefix(value, "\"") && (strings.HasSuffix(value, "\" ") || strings.HasSuffix(value, "\""))
 }
