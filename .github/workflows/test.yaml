@@ -33,7 +33,6 @@ jobs:
         uses: golangci/golangci-lint-action@a4f60bb28d35aeee14e6880718e0c85ff1882e64 # v6.0.1
         with:
           version: latest
-          args: --issues-exit-code=0 #TODO: remove this line when all issues are fixed
 
   generate:
     runs-on: ubuntu-latest
