@@ -5,32 +5,25 @@ import (
 	"strconv"
 	"testing"
 
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
+	"github.com/hashicorp/terraform-plugin-testing/helper/acctest"
 )
 
-func init() {
-	resource.AddTestSweepers("data_source_zone", &resource.Sweeper{
-		Name: "hetznerdns_zone_data_source",
-	})
-}
+func TestAccZoneDataSource(t *testing.T) {
+	aZoneName := fmt.Sprintf("%s.online", acctest.RandString(10))
+	aZoneTTL := 60
 
-func TestAccHcloudDataSourceDatasources(t *testing.T) {
-	// aName must be a valid DNS domain name with an existing TLD
-	aName := fmt.Sprintf("%s.online", acctest.RandString(10))
-	aTTL := 60
 	resource.Test(t, resource.TestCase{
-		PreCheck:          func() { testAccAPITokenPresent(t) },
-		ProviderFactories: testAccProviders,
+		PreCheck:                 func() { testAccPreCheck(t) },
+		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
 		Steps: []resource.TestStep{
+			// Read testing
 			{
-				Config: testAccZoneDataSourceConfig(aName, aTTL),
-				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttr(
-						"data.hetznerdns_zone.zone1", "name", aName),
-					resource.TestCheckResourceAttr(
-						"data.hetznerdns_zone.zone1", "ttl", strconv.Itoa(aTTL)),
+				Config: testAccZoneDataSourceConfig(aZoneName, aZoneTTL),
+				Check: resource.ComposeAggregateTestCheckFunc(
 					resource.TestCheckResourceAttrSet("data.hetznerdns_zone.zone1", "id"),
+					resource.TestCheckResourceAttr("data.hetznerdns_zone.zone1", "name", aZoneName),
+					resource.TestCheckResourceAttr("data.hetznerdns_zone.zone1", "ttl", strconv.Itoa(aZoneTTL)),
 				),
 			},
 		},
