@@ -152,7 +152,6 @@ func resourceRecordUpdate(c context.Context, d *schema.ResourceData, m interface
 	}
 
 	if record.Type == "TXT" {
-		// Unescape the TXT record value if it is escaped
 		if isEscapedString(record.Value) {
 			record.Value = unescapeString(record.Value)
 		}
@@ -202,8 +201,7 @@ func prepareTXTRecordValue(value string) string {
 		return value
 	}
 
-	// If the String is already in the correct format, return it as is
-	if strings.HasPrefix(value, "\"") && strings.HasSuffix(value, "\" ") {
+	if isEscapedString(value) {
 		log.Printf("[DEBUG] TXT record value is already in the correct format")
 		return value
 	}
