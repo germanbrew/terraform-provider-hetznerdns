@@ -4,17 +4,36 @@ Provides a Hetzner DNS Records resource to create, update and delete DNS Records
 
 ## Example Usage
 
+### Basic
 ```hcl
-data "hetznerdns_zone" "zone1" {
-    name = "zone1.online"
+data "hetznerdns_zone" "some_domain" {
+  name = "some-domain.com"
 }
 
 resource "hetznerdns_record" "www" {
-    zone_id = hetznerdns_zone.z1.id
-    name = "www"
-    value = "192.168.1.1"
-    type = "A"
-    ttl= 60
+  zone_id = data.hetznerdns_zone.some_domain.id
+  name    = "www"
+  type    = "A"
+  value   = "192.168.1.1"
+  ttl     = 60
+}
+```
+
+### TXT Records > 255 bytes
+
+TXT Records with a length of more that 255 bytes/characters must be split, otherwise the ressource will be always be recreated by the Hetzner DNS API.
+
+```hcl
+locals {
+  example_dkim = "v=DKIM1;h=sha256;k=rsa;s=email;p=MIIBIjAN..."
+}
+
+resource "hetznerdns_record" "dkim" {
+  zone_id = data.hetznerdns_zone.some_domain.id
+  name    = "example._domainkey"
+  type    = "TXT"
+  value   = join("\"", ["", replace(local.example_dkim, "/(.{255})/", "$1\" \""), " "])
+  ttl     = 60
 }
 ```
 
@@ -23,14 +42,14 @@ resource "hetznerdns_record" "www" {
 The following arguments are supported:
 
 - `zone_id` - (Required, string) Id of the DNS zone to create
-  the record in. 
+  the record in.
 
-- `name` - (Required, string) Name of the DNS record to create. 
+- `name` - (Required, string) Name of the DNS record to create.
 
-- `value` - (Required, string) The value of the record (eg. 192.168.1.1). 
-  For TXT records with quoted values, the quotes has to be ecaped in Terraform 
-  (eg. "v=spf1 include:_spf.google.com ~all" is represented by 
-  "\\"v=spf1 include:_spf.google.com ~all\\"" in Terraform). 
+- `value` - (Required, string) The value of the record (eg. 192.168.1.1).
+  For TXT records with quoted values, the quotes have to be escaped in Terraform
+  (eg. "v=spf1 include:\_spf.google.com ~all" is represented by
+  "\\"v=spf1 include:\_spf.google.com ~all\\"" in Terraform).
 
 - `type` - (Required, string) The type of the record.
 
@@ -39,7 +58,7 @@ The following arguments are supported:
 ## Import
 
 A Record can be imported using its `id`. Use the API to get all records of
-a zone and then copy the id. 
+a zone and then copy the id.
 
 ```
 curl "https://dns.hetzner.com/api/v1/records" \
@@ -71,7 +90,7 @@ curl "https://dns.hetzner.com/api/v1/records" \
 
 The command used above was copied from Hetzer DNS API docs. `jq` is
 used for formatting and is not required. Use the `id` to import a
-record. 
+record.
 
 ```
 terraform import hetznerdns_record.dkim_1 ed2416cb6bc8a8055b22222
