@@ -1,15 +1,17 @@
 # Terraform Provider for Hetzner DNS
 
-![CI Build](https://github.com/timohirt/terraform-provider-hetznerdns/workflows/CI%20Build/badge.svg?branch=master)
-![GitHub release (latest by date)](https://img.shields.io/github/v/release/timohirt/terraform-provider-hetznerdns)
-![GitHub](https://img.shields.io/github/license/timohirt/terraform-provider-hetznerdns)
-
-Read about what I learnt while [implementing this Terraform Provider](http://www.timohirt.de/blog/implementing-a-terraform-provider/).
+![CI Build](https://github.com/germanbrew/terraform-provider-hetznerdns/workflows/CI%20Build/badge.svg?branch=master)
+![GitHub release (latest by date)](https://img.shields.io/github/v/release/germanbrew/terraform-provider-hetznerdns)
+![GitHub](https://img.shields.io/github/license/germanbrew/terraform-provider-hetznerdns)
 
 **This provider is on published on the Terraform registry**. 
 
+This project has been forked from 
+[germanbrew/terraform-provider-hetznerdns](https://github.com/germanbrew/terraform-provider-hetznerdns) 
+which is unfortunately no longer maintained.
+
 You can find resources and data sources
-[documentation](https://registry.terraform.io/providers/timohirt/hetznerdns/latest/docs)
+[documentation](https://registry.terraform.io/providers/germanbrew/hetznerdns/latest/docs)
 there or [here](docs).
 
 ## Requirements
@@ -20,7 +22,7 @@ there or [here](docs).
 ## Installing and Using this Plugin
 
 You most likely want to download the provider from [Terraform
-Registry](https://registry.terraform.io/providers/timohirt/hetznerdns/latest/docs).
+Registry](https://registry.terraform.io/providers/germanbrew/hetznerdns/latest/docs).
 If you want or need to install the provider locally, take a look at
 [INSTALL](./INSTALL.md). 
 
@@ -33,7 +35,7 @@ add the following to your `terraform.tf`:
 terraform {
   required_providers {
     hetznerdns = {
-      source = "timohirt/hetznerdns"
+      source = "germanbrew/hetznerdns"
       version = "2.1.0"
     }
   }

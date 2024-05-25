@@ -1,4 +1,4 @@
-module github.com/timohirt/terraform-provider-hetznerdns
+module github.com/germanbrew/terraform-provider-hetznerdns
 
 go 1.16
 

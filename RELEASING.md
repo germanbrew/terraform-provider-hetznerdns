@@ -12,7 +12,7 @@ $ git tag v1.0.17
 $ git push --tags
 ```
 
-Then navigate your browser to the GitHub [releases page of this repository](https://github.com/timohirt/terraform-provider-hetznerdns/releases). 
+Then navigate your browser to the GitHub [releases page of this repository](https://github.com/germanbrew/terraform-provider-hetznerdns/releases). 
 
 Download `terraform-provider-hetznerdns_1.0.17_SHA256SUMS` from the
 list of assets associated with this release. The version might by
