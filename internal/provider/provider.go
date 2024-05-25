@@ -4,13 +4,14 @@ import (
 	"context"
 	"os"
 
-	"github.com/germanbrew/terraform-provider-hetznerdns/internal/api"
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
 	"github.com/hashicorp/terraform-plugin-framework/function"
 	"github.com/hashicorp/terraform-plugin-framework/provider"
 	"github.com/hashicorp/terraform-plugin-framework/provider/schema"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/types"
+
+	"github.com/germanbrew/terraform-provider-hetznerdns/internal/api"
 )
 
 // Ensure ScaffoldingProvider satisfies various provider interfaces.
@@ -34,6 +35,7 @@ func (p *hetznerDNSProvider) Metadata(_ context.Context, _ provider.MetadataRequ
 
 func (p *hetznerDNSProvider) Schema(_ context.Context, _ provider.SchemaRequest, resp *provider.SchemaResponse) {
 	resp.Schema = schema.Schema{
+		Description: "This providers helps you automate management of DNS zones and records at Hetzner DNS.",
 		Attributes: map[string]schema.Attribute{
 			"apitoken": schema.StringAttribute{
 				Description: "The Hetzner DNS API token. You can pass it using the env variable `HETZNER_DNS_API_TOKEN`as well.",
