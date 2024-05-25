@@ -21,7 +21,7 @@ resource "hetznerdns_record" "www" {
 
 ### TXT Records > 255 bytes
 
-TXT Records with a length of more that 255 bytes/characters must be split, otherwise the ressource will be always be recreated by the Hetzner DNS API.
+TXT Records with a length of more that 255 bytes/characters must be split, otherwise the ressource will always be recreated by the Hetzner DNS API.
 
 ```hcl
 locals {
