@@ -168,12 +168,17 @@ func (c *Client) doPutRequest(ctx context.Context, url string, bodyJSON interfac
 	return response, err
 }
 
-func readAndParseJSONBody(resp *http.Response, respType interface{}) error {
+func readBody(resp *http.Response) ([]byte, error) {
 	body, err := io.ReadAll(resp.Body)
 	defer resp.Body.Close()
 
+	return body, err
+}
+
+func readAndParseJSONBody(resp *http.Response, respType interface{}) error {
+	body, err := readBody(resp)
 	if err != nil {
-		return fmt.Errorf("error reading HTTP response body %s", err)
+		return fmt.Errorf("error reading HTTP response body %w", err)
 	}
 
 	return parseJSON(body, respType)
@@ -307,7 +312,12 @@ func (c *Client) CreateZone(ctx context.Context, opts CreateZoneOpts) (*Zone, er
 
 	resp, err := c.doPostRequest(ctx, "https://dns.hetzner.com/api/v1/zones", reqBody)
 	if err != nil {
-		return nil, fmt.Errorf("error creating zone. %s", err)
+		if resp != nil {
+			body, _ := readBody(resp)
+			return nil, fmt.Errorf("%w: %s", err, string(body))
+		}
+
+		return nil, err
 	}
 
 	if resp.StatusCode != http.StatusOK {
