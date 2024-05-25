@@ -3,7 +3,6 @@ package provider
 import (
 	"context"
 	"fmt"
-	"log"
 	"strings"
 
 	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
@@ -137,7 +136,7 @@ func (r *recordResource) Create(ctx context.Context, req resource.CreateRequest,
 
 	value := plan.Value.String()
 	if plan.Type.String() == "TXT" {
-		value = prepareTXTRecordValue(plan.Value.String())
+		value = prepareTXTRecordValue(ctx, plan.Value.String())
 	}
 
 	httpResp, err := r.client.CreateRecord(ctx, api.CreateRecordOpts{
@@ -262,14 +261,16 @@ func (r *recordResource) ImportState(ctx context.Context, req resource.ImportSta
 // Each part needs to be enclosed in double quotes and separated by a space.
 //
 // https://datatracker.ietf.org/doc/html/rfc4408#section-3.1.3
-func prepareTXTRecordValue(value string) string {
+func prepareTXTRecordValue(ctx context.Context, value string) string {
 	if len(value) < 255 {
-		log.Printf("[DEBUG] TXT record value is shorter than 255 bytes, no need to split it")
+		tflog.Debug(ctx, "TXT record value is shorter than 255 bytes, no need to split it")
+
 		return value
 	}
 
 	if isEscapedString(value) {
-		log.Printf("[DEBUG] TXT record value is already in the correct format")
+		tflog.Debug(ctx, "TXT record value is already in the correct format")
+
 		return value
 	}
 
@@ -279,8 +280,9 @@ func prepareTXTRecordValue(value string) string {
 		parts[i] = "\"" + part + "\""
 	}
 
-	log.Printf("[DEBUG] TXT record value has been split into %d parts", len(parts))
-	log.Print(parts)
+	tflog.Debug(ctx, fmt.Sprintf("TXT record value has been split into %d parts", len(parts)))
+	tflog.Debug(ctx, fmt.Sprintf("%v", parts))
+
 	return strings.Join(parts, " ")
 }
 
