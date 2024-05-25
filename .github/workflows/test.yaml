@@ -85,7 +85,5 @@ jobs:
       - env:
           TF_ACC: "1"
           HETZNER_DNS_API_TOKEN: ${{ secrets.HETZNER_DNS_API_TOKEN }}
-        run: |
-          TEST_DIRS=$(go list ./...)
-          go test -v -cover ${TEST_DIRS}
+        run: go test -v -cover $(go list ./hetznerdns/...)
         timeout-minutes: 10
