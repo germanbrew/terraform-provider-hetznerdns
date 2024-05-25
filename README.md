@@ -1,6 +1,6 @@
 # Terraform Provider for Hetzner DNS
 
-[![Tests](https://github.com/germanbrew/terraform-provider-hetznerdns/actions/workflows/build.yaml/badge.svg)](https://github.com/germanbrew/terraform-provider-hetznerdns/actions/workflows/build.yaml)
+[![Tests](https://github.com/germanbrew/terraform-provider-hetznerdns/actions/workflows/test.yaml/badge.svg)](https://github.com/germanbrew/terraform-provider-hetznerdns/actions/workflows/test.yaml)
 ![GitHub release (latest by date)](https://img.shields.io/github/v/release/germanbrew/terraform-provider-hetznerdns)
 ![GitHub](https://img.shields.io/github/license/germanbrew/terraform-provider-hetznerdns)
 
