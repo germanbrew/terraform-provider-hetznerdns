@@ -154,6 +154,15 @@ resource "hetznerdns_record" "example_com_spf" {
   type    = "TXT"
 }
 
+# SRV record
+resource "hetznerdns_record" "example_com_rv" {
+  zone_id = hetznerdns_zone.example_com.id
+  name    = "_ldap._tcp"
+  value   = "10 0 389 ldap.example.com."
+  type    = "SRV"
+  ttl     = 3600
+}
+
 # DKIM record
 locals {
   dkim = "v=DKIM1;h=sha256;k=rsa;s=email;p=abc..."}
