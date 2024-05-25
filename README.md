@@ -4,7 +4,7 @@
 ![GitHub release (latest by date)](https://img.shields.io/github/v/release/germanbrew/terraform-provider-hetznerdns)
 ![GitHub](https://img.shields.io/github/license/germanbrew/terraform-provider-hetznerdns)
 
-**This provider is on published on the Terraform and OpenTofu registry**.
+**This provider is published on the Terraform and OpenTofu Registry**.
 
 > This project has been forked from [timohirt/terraform-provider-hetznerdns](https://github.com/timohirt/terraform-provider-hetznerdns), which is no longer maintained.
 
@@ -15,7 +15,7 @@ there or [here](docs).
 ## Requirements
 
 - [Terraform](https://www.terraform.io/downloads.html) > v1.0
-- [Go](https://golang.org/) 1.16 (to build the provider plugin)
+- [Go](https://golang.org/) 1.21 (to build the provider plugin)
 
 ## Installing and Using this Plugin
 
