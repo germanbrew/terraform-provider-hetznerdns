@@ -7,7 +7,6 @@ import (
 	"fmt"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"io"
-	"io/ioutil"
 	"log"
 	"net/http"
 	"strings"
@@ -96,11 +95,11 @@ func (c *Client) doHTTPRequest(apiToken string, method string, url string, body 
 }
 
 func parseUnprocessableEntityError(resp *http.Response) (*UnprocessableEntityError, error) {
-	body, err := ioutil.ReadAll(resp.Body)
+	body, err := io.ReadAll(resp.Body)
 	defer resp.Body.Close()
 
 	if err != nil {
-		return nil, fmt.Errorf("Error reading HTTP response body: %e", err)
+		return nil, fmt.Errorf("error reading HTTP response body: %e", err)
 	}
 	var unprocessableEntityError UnprocessableEntityError
 	err = parseJSON(body, &unprocessableEntityError)
@@ -160,7 +159,7 @@ func (c *Client) doPutRequest(url string, bodyJSON interface{}) (*http.Response,
 }
 
 func readAndParseJSONBody(resp *http.Response, respType interface{}) error {
-	body, err := ioutil.ReadAll(resp.Body)
+	body, err := io.ReadAll(resp.Body)
 	defer resp.Body.Close()
 
 	if err != nil {
