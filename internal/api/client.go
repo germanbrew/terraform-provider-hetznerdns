@@ -14,10 +14,10 @@ import (
 	"github.com/hashicorp/terraform-plugin-log/tflog"
 )
 
-// UnauthorizedError represents the message of a HTTP 401 response.
+// UnauthorizedError represents the message of an HTTP 401 response.
 type UnauthorizedError ErrorMessage
 
-// UnprocessableEntityError represents the generic structure of a error response.
+// UnprocessableEntityError represents the generic structure of an error response.
 type UnprocessableEntityError struct {
 	Error ErrorMessage `json:"error"`
 }
@@ -142,7 +142,7 @@ func (c *Client) doPostRequest(ctx context.Context, url string, bodyJSON interfa
 
 	body := bytes.NewReader(reqJSON)
 
-	// This lock ensures that only one Post request is sent to Hetzber API
+	// This lock ensures that only one Post request is sent to Hetzner API
 	// at a time. See issue #5 for context.
 	c.requestLock.Lock()
 	response, err := c.doHTTPRequest(ctx, http.MethodPost, url, body)
@@ -191,7 +191,7 @@ func (c *Client) GetZones() ([]Zone, error) {
 	}
 
 	if resp.StatusCode != http.StatusOK {
-		return nil, fmt.Errorf("Error getting Zone. HTTP status %d unhandled", resp.StatusCode)
+		return nil, fmt.Errorf("error getting Zone. HTTP status %d unhandled", resp.StatusCode)
 	}
 
 	var response GetZones
@@ -206,9 +206,9 @@ func (c *Client) GetZones() ([]Zone, error) {
 
 // GetZone reads the current state of a DNS zone.
 func (c *Client) GetZone(ctx context.Context, id string) (*Zone, error) {
-	resp, err := c.doGetRequest(context.Background(), "https://dns.hetzner.com/api/v1/zones/"+id)
+	resp, err := c.doGetRequest(ctx, "https://dns.hetzner.com/api/v1/zones/"+id)
 	if err != nil {
-		return nil, fmt.Errorf("Error getting zone %s: %s", id, err)
+		return nil, fmt.Errorf("error getting zone %s: %s", id, err)
 	}
 
 	if resp.StatusCode == http.StatusOK {
