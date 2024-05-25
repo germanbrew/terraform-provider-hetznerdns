@@ -3,6 +3,7 @@ package hetznerdns
 import (
 	"context"
 	"log"
+	"strings"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 
@@ -69,6 +70,10 @@ func resourceRecordCreate(c context.Context, d *schema.ResourceData, m interface
 	value, valueNonEmpty := d.GetOk("value")
 	if !valueNonEmpty {
 		return diag.Errorf("Value of record not set")
+	}
+
+	if recordType.(string) == "TXT" {
+		value = prepareTXTRecordValue(value.(string))
 	}
 
 	opts := api.CreateRecordOpts{
@@ -150,9 +155,14 @@ func resourceRecordUpdate(c context.Context, d *schema.ResourceData, m interface
 			record.TTL = &ttl
 		}
 		record.Type = d.Get("type").(string)
-		record.Value = d.Get("value").(string)
 
-		record, err = client.UpdateRecord(*record)
+		value := d.Get("value").(string)
+		if record.Type == "TXT" {
+			value = prepareTXTRecordValue(value)
+		}
+		record.Value = value
+
+		_, err = client.UpdateRecord(*record)
 		if err != nil {
 			return diag.FromErr(err)
 		}
@@ -174,4 +184,42 @@ func resourceRecordDelete(c context.Context, d *schema.ResourceData, m interface
 	}
 
 	return nil
+}
+
+// If the value in a TXT record is longer than 255 bytes, it needs to be split into multiple parts. 
+// Each part needs to be enclosed in double quotes and separated by a space.
+// https://datatracker.ietf.org/doc/html/rfc4408#section-3.1.3
+func prepareTXTRecordValue(value string) string {
+	if len(value) < 255 {
+		return value
+	}
+
+	// If the String is already in the correct format, return it as is
+	if strings.HasPrefix(value, "\"") && strings.HasSuffix(value, "\"") {
+		return value
+	}
+
+	// Split the DKIM key into 255 byte parts
+	parts := splitStringBy255Bytes(value)
+	for i, part := range parts {
+		parts[i] = "\"" + part + "\""
+	}
+	return strings.Join(parts, " ")
+}
+
+// Strings in TXT records are by design limited to 255 bytes. 
+// Strings with more characters get split to substrings separated by space every 255 bytes/characters.
+// https://datatracker.ietf.org/doc/html/rfc4408#section-3.1.3
+func splitStringBy255Bytes(value string) []string {
+	var parts []string
+	for len(value) > 0 {
+		if len(value) > 255 {
+			parts = append(parts, value[:255])
+			value = value[255:]
+		} else {
+			parts = append(parts, value)
+			break
+		}
+	}
+	return parts
 }
