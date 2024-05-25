@@ -15,7 +15,7 @@ there or [here](docs).
 ## Requirements
 
 - [Terraform](https://www.terraform.io/downloads.html) > v1.0
-- [Go](https://golang.org/) 1.16 (to build the provider plugin)
+- [Go](https://golang.org/) 1.21 (to build the provider plugin)
 
 ## Installing and Using this Plugin
 
