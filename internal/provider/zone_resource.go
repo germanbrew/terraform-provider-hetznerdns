@@ -12,7 +12,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
 
-	api2 "github.com/germanbrew/terraform-provider-hetznerdns/internal/api"
+	"github.com/germanbrew/terraform-provider-hetznerdns/internal/api"
 )
 
 // Ensure provider defined types fully satisfy framework interfaces.
@@ -25,7 +25,7 @@ func NewZoneResource() resource.Resource {
 
 // zoneResource defines the resource implementation.
 type zoneResource struct {
-	client *api2.Client
+	client *api.Client
 }
 
 // zoneResourceModel describes the resource data model.
@@ -77,7 +77,7 @@ func (r *zoneResource) Configure(_ context.Context, req resource.ConfigureReques
 		return
 	}
 
-	client, ok := req.ProviderData.(*api2.Client)
+	client, ok := req.ProviderData.(*api.Client)
 
 	if !ok {
 		resp.Diagnostics.AddError(
@@ -103,7 +103,7 @@ func (r *zoneResource) Create(ctx context.Context, req resource.CreateRequest, r
 		return
 	}
 
-	httpResp, err := r.client.CreateZone(api2.CreateZoneOpts{
+	httpResp, err := r.client.CreateZone(ctx, api.CreateZoneOpts{
 		Name: plan.Name.String(),
 		TTL:  uint64(plan.Ttl.ValueInt64()),
 	})
@@ -131,7 +131,7 @@ func (r *zoneResource) Read(ctx context.Context, req resource.ReadRequest, resp 
 		return
 	}
 
-	zone, err := r.client.GetZone(state.ID.String())
+	zone, err := r.client.GetZone(context.Background(), state.ID.String())
 	if err != nil {
 		resp.Diagnostics.AddError("Client Error", fmt.Sprintf("Unable to read zene, got error: %s", err))
 		return
@@ -162,7 +162,7 @@ func (r *zoneResource) Update(ctx context.Context, req resource.UpdateRequest, r
 	}
 
 	if !plan.Ttl.Equal(state.Ttl) {
-		_, err := r.client.UpdateZone(api2.Zone{
+		_, err := r.client.UpdateZone(ctx, api.Zone{
 			Name: plan.Name.String(),
 			TTL:  uint64(plan.Ttl.ValueInt64()),
 		})
@@ -189,7 +189,7 @@ func (r *zoneResource) Delete(ctx context.Context, req resource.DeleteRequest, r
 		return
 	}
 
-	if err := r.client.DeleteZone(state.ID.String()); err != nil {
+	if err := r.client.DeleteZone(ctx, state.ID.String()); err != nil {
 		resp.Diagnostics.AddError("API Error", fmt.Sprintf("error deleting zone: %s", err))
 		return
 	}

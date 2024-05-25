@@ -2,6 +2,7 @@ package api
 
 import (
 	"bytes"
+	"context"
 	"io"
 	"net/http"
 	"testing"
@@ -16,7 +17,7 @@ func TestClientCreateZoneSuccess(t *testing.T) {
 	client := createTestClient(config)
 
 	opts := CreateZoneOpts{Name: "mydomain.com", TTL: 3600}
-	zone, err := client.CreateZone(opts)
+	zone, err := client.CreateZone(context.Background(), opts)
 
 	assert.NoError(t, err)
 	assert.Equal(t, Zone{ID: "12345", Name: "mydomain.com", TTL: 3600}, *zone)
@@ -31,7 +32,7 @@ func TestClientCreateZoneInvalidDomain(t *testing.T) {
 
 	client := createTestClient(config)
 	opts := CreateZoneOpts{Name: "this.is.invalid", TTL: 3600}
-	_, err := client.CreateZone(opts)
+	_, err := client.CreateZone(context.Background(), opts)
 
 	assert.Error(t, err)
 	assert.Contains(t, err.Error(), "API returned HTTP 422 Unprocessable Entity error with message: '422 : invalid TLD'")
@@ -41,7 +42,7 @@ func TestClientCreateZoneInvalidTLD(t *testing.T) {
 	var irrelevantConfig RequestConfig
 	client := createTestClient(irrelevantConfig)
 	opts := CreateZoneOpts{Name: "thisisinvalid", TTL: 3600}
-	_, err := client.CreateZone(opts)
+	_, err := client.CreateZone(context.Background(), opts)
 
 	assert.Error(t, err)
 	assert.Contains(t, err.Error(), "'thisisinvalid' is not a valid domain")
@@ -55,7 +56,7 @@ func TestClientUpdateZoneSuccess(t *testing.T) {
 	config := RequestConfig{responseHTTPStatus: http.StatusOK, requestBodyReader: &requestBodyReader, responseBodyJSON: responseBody}
 	client := createTestClient(config)
 
-	updatedZone, err := client.UpdateZone(zoneWithUpdates)
+	updatedZone, err := client.UpdateZone(context.Background(), zoneWithUpdates)
 
 	assert.NoError(t, err)
 	assert.Equal(t, zoneWithUpdates, *updatedZone)
@@ -69,7 +70,7 @@ func TestClientGetZone(t *testing.T) {
 	config := RequestConfig{responseHTTPStatus: http.StatusOK, responseBodyJSON: responseBody}
 	client := createTestClient(config)
 
-	zone, err := client.GetZone("12345678")
+	zone, err := client.GetZone(context.Background(), "12345678")
 
 	assert.NoError(t, err)
 	assert.Equal(t, Zone{ID: "12345678", Name: "zone1.online", TTL: 3600}, *zone)
@@ -79,7 +80,7 @@ func TestClientGetZoneReturnNilIfNotFound(t *testing.T) {
 	config := RequestConfig{responseHTTPStatus: http.StatusNotFound}
 	client := createTestClient(config)
 
-	zone, err := client.GetZone("12345678")
+	zone, err := client.GetZone(context.Background(), "12345678")
 
 	assert.NoError(t, err)
 	assert.Nil(t, zone)
@@ -110,7 +111,7 @@ func TestClientDeleteZone(t *testing.T) {
 	config := RequestConfig{responseHTTPStatus: http.StatusOK}
 	client := createTestClient(config)
 
-	err := client.DeleteZone("irrelevant")
+	err := client.DeleteZone(context.Background(), "irrelevant")
 
 	assert.NoError(t, err)
 }
@@ -198,7 +199,7 @@ func TestClientHandleUnauthorizedRequest(t *testing.T) {
 	client := createTestClient(config)
 
 	opts := CreateZoneOpts{Name: "mydomain.com", TTL: 3600}
-	_, err := client.CreateZone(opts)
+	_, err := client.CreateZone(context.Background(), opts)
 
 	assert.Error(t, err)
 	assert.Contains(t, err.Error(), "'Invalid API key'", "Error message didn't contain error message from API.")
