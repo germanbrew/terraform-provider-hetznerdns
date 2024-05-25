@@ -39,7 +39,7 @@ func (p *hetznerDNSProvider) Schema(_ context.Context, _ provider.SchemaRequest,
 		Attributes: map[string]schema.Attribute{
 			"apitoken": schema.StringAttribute{
 				Description: "The Hetzner DNS API token. You can pass it using the env variable `HETZNER_DNS_API_TOKEN`as well.",
-				Required:    true,
+				Optional:    true,
 				Sensitive:   true,
 			},
 		},
