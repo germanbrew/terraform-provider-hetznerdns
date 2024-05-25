@@ -304,7 +304,7 @@ func (c *Client) GetZoneByName(ctx context.Context, name string) (*Zone, error) 
 // CreateZoneOpts covers all parameters used to create a new DNS zone.
 type CreateZoneOpts struct {
 	Name string `json:"name"`
-	TTL  *int64 `json:"ttl,omitempty"`
+	TTL  int64  `json:"ttl"`
 }
 
 // CreateZone creates a new DNS zone.

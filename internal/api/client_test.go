@@ -17,12 +17,11 @@ func TestClientCreateZoneSuccess(t *testing.T) {
 	config := RequestConfig{responseHTTPStatus: http.StatusOK, requestBodyReader: &requestBodyReader, responseBodyJSON: responseBody}
 	client := createTestClient(config)
 
-	aTTL := int64(3600)
-	opts := CreateZoneOpts{Name: "mydomain.com", TTL: &aTTL}
+	opts := CreateZoneOpts{Name: "mydomain.com", TTL: 3600}
 	zone, err := client.CreateZone(context.Background(), opts)
 
 	assert.NoError(t, err)
-	assert.Equal(t, Zone{ID: "12345", Name: "mydomain.com", TTL: &aTTL}, *zone)
+	assert.Equal(t, Zone{ID: "12345", Name: "mydomain.com", TTL: 3600}, *zone)
 	assert.NotNil(t, requestBodyReader, "The request body should not be nil")
 	jsonRequestBody, _ := io.ReadAll(requestBodyReader)
 	assert.Equal(t, `{"name":"mydomain.com","ttl":3600}`, string(jsonRequestBody))
@@ -33,8 +32,7 @@ func TestClientCreateZoneInvalidDomain(t *testing.T) {
 	config := RequestConfig{responseHTTPStatus: http.StatusUnprocessableEntity, responseBodyJSON: responseBody}
 
 	client := createTestClient(config)
-	aTTL := int64(3600)
-	opts := CreateZoneOpts{Name: "this.is.invalid", TTL: &aTTL}
+	opts := CreateZoneOpts{Name: "this.is.invalid", TTL: 3600}
 	_, err := client.CreateZone(context.Background(), opts)
 
 	assert.Error(t, err)
@@ -44,8 +42,7 @@ func TestClientCreateZoneInvalidDomain(t *testing.T) {
 func TestClientCreateZoneInvalidTLD(t *testing.T) {
 	var irrelevantConfig RequestConfig
 	client := createTestClient(irrelevantConfig)
-	aTTL := int64(3600)
-	opts := CreateZoneOpts{Name: "thisisinvalid", TTL: &aTTL}
+	opts := CreateZoneOpts{Name: "thisisinvalid", TTL: 3600}
 	_, err := client.CreateZone(context.Background(), opts)
 
 	assert.Error(t, err)
@@ -53,8 +50,7 @@ func TestClientCreateZoneInvalidTLD(t *testing.T) {
 }
 
 func TestClientUpdateZoneSuccess(t *testing.T) {
-	aTTL := int64(3600)
-	zoneWithUpdates := Zone{ID: "12345678", Name: "zone1.online", TTL: &aTTL}
+	zoneWithUpdates := Zone{ID: "12345678", Name: "zone1.online", TTL: 3600}
 	zoneWithUpdatesJSON := `{"id":"12345678","name":"zone1.online","ttl":3600}`
 
 	var requestBodyReader io.Reader
@@ -79,10 +75,8 @@ func TestClientGetZone(t *testing.T) {
 
 	zone, err := client.GetZone(context.Background(), "12345678")
 
-	aTTL := int64(3600)
-
 	assert.NoError(t, err)
-	assert.Equal(t, Zone{ID: "12345678", Name: "zone1.online", TTL: &aTTL}, *zone)
+	assert.Equal(t, Zone{ID: "12345678", Name: "zone1.online", TTL: 3600}, *zone)
 }
 
 func TestClientGetZoneReturnNilIfNotFound(t *testing.T) {
@@ -102,10 +96,8 @@ func TestClientGetZoneByName(t *testing.T) {
 
 	zone, err := client.GetZoneByName(context.Background(), "zone1.online")
 
-	aTTL := int64(3600)
-
 	assert.NoError(t, err)
-	assert.Equal(t, Zone{ID: "12345678", Name: "zone1.online", TTL: &aTTL}, *zone)
+	assert.Equal(t, Zone{ID: "12345678", Name: "zone1.online", TTL: 3600}, *zone)
 }
 
 func TestClientGetZoneByNameReturnNilIfnotFound(t *testing.T) {
@@ -212,8 +204,7 @@ func TestClientHandleUnauthorizedRequest(t *testing.T) {
 	config := RequestConfig{responseHTTPStatus: http.StatusUnauthorized, responseBodyJSON: responseBody}
 	client := createTestClient(config)
 
-	aTTL := int64(3600)
-	opts := CreateZoneOpts{Name: "mydomain.com", TTL: &aTTL}
+	opts := CreateZoneOpts{Name: "mydomain.com", TTL: 3600}
 	_, err := client.CreateZone(context.Background(), opts)
 
 	assert.Error(t, err)

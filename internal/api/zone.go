@@ -4,13 +4,13 @@ package api
 type Zone struct {
 	ID   string `json:"id"`
 	Name string `json:"name"`
-	TTL  *int64 `json:"ttl,omitempty"`
+	TTL  int64  `json:"ttl"`
 }
 
 // CreateZoneRequest represents the body of a POST Zone request.
 type CreateZoneRequest struct {
 	Name string `json:"name"`
-	TTL  *int64 `json:"ttl,omitempty"`
+	TTL  int64  `json:"ttl"`
 }
 
 // CreateZoneResponse represents the content of a POST Zone response.
