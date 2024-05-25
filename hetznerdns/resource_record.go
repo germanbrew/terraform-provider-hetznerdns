@@ -2,12 +2,11 @@ package hetznerdns
 
 import (
 	"context"
+	"fmt"
 	"log"
 
-	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
-
 	"github.com/germanbrew/terraform-provider-hetznerdns/hetznerdns/api"
-
+	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
@@ -48,7 +47,7 @@ func resourceRecord() *schema.Resource {
 }
 
 func resourceRecordCreate(c context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	log.Printf("[DEBUG] Updating resource record")
+	log.Printf("[DEBUG] Creating resource record")
 	client := m.(*api.Client)
 
 	zoneID, zoneIDNonEmpty := d.GetOk("zone_id")
@@ -76,6 +75,19 @@ func resourceRecordCreate(c context.Context, d *schema.ResourceData, m interface
 		Name:   name.(string),
 		Type:   recordType.(string),
 		Value:  value.(string),
+	}
+
+	recordExists, err := client.RecordExistsByName(opts.ZoneID, opts.Name)
+	if err != nil {
+		log.Printf("[ERROR] Checking if resource record exists failed: %s", err)
+		d.SetId("")
+		return diag.FromErr(err)
+	}
+
+	if recordExists {
+		errMsg := fmt.Sprintf("Record %s already exists", opts.Name)
+		log.Printf("[ERROR] %s", errMsg)
+		return diag.Errorf(errMsg)
 	}
 
 	tTL, tTLNonEmpty := d.GetOk("ttl")
