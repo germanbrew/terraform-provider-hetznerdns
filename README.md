@@ -7,7 +7,7 @@
 **This provider is on published on the Terraform registry**. 
 
 This project has been forked from 
-[germanbrew/terraform-provider-hetznerdns](https://github.com/germanbrew/terraform-provider-hetznerdns) 
+[timohirt/terraform-provider-hetznerdns](https://github.com/timohirt/terraform-provider-hetznerdns) 
 which is unfortunately no longer maintained.
 
 You can find resources and data sources
