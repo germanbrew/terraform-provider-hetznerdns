@@ -317,17 +317,11 @@ func (c *Client) CreateZone(ctx context.Context, opts CreateZoneOpts) (*Zone, er
 
 	resp, err := c.doPostRequest(ctx, "https://dns.hetzner.com/api/v1/zones", reqBody)
 	if err != nil {
-		if resp != nil {
-			body, _ := readBody(resp)
-
-			return nil, fmt.Errorf("%w: %s", err, string(body))
-		}
-
 		return nil, err
 	}
 
 	if resp.StatusCode != http.StatusOK {
-		return nil, fmt.Errorf("error creating Zone. HTTP status %d unhandled", resp.StatusCode)
+		return nil, fmt.Errorf("http status %d unhandled", resp.StatusCode)
 	}
 
 	var response CreateZoneResponse
@@ -344,11 +338,11 @@ func (c *Client) CreateZone(ctx context.Context, opts CreateZoneOpts) (*Zone, er
 func (c *Client) GetRecordByName(zoneID string, name string) (*Record, error) {
 	resp, err := c.doGetRequest(context.Background(), "https://dns.hetzner.com/api/v1/records?zone_id="+zoneID)
 	if err != nil {
-		return nil, fmt.Errorf("error getting record %s: %w", name, err)
+		return nil, err
 	}
 
 	if resp.StatusCode != http.StatusOK {
-		return nil, fmt.Errorf("error getting Record. HTTP status %d unhandled", resp.StatusCode)
+		return nil, fmt.Errorf("http status %d unhandled", resp.StatusCode)
 	}
 
 	var response *RecordsResponse
@@ -359,7 +353,7 @@ func (c *Client) GetRecordByName(zoneID string, name string) (*Record, error) {
 	}
 
 	if len(response.Records) == 0 {
-		return nil, fmt.Errorf("error getting record '%s'. It seems there are no records in zone %s at all", name, zoneID)
+		return nil, fmt.Errorf("it seems there are no records in zone %s at all", zoneID)
 	}
 
 	for _, record := range response.Records {
@@ -368,7 +362,7 @@ func (c *Client) GetRecordByName(zoneID string, name string) (*Record, error) {
 		}
 	}
 
-	return nil, fmt.Errorf("error getting record '%s'. There are records in zone %s, but %s isn't included", name, zoneID, name)
+	return nil, fmt.Errorf("there are records in zone %s, but %s isn't included", zoneID, name)
 }
 
 // GetRecord reads the current state of a DNS Record.
