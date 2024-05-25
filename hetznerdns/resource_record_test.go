@@ -202,7 +202,7 @@ resource "hetznerdns_zone" "zone1" {
 	ttl = %d
 }
 
-resource "hetznerdns_record" "dkim_TXT" {
+resource "hetznerdns_record" "record1" {
 	zone_id = "${hetznerdns_zone.zone1.id}"
 	type = "TXT"
 	name = "%s"
