@@ -10,7 +10,7 @@ import (
 )
 
 func TestAccOnePrimaryServersResources(t *testing.T) {
-	aZoneName := fmt.Sprintf("%s.online", acctest.RandString(10))
+	aZoneName := acctest.RandString(10) + ".online"
 	aZoneTTL := 60
 
 	psAddress := "1.1.1.1"
@@ -66,7 +66,7 @@ resource "hetznerdns_primary_server" "test" {
 }
 
 func TestAccTwoPrimaryServersResources(t *testing.T) {
-	aZoneName := fmt.Sprintf("%s.online", acctest.RandString(10))
+	aZoneName := acctest.RandString(10) + ".online"
 	aZoneTTL := 60
 
 	ps1Address := "1.1.1.1"

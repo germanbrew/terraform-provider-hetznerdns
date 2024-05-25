@@ -4,19 +4,20 @@ import (
 	"context"
 	"os"
 
+	"github.com/germanbrew/terraform-provider-hetznerdns/internal/api"
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
 	"github.com/hashicorp/terraform-plugin-framework/function"
 	"github.com/hashicorp/terraform-plugin-framework/provider"
 	"github.com/hashicorp/terraform-plugin-framework/provider/schema"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/types"
-
-	"github.com/germanbrew/terraform-provider-hetznerdns/internal/api"
 )
 
 // Ensure ScaffoldingProvider satisfies various provider interfaces.
-var _ provider.Provider = &hetznerDNSProvider{}
-var _ provider.ProviderWithFunctions = &hetznerDNSProvider{}
+var (
+	_ provider.Provider              = &hetznerDNSProvider{}
+	_ provider.ProviderWithFunctions = &hetznerDNSProvider{}
+)
 
 type hetznerDNSProvider struct {
 	version string
@@ -49,6 +50,7 @@ func (p *hetznerDNSProvider) Configure(ctx context.Context, req provider.Configu
 	apiToken := os.Getenv("HETZNER_DNS_API_TOKEN")
 
 	resp.Diagnostics.Append(req.Config.Get(ctx, &data)...)
+
 	if resp.Diagnostics.HasError() {
 		return
 	}
@@ -92,6 +94,9 @@ func (p *hetznerDNSProvider) Resources(_ context.Context) []func() resource.Reso
 	return []func() resource.Resource{
 		func() resource.Resource {
 			return NewPrimaryServerResource()
+		},
+		func() resource.Resource {
+			return NewRecordResource()
 		},
 		func() resource.Resource {
 			return NewZoneResource()

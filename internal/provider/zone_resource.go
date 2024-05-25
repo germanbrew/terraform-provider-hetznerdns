@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"regexp"
 
+	"github.com/germanbrew/terraform-provider-hetznerdns/internal/api"
 	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
@@ -14,13 +15,13 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
-
-	"github.com/germanbrew/terraform-provider-hetznerdns/internal/api"
 )
 
 // Ensure provider defined types fully satisfy framework interfaces.
-var _ resource.Resource = &zoneResource{}
-var _ resource.ResourceWithImportState = &zoneResource{}
+var (
+	_ resource.Resource                = &zoneResource{}
+	_ resource.ResourceWithImportState = &zoneResource{}
+)
 
 func NewZoneResource() resource.Resource {
 	return &zoneResource{}
@@ -35,7 +36,7 @@ type zoneResource struct {
 type zoneResourceModel struct {
 	ID   types.String `tfsdk:"id"`
 	Name types.String `tfsdk:"name"`
-	Ttl  types.Int64  `tfsdk:"ttl"`
+	TTL  types.Int64  `tfsdk:"ttl"`
 }
 
 func (r *zoneResource) Metadata(_ context.Context, req resource.MetadataRequest, resp *resource.MetadataResponse) {
@@ -67,7 +68,7 @@ func (r *zoneResource) Schema(_ context.Context, _ resource.SchemaRequest, resp 
 			},
 			"ttl": schema.Int64Attribute{
 				MarkdownDescription: "Time to live of this zone",
-				Required:            true,
+				Optional:            true,
 			},
 			"id": schema.StringAttribute{
 				Computed:            true,
@@ -114,9 +115,8 @@ func (r *zoneResource) Create(ctx context.Context, req resource.CreateRequest, r
 
 	httpResp, err := r.client.CreateZone(ctx, api.CreateZoneOpts{
 		Name: plan.Name.String(),
-		TTL:  uint64(plan.Ttl.ValueInt64()),
+		TTL:  plan.TTL.ValueInt64Pointer(),
 	})
-
 	if err != nil {
 		resp.Diagnostics.AddError("API Error", fmt.Sprintf("error creating zone: %s", err))
 		return
@@ -152,7 +152,7 @@ func (r *zoneResource) Read(ctx context.Context, req resource.ReadRequest, resp 
 	}
 
 	state.Name = types.StringValue(zone.Name)
-	state.Ttl = types.Int64Value(int64(zone.TTL))
+	state.TTL = types.Int64PointerValue(zone.TTL)
 	state.ID = types.StringValue(zone.ID)
 
 	// Save updated state into Terraform state
@@ -163,6 +163,7 @@ func (r *zoneResource) Update(ctx context.Context, req resource.UpdateRequest, r
 	tflog.Trace(ctx, "update resource zone")
 
 	var plan, state zoneResourceModel
+
 	resp.Diagnostics.Append(req.Plan.Get(ctx, &plan)...)
 	resp.Diagnostics.Append(req.State.Get(ctx, &state)...)
 
@@ -170,12 +171,11 @@ func (r *zoneResource) Update(ctx context.Context, req resource.UpdateRequest, r
 		return
 	}
 
-	if !plan.Ttl.Equal(state.Ttl) {
+	if !plan.TTL.Equal(state.TTL) {
 		_, err := r.client.UpdateZone(ctx, api.Zone{
 			Name: plan.Name.String(),
-			TTL:  uint64(plan.Ttl.ValueInt64()),
+			TTL:  plan.TTL.ValueInt64Pointer(),
 		})
-
 		if err != nil {
 			resp.Diagnostics.AddError("API Error", fmt.Sprintf("error updating zone: %s", err))
 			return

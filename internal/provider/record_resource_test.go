@@ -10,8 +10,7 @@ import (
 )
 
 func TestAccRecordResources(t *testing.T) {
-	// aZoneName must be a valid DNS domain name with an existing TLD
-	aZoneName := fmt.Sprintf("%s.online", acctest.RandString(10))
+	aZoneName := acctest.RandString(10) + ".online"
 	aZoneTTL := 60
 
 	aValue := "192.168.1.1"
@@ -20,12 +19,12 @@ func TestAccRecordResources(t *testing.T) {
 	aTTL := aZoneTTL * 2
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:          func() { testAccAPITokenPresent(t) },
-		ProviderFactories: testAccProviders,
+		PreCheck:                 func() { testAccPreCheck(t) },
+		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
 		Steps: []resource.TestStep{
+			// Create and Read testing
 			{
-				Config:             testAccRecordResourceConfigCreate(aZoneName, aZoneTTL, aName, aType, aValue, aTTL),
-				PreventDiskCleanup: true,
+				Config: testAccRecordResourceConfigCreate(aZoneName, aZoneTTL, aName, aType, aValue, aTTL),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttrSet(
 						"hetznerdns_record.record1", "id"),
@@ -39,6 +38,20 @@ func TestAccRecordResources(t *testing.T) {
 						"hetznerdns_record.record1", "ttl", strconv.Itoa(aTTL)),
 				),
 			},
+			// ImportState testing
+			{
+				ResourceName:      "hetznerdns_zone.test",
+				ImportState:       true,
+				ImportStateVerify: true,
+			},
+			// Update and Read testing
+			{
+				Config: testAccExampleResourceConfig(aZoneName, aZoneTTL*2),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					resource.TestCheckResourceAttr("hetznerdns_zone.test", "ttl", strconv.Itoa(aZoneTTL*2)),
+				),
+			},
+			// Delete testing automatically occurs in TestCase
 		},
 	})
 }
@@ -62,7 +75,7 @@ resource "hetznerdns_record" "record1" {
 
 func TestAccRecordWithDefaultTTLResources(t *testing.T) {
 	// aZoneName must be a valid DNS domain name with an existing TLD
-	aZoneName := fmt.Sprintf("%s.online", acctest.RandString(10))
+	aZoneName := acctest.RandString(10) + ".online"
 	aZoneTTL := 3600
 
 	aValue := "192.168.1.1"
@@ -70,8 +83,8 @@ func TestAccRecordWithDefaultTTLResources(t *testing.T) {
 	aType := "A"
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:          func() { testAccAPITokenPresent(t) },
-		ProviderFactories: testAccProviders,
+		PreCheck:                 func() { testAccPreCheck(t) },
+		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
 		Steps: []resource.TestStep{
 			{
 				Config:             testAccRecordResourceConfigCreateWithDefaultTTL(aZoneName, aZoneTTL, aName, aType, aValue),
@@ -110,7 +123,7 @@ resource "hetznerdns_record" "record1" {
 
 func TestAccTwoRecordResources(t *testing.T) {
 	// aZoneName must be a valid DNS domain name with an existing TLD
-	aZoneName := fmt.Sprintf("%s.online", acctest.RandString(10))
+	aZoneName := acctest.RandString(10) + ".online"
 
 	aValue := "192.168.1.1"
 	anotherValue := "192.168.1.2"
@@ -120,8 +133,8 @@ func TestAccTwoRecordResources(t *testing.T) {
 	aTTL := 60
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:          func() { testAccAPITokenPresent(t) },
-		ProviderFactories: testAccProviders,
+		PreCheck:                 func() { testAccPreCheck(t) },
+		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
 		Steps: []resource.TestStep{
 			{
 				Config:             testAccRecordResourceConfigCreateTwo(aZoneName, aName, anotherName, aType, aValue, anotherValue, aTTL),

@@ -10,7 +10,7 @@ import (
 )
 
 func TestAccZoneDataSource(t *testing.T) {
-	aZoneName := fmt.Sprintf("%s.online", acctest.RandString(10))
+	aZoneName := acctest.RandString(10) + ".online"
 	aZoneTTL := 60
 
 	resource.Test(t, resource.TestCase{

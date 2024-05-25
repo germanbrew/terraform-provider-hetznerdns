@@ -12,15 +12,17 @@ import (
 
 func TestClientCreateZoneSuccess(t *testing.T) {
 	var requestBodyReader io.Reader
+
 	responseBody := []byte(`{"zone":{"id":"12345","name":"mydomain.com","ttl":3600}}`)
 	config := RequestConfig{responseHTTPStatus: http.StatusOK, requestBodyReader: &requestBodyReader, responseBodyJSON: responseBody}
 	client := createTestClient(config)
 
-	opts := CreateZoneOpts{Name: "mydomain.com", TTL: 3600}
+	aTTL := int64(3600)
+	opts := CreateZoneOpts{Name: "mydomain.com", TTL: &aTTL}
 	zone, err := client.CreateZone(context.Background(), opts)
 
 	assert.NoError(t, err)
-	assert.Equal(t, Zone{ID: "12345", Name: "mydomain.com", TTL: 3600}, *zone)
+	assert.Equal(t, Zone{ID: "12345", Name: "mydomain.com", TTL: &aTTL}, *zone)
 	assert.NotNil(t, requestBodyReader, "The request body should not be nil")
 	jsonRequestBody, _ := io.ReadAll(requestBodyReader)
 	assert.Equal(t, `{"name":"mydomain.com","ttl":3600}`, string(jsonRequestBody))
@@ -31,7 +33,8 @@ func TestClientCreateZoneInvalidDomain(t *testing.T) {
 	config := RequestConfig{responseHTTPStatus: http.StatusUnprocessableEntity, responseBodyJSON: responseBody}
 
 	client := createTestClient(config)
-	opts := CreateZoneOpts{Name: "this.is.invalid", TTL: 3600}
+	aTTL := int64(3600)
+	opts := CreateZoneOpts{Name: "this.is.invalid", TTL: &aTTL}
 	_, err := client.CreateZone(context.Background(), opts)
 
 	assert.Error(t, err)
@@ -41,7 +44,8 @@ func TestClientCreateZoneInvalidDomain(t *testing.T) {
 func TestClientCreateZoneInvalidTLD(t *testing.T) {
 	var irrelevantConfig RequestConfig
 	client := createTestClient(irrelevantConfig)
-	opts := CreateZoneOpts{Name: "thisisinvalid", TTL: 3600}
+	aTTL := int64(3600)
+	opts := CreateZoneOpts{Name: "thisisinvalid", TTL: &aTTL}
 	_, err := client.CreateZone(context.Background(), opts)
 
 	assert.Error(t, err)
@@ -49,9 +53,12 @@ func TestClientCreateZoneInvalidTLD(t *testing.T) {
 }
 
 func TestClientUpdateZoneSuccess(t *testing.T) {
-	zoneWithUpdates := Zone{ID: "12345678", Name: "zone1.online", TTL: 3600}
+	aTTL := int64(3600)
+	zoneWithUpdates := Zone{ID: "12345678", Name: "zone1.online", TTL: &aTTL}
 	zoneWithUpdatesJSON := `{"id":"12345678","name":"zone1.online","ttl":3600}`
+
 	var requestBodyReader io.Reader
+
 	responseBody := []byte(`{"zone":{"id":"12345678","name":"zone1.online","ttl":3600}}`)
 	config := RequestConfig{responseHTTPStatus: http.StatusOK, requestBodyReader: &requestBodyReader, responseBodyJSON: responseBody}
 	client := createTestClient(config)
@@ -72,8 +79,10 @@ func TestClientGetZone(t *testing.T) {
 
 	zone, err := client.GetZone(context.Background(), "12345678")
 
+	aTTL := int64(3600)
+
 	assert.NoError(t, err)
-	assert.Equal(t, Zone{ID: "12345678", Name: "zone1.online", TTL: 3600}, *zone)
+	assert.Equal(t, Zone{ID: "12345678", Name: "zone1.online", TTL: &aTTL}, *zone)
 }
 
 func TestClientGetZoneReturnNilIfNotFound(t *testing.T) {
@@ -93,8 +102,10 @@ func TestClientGetZoneByName(t *testing.T) {
 
 	zone, err := client.GetZoneByName(context.Background(), "zone1.online")
 
+	aTTL := int64(3600)
+
 	assert.NoError(t, err)
-	assert.Equal(t, Zone{ID: "12345678", Name: "zone1.online", TTL: 3600}, *zone)
+	assert.Equal(t, Zone{ID: "12345678", Name: "zone1.online", TTL: &aTTL}, *zone)
 }
 
 func TestClientGetZoneByNameReturnNilIfnotFound(t *testing.T) {
@@ -117,12 +128,12 @@ func TestClientDeleteZone(t *testing.T) {
 }
 
 func TestClientGetRecord(t *testing.T) {
-	aTTL := 3600
+	aTTL := int64(3600)
 	responseBody := []byte(`{"record":{"zone_id":"wwwlsksjjenm","id":"12345678","name":"zone1.online","ttl":3600,"type":"A","value":"192.168.1.1"}}`)
 	config := RequestConfig{responseHTTPStatus: http.StatusOK, responseBodyJSON: responseBody}
 	client := createTestClient(config)
 
-	record, err := client.GetRecord("12345678")
+	record, err := client.GetRecord(context.Background(), "12345678")
 
 	assert.NoError(t, err)
 	assert.Equal(t, Record{ZoneID: "wwwlsksjjenm", ID: "12345678", Name: "zone1.online", TTL: &aTTL, Type: "A", Value: "192.168.1.1"}, *record)
@@ -133,7 +144,7 @@ func TestClientGetRecordWithUndefinedTTL(t *testing.T) {
 	config := RequestConfig{responseHTTPStatus: http.StatusOK, responseBodyJSON: responseBody}
 	client := createTestClient(config)
 
-	record, err := client.GetRecord("12345678")
+	record, err := client.GetRecord(context.Background(), "12345678")
 
 	assert.NoError(t, err)
 	assert.Equal(t, Record{ZoneID: "wwwlsksjjenm", ID: "12345678", Name: "zone1.online", TTL: nil, Type: "A", Value: "192.168.1.1"}, *record)
@@ -143,7 +154,7 @@ func TestClientGetRecordReturnNilIfNotFound(t *testing.T) {
 	config := RequestConfig{responseHTTPStatus: http.StatusNotFound}
 	client := createTestClient(config)
 
-	record, err := client.GetRecord("irrelevant")
+	record, err := client.GetRecord(context.Background(), "irrelevant")
 
 	assert.NoError(t, err)
 	assert.Nil(t, record)
@@ -151,13 +162,14 @@ func TestClientGetRecordReturnNilIfNotFound(t *testing.T) {
 
 func TestClientCreateRecordSuccess(t *testing.T) {
 	var requestBodyReader io.Reader
+
 	responseBody := []byte(`{"record":{"zone_id":"wwwlsksjjenm","id":"12345678","name":"zone1.online","ttl":3600,"type":"A","value":"192.168.1.1"}}`)
 	config := RequestConfig{responseHTTPStatus: http.StatusOK, requestBodyReader: &requestBodyReader, responseBodyJSON: responseBody}
 	client := createTestClient(config)
 
-	aTTL := 3600
+	aTTL := int64(3600)
 	opts := CreateRecordOpts{ZoneID: "wwwlsksjjenm", Name: "zone1.online", TTL: &aTTL, Type: "A", Value: "192.168.1.1"}
-	record, err := client.CreateRecord(opts)
+	record, err := client.CreateRecord(context.Background(), opts)
 
 	assert.NoError(t, err)
 	assert.Equal(t, Record{ZoneID: "wwwlsksjjenm", ID: "12345678", Name: "zone1.online", TTL: &aTTL, Type: "A", Value: "192.168.1.1"}, *record)
@@ -170,21 +182,23 @@ func TestClientRecordZone(t *testing.T) {
 	config := RequestConfig{responseHTTPStatus: http.StatusOK}
 	client := createTestClient(config)
 
-	err := client.DeleteRecord("irrelevant")
+	err := client.DeleteRecord(context.Background(), "irrelevant")
 
 	assert.NoError(t, err)
 }
 
 func TestClientUpdateRecordSuccess(t *testing.T) {
-	aTTL := 3600
+	aTTL := int64(3600)
 	recordWithUpdates := Record{ZoneID: "wwwlsksjjenm", ID: "12345678", Name: "zone2.online", TTL: &aTTL, Type: "A", Value: "192.168.1.1"}
 	recordWithUpdatesJSON := `{"zone_id":"wwwlsksjjenm","id":"12345678","type":"A","name":"zone2.online","value":"192.168.1.1","ttl":3600}`
+
 	var requestBodyReader io.Reader
+
 	responseBody := []byte(`{"record":{"zone_id":"wwwlsksjjenm","id":"12345678","type":"A","name":"zone2.online","value":"192.168.1.1","ttl":3600}}`)
 	config := RequestConfig{responseHTTPStatus: http.StatusOK, requestBodyReader: &requestBodyReader, responseBodyJSON: responseBody}
 	client := createTestClient(config)
 
-	updatedRecord, err := client.UpdateRecord(recordWithUpdates)
+	updatedRecord, err := client.UpdateRecord(context.Background(), recordWithUpdates)
 
 	assert.NoError(t, err)
 	assert.Equal(t, recordWithUpdates, *updatedRecord)
@@ -198,7 +212,8 @@ func TestClientHandleUnauthorizedRequest(t *testing.T) {
 	config := RequestConfig{responseHTTPStatus: http.StatusUnauthorized, responseBodyJSON: responseBody}
 	client := createTestClient(config)
 
-	opts := CreateZoneOpts{Name: "mydomain.com", TTL: 3600}
+	aTTL := int64(3600)
+	opts := CreateZoneOpts{Name: "mydomain.com", TTL: &aTTL}
 	_, err := client.CreateZone(context.Background(), opts)
 
 	assert.Error(t, err)
@@ -216,6 +231,7 @@ func createTestClient(config RequestConfig) Client {
 	createFakeHTTPClient := func() *http.Client {
 		return &http.Client{Transport: fakeHTTPClient}
 	}
+
 	return Client{apiToken: "irrelevant", createHTTPClient: createFakeHTTPClient}
 }
 
@@ -233,6 +249,8 @@ func (f TestClient) RoundTrip(req *http.Request) (*http.Response, error) {
 	if f.config.responseBodyJSON != nil {
 		jsonBody = io.NopCloser(bytes.NewReader(f.config.responseBodyJSON))
 	}
+
 	resp := http.Response{StatusCode: f.config.responseHTTPStatus, Body: jsonBody}
+
 	return &resp, nil
 }

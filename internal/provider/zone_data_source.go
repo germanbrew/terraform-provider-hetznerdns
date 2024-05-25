@@ -4,13 +4,12 @@ import (
 	"context"
 	"fmt"
 
+	"github.com/germanbrew/terraform-provider-hetznerdns/internal/api"
 	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
 	"github.com/hashicorp/terraform-plugin-framework/datasource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/types"
-
-	"github.com/germanbrew/terraform-provider-hetznerdns/internal/api"
 )
 
 // Ensure provider defined types fully satisfy framework interfaces.
@@ -110,7 +109,7 @@ func (d *zoneDataSource) Read(ctx context.Context, req datasource.ReadRequest, r
 
 	data.ID = types.StringValue(zone.ID)
 	data.Name = types.StringValue(zone.Name)
-	data.TTL = types.Int64Value(int64(zone.TTL))
+	data.TTL = types.Int64PointerValue(zone.TTL)
 
 	// Save data into Terraform state
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)

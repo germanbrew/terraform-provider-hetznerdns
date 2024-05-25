@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 
+	"github.com/germanbrew/terraform-provider-hetznerdns/internal/api"
 	"github.com/hashicorp/terraform-plugin-framework-validators/int64validator"
 	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
 	"github.com/hashicorp/terraform-plugin-framework/path"
@@ -14,13 +15,13 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
-
-	"github.com/germanbrew/terraform-provider-hetznerdns/internal/api"
 )
 
 // Ensure provider defined types fully satisfy framework interfaces.
-var _ resource.Resource = &primaryServerResource{}
-var _ resource.ResourceWithImportState = &primaryServerResource{}
+var (
+	_ resource.Resource                = &primaryServerResource{}
+	_ resource.ResourceWithImportState = &primaryServerResource{}
+)
 
 func NewPrimaryServerResource() resource.Resource {
 	return &primaryServerResource{}
@@ -121,7 +122,6 @@ func (r *primaryServerResource) Create(ctx context.Context, req resource.CreateR
 		Address: plan.Address.String(),
 		Port:    uint16(plan.Port.ValueInt64()),
 	})
-
 	if err != nil {
 		resp.Diagnostics.AddError("API Error", fmt.Sprintf("creating primary server: %s", err))
 		return
@@ -169,6 +169,7 @@ func (r *primaryServerResource) Update(ctx context.Context, req resource.UpdateR
 	tflog.Trace(ctx, "updating primary server")
 
 	var plan, state primaryServerResourceModel
+
 	resp.Diagnostics.Append(req.Plan.Get(ctx, &plan)...)
 	resp.Diagnostics.Append(req.State.Get(ctx, &state)...)
 
@@ -181,7 +182,6 @@ func (r *primaryServerResource) Update(ctx context.Context, req resource.UpdateR
 			Address: plan.Address.String(),
 			Port:    uint16(plan.Port.ValueInt64()),
 		})
-
 		if err != nil {
 			resp.Diagnostics.AddError("API Error", fmt.Sprintf("error primary server: %s", err))
 			return

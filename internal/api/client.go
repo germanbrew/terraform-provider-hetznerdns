@@ -14,15 +14,15 @@ import (
 	"github.com/hashicorp/terraform-plugin-log/tflog"
 )
 
-// UnauthorizedError represents the message of a HTTP 401 response
+// UnauthorizedError represents the message of a HTTP 401 response.
 type UnauthorizedError ErrorMessage
 
-// UnprocessableEntityError represents the generic structure of a error response
+// UnprocessableEntityError represents the generic structure of a error response.
 type UnprocessableEntityError struct {
 	Error ErrorMessage `json:"error"`
 }
 
-// ErrorMessage is the message of an error response
+// ErrorMessage is the message of an error response.
 type ErrorMessage struct {
 	Message string `json:"message"`
 }
@@ -36,9 +36,11 @@ func defaultCreateHTTPClient() *http.Client {
 		if !ok && resp.StatusCode == http.StatusUnprocessableEntity {
 			return true, nil
 		}
+
 		return ok, err
 	}
 	retryableClient.RetryMax = 10
+
 	return retryableClient.StandardClient()
 }
 
@@ -66,12 +68,12 @@ func (c *Client) doHTTPRequest(ctx context.Context, method string, url string, b
 
 	req.Header.Add("Auth-API-Token", c.apiToken)
 	req.Header.Add("Accept", "application/json; charset=utf-8")
+
 	if body != nil {
 		req.Header.Set("Content-Type", "application/json; charset=utf-8")
 	}
 
 	resp, err := client.Do(req)
-
 	if err != nil {
 		return nil, err
 	}
@@ -81,8 +83,8 @@ func (c *Client) doHTTPRequest(ctx context.Context, method string, url string, b
 		if err != nil {
 			return nil, err
 		}
-		return nil, fmt.Errorf("API returned HTTP 401 Unauthorized error with message: '%s'. Double check your API key is still valid", unauthorizedError.Message)
 
+		return nil, fmt.Errorf("API returned HTTP 401 Unauthorized error with message: '%s'. Double check your API key is still valid", unauthorizedError.Message)
 	} else if resp.StatusCode == http.StatusUnprocessableEntity {
 		unprocessableEntityError, err := parseUnprocessableEntityError(resp)
 		if err != nil {
@@ -91,6 +93,7 @@ func (c *Client) doHTTPRequest(ctx context.Context, method string, url string, b
 
 		return nil, fmt.Errorf("API returned HTTP 422 Unprocessable Entity error with message: '%s'", unprocessableEntityError.Error.Message)
 	}
+
 	return resp, nil
 }
 
@@ -101,20 +104,25 @@ func parseUnprocessableEntityError(resp *http.Response) (*UnprocessableEntityErr
 	if err != nil {
 		return nil, fmt.Errorf("error reading HTTP response body: %e", err)
 	}
+
 	var unprocessableEntityError UnprocessableEntityError
+
 	err = parseJSON(body, &unprocessableEntityError)
 	if err != nil {
 		return nil, err
 	}
+
 	return &unprocessableEntityError, nil
 }
 
 func parseUnauthorizedError(resp *http.Response) (*UnauthorizedError, error) {
 	var unauthorizedError UnauthorizedError
+
 	err := readAndParseJSONBody(resp, &unauthorizedError)
 	if err != nil {
 		return nil, err
 	}
+
 	return &unauthorizedError, nil
 }
 
@@ -131,6 +139,7 @@ func (c *Client) doPostRequest(ctx context.Context, url string, bodyJSON interfa
 	if err != nil {
 		return nil, fmt.Errorf("error serializing JSON body %s", err)
 	}
+
 	body := bytes.NewReader(reqJSON)
 
 	// This lock ensures that only one Post request is sent to Hetzber API
@@ -147,6 +156,7 @@ func (c *Client) doPutRequest(ctx context.Context, url string, bodyJSON interfac
 	if err != nil {
 		return nil, fmt.Errorf("error serializing JSON body %s", err)
 	}
+
 	body := bytes.NewReader(reqJSON)
 
 	// This lock ensures that only one Post request is sent to Hetzner API
@@ -173,7 +183,7 @@ func parseJSON(data []byte, respType interface{}) error {
 	return json.Unmarshal(data, &respType)
 }
 
-// GetZones reads the current state of a DNS zone
+// GetZones reads the current state of a DNS zone.
 func (c *Client) GetZones() ([]Zone, error) {
 	resp, err := c.doGetRequest(context.Background(), "https://dns.hetzner.com/api/v1/zones")
 	if err != nil {
@@ -185,6 +195,7 @@ func (c *Client) GetZones() ([]Zone, error) {
 	}
 
 	var response GetZones
+
 	err = readAndParseJSONBody(resp, &response)
 	if err != nil {
 		return nil, err
@@ -193,19 +204,21 @@ func (c *Client) GetZones() ([]Zone, error) {
 	return response.Zones, nil
 }
 
-// GetZone reads the current state of a DNS zone
+// GetZone reads the current state of a DNS zone.
 func (c *Client) GetZone(ctx context.Context, id string) (*Zone, error) {
-	resp, err := c.doGetRequest(context.Background(), fmt.Sprintf("https://dns.hetzner.com/api/v1/zones/%s", id))
+	resp, err := c.doGetRequest(context.Background(), "https://dns.hetzner.com/api/v1/zones/"+id)
 	if err != nil {
 		return nil, fmt.Errorf("Error getting zone %s: %s", id, err)
 	}
 
 	if resp.StatusCode == http.StatusOK {
 		var response GetZoneResponse
+
 		err = readAndParseJSONBody(resp, &response)
 		if err != nil {
 			return nil, err
 		}
+
 		return &response.Zone, nil
 	} else if resp.StatusCode == http.StatusNotFound {
 		return nil, nil
@@ -214,9 +227,9 @@ func (c *Client) GetZone(ctx context.Context, id string) (*Zone, error) {
 	return nil, fmt.Errorf("error getting Zone. HTTP status %d unhandled", resp.StatusCode)
 }
 
-// UpdateZone takes the passed state and updates the respective Zone
+// UpdateZone takes the passed state and updates the respective Zone.
 func (c *Client) UpdateZone(ctx context.Context, zone Zone) (*Zone, error) {
-	resp, err := c.doPutRequest(ctx, fmt.Sprintf("https://dns.hetzner.com/api/v1/zones/%s", zone.ID), zone)
+	resp, err := c.doPutRequest(ctx, "https://dns.hetzner.com/api/v1/zones/"+zone.ID, zone)
 	if err != nil {
 		return nil, fmt.Errorf("error updating zone %s: %s", zone.ID, err)
 	}
@@ -226,16 +239,18 @@ func (c *Client) UpdateZone(ctx context.Context, zone Zone) (*Zone, error) {
 	}
 
 	var response ZoneResponse
+
 	err = readAndParseJSONBody(resp, &response)
 	if err != nil {
 		return nil, err
 	}
+
 	return &response.Zone, nil
 }
 
-// DeleteZone deletes a given DNS zone
+// DeleteZone deletes a given DNS zone.
 func (c *Client) DeleteZone(ctx context.Context, id string) error {
-	resp, err := c.doDeleteRequest(ctx, fmt.Sprintf("https://dns.hetzner.com/api/v1/zones/%s", id))
+	resp, err := c.doDeleteRequest(ctx, "https://dns.hetzner.com/api/v1/zones/"+id)
 	if err != nil {
 		return fmt.Errorf("error deleting zone %s: %s", id, err)
 	}
@@ -247,12 +262,13 @@ func (c *Client) DeleteZone(ctx context.Context, id string) error {
 	return nil
 }
 
-// GetZoneByName reads the current state of a DNS zone with a given name
+// GetZoneByName reads the current state of a DNS zone with a given name.
 func (c *Client) GetZoneByName(ctx context.Context, name string) (*Zone, error) {
-	resp, err := c.doGetRequest(ctx, fmt.Sprintf("https://dns.hetzner.com/api/v1/zones?name=%s", name))
+	resp, err := c.doGetRequest(ctx, "https://dns.hetzner.com/api/v1/zones?name="+name)
 	if err != nil {
 		return nil, fmt.Errorf("error getting zone %s: %s", name, err)
 	}
+
 	if resp.StatusCode == http.StatusNotFound {
 		return nil, nil
 	}
@@ -262,6 +278,7 @@ func (c *Client) GetZoneByName(ctx context.Context, name string) (*Zone, error) 
 	}
 
 	var response *GetZonesByNameResponse
+
 	err = readAndParseJSONBody(resp, &response)
 	if err != nil {
 		return nil, err
@@ -274,19 +291,20 @@ func (c *Client) GetZoneByName(ctx context.Context, name string) (*Zone, error) 
 	return &response.Zones[0], nil
 }
 
-// CreateZoneOpts covers all parameters used to create a new DNS zone
+// CreateZoneOpts covers all parameters used to create a new DNS zone.
 type CreateZoneOpts struct {
 	Name string `json:"name"`
-	TTL  uint64 `json:"ttl"`
+	TTL  *int64 `json:"ttl,omitempty"`
 }
 
-// CreateZone creates a new DNS zone
+// CreateZone creates a new DNS zone.
 func (c *Client) CreateZone(ctx context.Context, opts CreateZoneOpts) (*Zone, error) {
 	if !strings.Contains(opts.Name, ".") {
 		return nil, fmt.Errorf("error creating zone. The name '%s' is not a valid domain. It must correspond to the schema <domain>.<tld>", opts.Name)
 	}
 
 	reqBody := CreateZoneRequest{Name: opts.Name, TTL: opts.TTL}
+
 	resp, err := c.doPostRequest(ctx, "https://dns.hetzner.com/api/v1/zones", reqBody)
 	if err != nil {
 		return nil, fmt.Errorf("error creating zone. %s", err)
@@ -297,6 +315,7 @@ func (c *Client) CreateZone(ctx context.Context, opts CreateZoneOpts) (*Zone, er
 	}
 
 	var response CreateZoneResponse
+
 	err = readAndParseJSONBody(resp, &response)
 	if err != nil {
 		return nil, err
@@ -305,77 +324,83 @@ func (c *Client) CreateZone(ctx context.Context, opts CreateZoneOpts) (*Zone, er
 	return &response.Zone, nil
 }
 
-// GetRecordByName reads the current state of a DNS Record with a given name and zone id
+// GetRecordByName reads the current state of a DNS Record with a given name and zone id.
 func (c *Client) GetRecordByName(zoneID string, name string) (*Record, error) {
-	resp, err := c.doGetRequest(context.Background(), fmt.Sprintf("https://dns.hetzner.com/api/v1/records?zone_id=%s", zoneID))
+	resp, err := c.doGetRequest(context.Background(), "https://dns.hetzner.com/api/v1/records?zone_id="+zoneID)
 	if err != nil {
-		return nil, fmt.Errorf("Error getting record %s: %s", name, err)
+		return nil, fmt.Errorf("error getting record %s: %w", name, err)
 	}
 
-	if resp.StatusCode == http.StatusOK {
-		var response *RecordsResponse
-		err = readAndParseJSONBody(resp, &response)
-		if err != nil {
-			return nil, err
-		}
-
-		if len(response.Records) == 0 {
-			return nil, fmt.Errorf("Error getting record '%s'. It seems there are no records in zone %s at all", name, zoneID)
-		}
-
-		for _, record := range response.Records {
-			if record.Name == name {
-				return &record, nil
-			}
-		}
-
-		return nil, fmt.Errorf("Error getting record '%s'. There are records in zone %s, but %s isn't included", name, zoneID, name)
+	if resp.StatusCode != http.StatusOK {
+		return nil, fmt.Errorf("error getting Record. HTTP status %d unhandled", resp.StatusCode)
 	}
 
-	return nil, fmt.Errorf("Error getting Record. HTTP status %d unhandled", resp.StatusCode)
+	var response *RecordsResponse
+
+	err = readAndParseJSONBody(resp, &response)
+	if err != nil {
+		return nil, err
+	}
+
+	if len(response.Records) == 0 {
+		return nil, fmt.Errorf("error getting record '%s'. It seems there are no records in zone %s at all", name, zoneID)
+	}
+
+	for _, record := range response.Records {
+		if record.Name == name {
+			return &record, nil
+		}
+	}
+
+	return nil, fmt.Errorf("error getting record '%s'. There are records in zone %s, but %s isn't included", name, zoneID, name)
 }
 
-// GetRecord reads the current state of a DNS Record
-func (c *Client) GetRecord(recordID string) (*Record, error) {
-	resp, err := c.doGetRequest(context.Background(), fmt.Sprintf("https://dns.hetzner.com/api/v1/records/%s", recordID))
+// GetRecord reads the current state of a DNS Record.
+func (c *Client) GetRecord(ctx context.Context, recordID string) (*Record, error) {
+	resp, err := c.doGetRequest(ctx, "https://dns.hetzner.com/api/v1/records/"+recordID)
 	if err != nil {
-		return nil, fmt.Errorf("Error getting record %s: %s", recordID, err)
+		return nil, fmt.Errorf("error getting record %s: %s", recordID, err)
 	}
 
-	if resp.StatusCode == http.StatusOK {
-		var response *RecordResponse
-		err = readAndParseJSONBody(resp, &response)
-		if err != nil {
-			return nil, fmt.Errorf("Error Reading json response of get record %s request: %s", recordID, err)
-		}
-
-		return &response.Record, nil
-	} else if resp.StatusCode == http.StatusNotFound {
+	if resp.StatusCode == http.StatusNotFound {
 		return nil, nil
 	}
 
-	return nil, fmt.Errorf("Error getting Record. HTTP status %d unhandled", resp.StatusCode)
+	if resp.StatusCode != http.StatusOK {
+		return nil, fmt.Errorf("error getting Record. HTTP status %d unhandled", resp.StatusCode)
+	}
+
+	var response *RecordResponse
+
+	err = readAndParseJSONBody(resp, &response)
+	if err != nil {
+		return nil, fmt.Errorf("error Reading json response of get record %s request: %s", recordID, err)
+	}
+
+	return &response.Record, nil
 }
 
-// CreateRecordOpts covers all parameters used to create a new DNS record
+// CreateRecordOpts covers all parameters used to create a new DNS record.
 type CreateRecordOpts struct {
 	ZoneID string `json:"zone_id"`
 	Type   string `json:"type"`
 	Name   string `json:"name"`
 	Value  string `json:"value"`
-	TTL    *int   `json:"ttl,omitempty"`
+	TTL    *int64 `json:"ttl,omitempty"`
 }
 
-// CreateRecord create a new DNS records
-func (c *Client) CreateRecord(opts CreateRecordOpts) (*Record, error) {
+// CreateRecord create a new DNS records.
+func (c *Client) CreateRecord(ctx context.Context, opts CreateRecordOpts) (*Record, error) {
 	reqBody := CreateRecordRequest{ZoneID: opts.ZoneID, Name: opts.Name, TTL: opts.TTL, Type: opts.Type, Value: opts.Value}
-	resp, err := c.doPostRequest(context.Background(), "https://dns.hetzner.com/api/v1/records", reqBody)
+
+	resp, err := c.doPostRequest(ctx, "https://dns.hetzner.com/api/v1/records", reqBody)
 	if err != nil {
-		return nil, fmt.Errorf("Error creating record %s: %s", opts.Name, err)
+		return nil, fmt.Errorf("error creating record %s: %s", opts.Name, err)
 	}
 
 	if resp.StatusCode == http.StatusOK {
 		var response RecordResponse
+
 		err = readAndParseJSONBody(resp, &response)
 		if err != nil {
 			return nil, err
@@ -384,44 +409,46 @@ func (c *Client) CreateRecord(opts CreateRecordOpts) (*Record, error) {
 		return &response.Record, nil
 	}
 
-	return nil, fmt.Errorf("Error creating Record. HTTP status %d unhandled", resp.StatusCode)
+	return nil, fmt.Errorf("error creating Record. HTTP status %d unhandled", resp.StatusCode)
 }
 
-// DeleteRecord deletes a given record
-func (c *Client) DeleteRecord(id string) error {
-	resp, err := c.doDeleteRequest(context.Background(), fmt.Sprintf("https://dns.hetzner.com/api/v1/records/%s", id))
+// DeleteRecord deletes a given record.
+func (c *Client) DeleteRecord(ctx context.Context, id string) error {
+	resp, err := c.doDeleteRequest(ctx, "https://dns.hetzner.com/api/v1/records/"+id)
 	if err != nil {
-		return fmt.Errorf("Error deleting zone %s: %s", id, err)
+		return fmt.Errorf("error deleting zone %s: %s", id, err)
 	}
 
-	if resp.StatusCode == http.StatusOK {
-		return nil
+	if resp.StatusCode != http.StatusOK {
+		return fmt.Errorf("error deleting Record. HTTP status %d unhandled", resp.StatusCode)
 	}
-	return fmt.Errorf("Error deleting Record. HTTP status %d unhandled", resp.StatusCode)
+
+	return nil
 }
 
-// UpdateRecord create a new DNS records
-func (c *Client) UpdateRecord(record Record) (*Record, error) {
-	resp, err := c.doPutRequest(context.Background(), fmt.Sprintf("https://dns.hetzner.com/api/v1/records/%s", record.ID), record)
+// UpdateRecord create a new DNS records.
+func (c *Client) UpdateRecord(ctx context.Context, record Record) (*Record, error) {
+	resp, err := c.doPutRequest(ctx, "https://dns.hetzner.com/api/v1/records/"+record.ID, record)
 	if err != nil {
-		return nil, fmt.Errorf("Error updating record %s: %s", record.ID, err)
+		return nil, fmt.Errorf("error updating record %s: %s", record.ID, err)
 	}
 
-	if resp.StatusCode == http.StatusOK {
-		var response RecordResponse
-		err = readAndParseJSONBody(resp, &response)
-		if err != nil {
-			return nil, err
-		}
-
-		return &response.Record, nil
+	if resp.StatusCode != http.StatusOK {
+		return nil, fmt.Errorf("error creating Record. HTTP status %d unhandled", resp.StatusCode)
 	}
 
-	return nil, fmt.Errorf("Error creating Record. HTTP status %d unhandled", resp.StatusCode)
+	var response RecordResponse
+
+	err = readAndParseJSONBody(resp, &response)
+	if err != nil {
+		return nil, err
+	}
+
+	return &response.Record, nil
 }
 
 func (c *Client) GetPrimaryServer(ctx context.Context, id string) (*PrimaryServer, error) {
-	resp, err := c.doGetRequest(ctx, fmt.Sprintf("https://dns.hetzner.com/api/v1/primary_servers/%s", id))
+	resp, err := c.doGetRequest(ctx, "https://dns.hetzner.com/api/v1/primary_servers/"+id)
 	if err != nil {
 		return nil, fmt.Errorf("error getting primary server %s: %s", id, err)
 	}
@@ -435,6 +462,7 @@ func (c *Client) GetPrimaryServer(ctx context.Context, id string) (*PrimaryServe
 	}
 
 	var response *PrimaryServerResponse
+
 	err = readAndParseJSONBody(resp, &response)
 	if err != nil {
 		return nil, fmt.Errorf("error Reading json response of get primary server %s request: %s", id, err)
@@ -449,6 +477,7 @@ func (c *Client) CreatePrimaryServer(ctx context.Context, server CreatePrimarySe
 		Address: server.Address,
 		Port:    server.Port,
 	}
+
 	resp, err := c.doPostRequest(ctx, "https://dns.hetzner.com/api/v1/primary_servers", reqBody)
 	if err != nil {
 		return nil, fmt.Errorf("error creating primary server %s: %w", server.Address, err)
@@ -459,6 +488,7 @@ func (c *Client) CreatePrimaryServer(ctx context.Context, server CreatePrimarySe
 	}
 
 	var response PrimaryServerResponse
+
 	err = readAndParseJSONBody(resp, &response)
 	if err != nil {
 		return nil, err
@@ -468,7 +498,7 @@ func (c *Client) CreatePrimaryServer(ctx context.Context, server CreatePrimarySe
 }
 
 func (c *Client) UpdatePrimaryServer(ctx context.Context, server PrimaryServer) (*PrimaryServer, error) {
-	resp, err := c.doPutRequest(ctx, fmt.Sprintf("https://dns.hetzner.com/api/v1/primary_servers/%s", server.ID), server)
+	resp, err := c.doPutRequest(ctx, "https://dns.hetzner.com/api/v1/primary_servers/"+server.ID, server)
 	if err != nil {
 		return nil, fmt.Errorf("error updating primary server %s: %w", server.ID, err)
 	}
@@ -478,6 +508,7 @@ func (c *Client) UpdatePrimaryServer(ctx context.Context, server PrimaryServer) 
 	}
 
 	var response PrimaryServerResponse
+
 	err = readAndParseJSONBody(resp, &response)
 	if err != nil {
 		return nil, err
@@ -487,7 +518,7 @@ func (c *Client) UpdatePrimaryServer(ctx context.Context, server PrimaryServer) 
 }
 
 func (c *Client) DeletePrimaryServer(ctx context.Context, id string) error {
-	resp, err := c.doDeleteRequest(ctx, fmt.Sprintf("https://dns.hetzner.com/api/v1/primary_servers/%s", id))
+	resp, err := c.doDeleteRequest(ctx, "https://dns.hetzner.com/api/v1/primary_servers/"+id)
 	if err != nil {
 		return fmt.Errorf("error deleting primary server %s: %s", id, err)
 	}

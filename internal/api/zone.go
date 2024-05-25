@@ -1,39 +1,39 @@
 package api
 
-// Zone represents a DNS Zone
+// Zone represents a DNS Zone.
 type Zone struct {
 	ID   string `json:"id"`
 	Name string `json:"name"`
-	TTL  uint64 `json:"ttl"`
+	TTL  *int64 `json:"ttl,omitempty"`
 }
 
-// CreateZoneRequest represents the body of a POST Zone request
+// CreateZoneRequest represents the body of a POST Zone request.
 type CreateZoneRequest struct {
 	Name string `json:"name"`
-	TTL  uint64 `json:"ttl"`
+	TTL  *int64 `json:"ttl,omitempty"`
 }
 
-// CreateZoneResponse represents the content of a POST Zone response
+// CreateZoneResponse represents the content of a POST Zone response.
 type CreateZoneResponse struct {
 	Zone Zone `json:"zone"`
 }
 
-// GetZoneResponse represents the content of a GET Zone request
+// GetZoneResponse represents the content of a GET Zone request.
 type GetZoneResponse struct {
 	Zone Zone `json:"zone"`
 }
 
-// ZoneResponse represents the content of response containing a Zone
+// ZoneResponse represents the content of response containing a Zone.
 type ZoneResponse struct {
 	Zone Zone `json:"zone"`
 }
 
-// GetZones represents the content of a GET Zones response
+// GetZones represents the content of a GET Zones response.
 type GetZones struct {
 	Zones []Zone `json:"zones"`
 }
 
-// GetZonesByNameResponse represents the content of a GET Zones response
+// GetZonesByNameResponse represents the content of a GET Zones response.
 type GetZonesByNameResponse struct {
 	Zones []Zone `json:"zones"`
 }
