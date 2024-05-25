@@ -3,12 +3,15 @@ package provider
 import (
 	"context"
 	"fmt"
+	"regexp"
 
+	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
+	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
 
@@ -54,6 +57,12 @@ func (r *zoneResource) Schema(_ context.Context, _ resource.SchemaRequest, resp 
 				Required: true,
 				PlanModifiers: []planmodifier.String{
 					stringplanmodifier.RequiresReplace(),
+				},
+				Validators: []validator.String{
+					stringvalidator.RegexMatches(
+						regexp.MustCompile(`^[a-z0-9-]+\.[a-z0-9-]+$`),
+						"Name must be a valid domain with top level domain",
+					),
 				},
 			},
 			"ttl": schema.Int64Attribute{
@@ -131,7 +140,7 @@ func (r *zoneResource) Read(ctx context.Context, req resource.ReadRequest, resp 
 		return
 	}
 
-	zone, err := r.client.GetZone(context.Background(), state.ID.String())
+	zone, err := r.client.GetZone(ctx, state.ID.String())
 	if err != nil {
 		resp.Diagnostics.AddError("Client Error", fmt.Sprintf("Unable to read zene, got error: %s", err))
 		return

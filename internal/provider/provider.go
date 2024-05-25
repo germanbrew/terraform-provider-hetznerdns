@@ -91,6 +91,9 @@ func (p *hetznerDNSProvider) Configure(ctx context.Context, req provider.Configu
 func (p *hetznerDNSProvider) Resources(_ context.Context) []func() resource.Resource {
 	return []func() resource.Resource{
 		func() resource.Resource {
+			return NewPrimaryServerResource()
+		},
+		func() resource.Resource {
 			return NewZoneResource()
 		},
 	}

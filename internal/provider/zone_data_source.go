@@ -4,8 +4,10 @@ import (
 	"context"
 	"fmt"
 
+	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
 	"github.com/hashicorp/terraform-plugin-framework/datasource/schema"
+	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 
 	"github.com/germanbrew/terraform-provider-hetznerdns/internal/api"
@@ -43,6 +45,9 @@ func (d *zoneDataSource) Schema(_ context.Context, _ datasource.SchemaRequest, r
 			"name": schema.StringAttribute{
 				MarkdownDescription: "Name of the DNS zone to get data from",
 				Required:            true,
+				Validators: []validator.String{
+					stringvalidator.LengthAtLeast(1),
+				},
 			},
 			"ttl": schema.Int64Attribute{
 				MarkdownDescription: "Time to live of this zone",
