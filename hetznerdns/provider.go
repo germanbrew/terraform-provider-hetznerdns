@@ -19,6 +19,12 @@ func Provider() *schema.Provider {
 				DefaultFunc: schema.EnvDefaultFunc("HETZNER_DNS_API_TOKEN", nil),
 				Description: "The API access token to authenticate at Hetzner DNS API.",
 			},
+			"max_retries": {
+				Type:        schema.TypeInt,
+				Optional:    true,
+				DefaultFunc: schema.EnvDefaultFunc("HETZNER_DNS_MAX_RETRIES", 10),
+				Description: "The maximum number of retries to perform when an API request fails.",
+			},
 		},
 		ResourcesMap: map[string]*schema.Resource{
 			"hetznerdns_zone":           resourceZone(),
@@ -33,5 +39,5 @@ func Provider() *schema.Provider {
 }
 
 func configureProvider(c context.Context, r *schema.ResourceData) (interface{}, diag.Diagnostics) {
-	return api.NewClient(r.Get("apitoken").(string))
+	return api.NewClient(r.Get("apitoken").(string), r.Get("max_retries").(int))
 }

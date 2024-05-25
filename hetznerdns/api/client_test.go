@@ -212,10 +212,10 @@ type RequestConfig struct {
 
 func createTestClient(config RequestConfig) Client {
 	fakeHTTPClient := TestClient{config: config}
-	createFakeHTTPClient := func() *http.Client {
+	createFakeHTTPClient := func(int) *http.Client {
 		return &http.Client{Transport: fakeHTTPClient}
 	}
-	return Client{apiToken: "irrelevant", createHTTPClient: createFakeHTTPClient}
+	return Client{apiToken: "irrelevant", maxRetries: 10, createHTTPClient: createFakeHTTPClient}
 }
 
 type TestClient struct {

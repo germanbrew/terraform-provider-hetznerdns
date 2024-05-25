@@ -10,7 +10,6 @@ import (
 	"net/http"
 	"strings"
 	"sync"
-	"time"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 
@@ -30,9 +29,9 @@ type ErrorMessage struct {
 	Message string `json:"message"`
 }
 
-type createHTTPClient func() *http.Client
+type createHTTPClient func(int) *http.Client
 
-func defaultCreateHTTPClient() *http.Client {
+func defaultCreateHTTPClient(maxRetries int) *http.Client {
 	retryableClient := retryablehttp.NewClient()
 	retryableClient.CheckRetry = func(ctx context.Context, resp *http.Response, err error) (bool, error) {
 		ok, err := retryablehttp.DefaultRetryPolicy(ctx, resp, err)
@@ -41,8 +40,8 @@ func defaultCreateHTTPClient() *http.Client {
 		}
 		return ok, err
 	}
-	retryableClient.RetryMax = 10
-	retryableClient.RetryWaitMax = 10 * time.Second
+
+	retryableClient.RetryMax = maxRetries
 	return retryableClient.StandardClient()
 }
 
@@ -50,16 +49,17 @@ func defaultCreateHTTPClient() *http.Client {
 type Client struct {
 	requestLock      sync.Mutex
 	apiToken         string
+	maxRetries       int
 	createHTTPClient createHTTPClient
 }
 
 // NewClient creates a new API Client using a given api token.
-func NewClient(apiToken string) (*Client, diag.Diagnostics) {
-	return &Client{apiToken: apiToken, createHTTPClient: defaultCreateHTTPClient}, nil
+func NewClient(apiToken string, maxRetries int) (*Client, diag.Diagnostics) {
+	return &Client{apiToken: apiToken, maxRetries: maxRetries, createHTTPClient: defaultCreateHTTPClient}, nil
 }
 
 func (c *Client) doHTTPRequest(apiToken string, method string, url string, body io.Reader) (*http.Response, error) {
-	client := c.createHTTPClient()
+	client := c.createHTTPClient(c.maxRetries)
 
 	log.Printf("[DEBUG] HTTP request to API %s %s", method, url)
 	req, err := http.NewRequest(method, url, body)
