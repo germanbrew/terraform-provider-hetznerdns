@@ -196,7 +196,7 @@ func (c *Client) GetZones() ([]Zone, error) {
 	}
 
 	if resp.StatusCode != http.StatusOK {
-		return nil, fmt.Errorf("error getting Zone. HTTP status %d unhandled", resp.StatusCode)
+		return nil, fmt.Errorf("error getting zones. HTTP status %d unhandled", resp.StatusCode)
 	}
 
 	var response GetZones
@@ -279,7 +279,7 @@ func (c *Client) GetZoneByName(ctx context.Context, name string) (*Zone, error) 
 	}
 
 	if resp.StatusCode != http.StatusOK {
-		return nil, fmt.Errorf("error getting Zone. HTTP status %d unhandled", resp.StatusCode)
+		return nil, fmt.Errorf("error getting GetZoneByName. HTTP status %d unhandled", resp.StatusCode)
 	}
 
 	var response *GetZonesByNameResponse

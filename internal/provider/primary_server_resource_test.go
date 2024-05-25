@@ -58,7 +58,7 @@ resource "hetznerdns_zone" "zone1" {
 }
 
 resource "hetznerdns_primary_server" "test" {
-	zone_id = "${hetznerdns_zone.zone1.id}"
+	zone_id = hetznerdns_zone.zone1.id
 	address = "%s"
 	port    = %d
 }
@@ -100,13 +100,13 @@ resource "hetznerdns_zone" "zone1" {
 }
 
 resource "hetznerdns_primary_server" "ps1" {
-	zone_id = "${hetznerdns_zone.zone1.id}"
+	zone_id = hetznerdns_zone.zone1.id
 	address = "%s"
 	port    = %d
 }
 
 resource "hetznerdns_primary_server" "ps2" {
-	zone_id = "${hetznerdns_zone.zone1.id}"
+	zone_id = hetznerdns_zone.zone1.id
 	address = "%s"
 	port    = %d
 }
