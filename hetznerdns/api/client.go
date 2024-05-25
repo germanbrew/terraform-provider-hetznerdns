@@ -5,12 +5,14 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"io"
 	"log"
 	"net/http"
 	"strings"
 	"sync"
+	"time"
+
+	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 
 	"github.com/hashicorp/go-retryablehttp"
 )
@@ -40,6 +42,7 @@ func defaultCreateHTTPClient() *http.Client {
 		return ok, err
 	}
 	retryableClient.RetryMax = 10
+	retryableClient.RetryWaitMax = 10 * time.Second
 	return retryableClient.StandardClient()
 }
 
