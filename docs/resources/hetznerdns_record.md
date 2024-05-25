@@ -28,7 +28,7 @@ The following arguments are supported:
 - `name` - (Required, string) Name of the DNS record to create. 
 
 - `value` - (Required, string) The value of the record (eg. 192.168.1.1). 
-  For TXT records with quoted values, the quotes has to be ecaped in Terraform 
+  For TXT records with quoted values, the quotes have to be escaped in Terraform 
   (eg. "v=spf1 include:_spf.google.com ~all" is represented by 
   "\\"v=spf1 include:_spf.google.com ~all\\"" in Terraform). 
 
