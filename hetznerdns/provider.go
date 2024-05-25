@@ -9,7 +9,7 @@ import (
 )
 
 // Provider creates and return a Terraform resource provider
-// for Hetzer DNS
+// for Hetzner DNS
 func Provider() *schema.Provider {
 	return &schema.Provider{
 		Schema: map[string]*schema.Schema{
