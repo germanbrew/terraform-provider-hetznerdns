@@ -126,6 +126,10 @@ func resourceRecordRead(c context.Context, d *schema.ResourceData, m interface{}
 	}
 	d.Set("value", record.Value)
 
+	if record.Type == "TXT" {
+		record.Value = prepareTXTRecordValue(record.Value)
+	}
+
 	return nil
 }
 
