@@ -1,12 +1,12 @@
-package hetznerdns
+package provider
 
 import (
 	"context"
 	"log"
 
-	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
+	"github.com/germanbrew/terraform-provider-hetznerdns/internal/provider/api"
 
-	"github.com/germanbrew/terraform-provider-hetznerdns/hetznerdns/api"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )

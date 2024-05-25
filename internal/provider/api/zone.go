@@ -28,6 +28,11 @@ type ZoneResponse struct {
 	Zone Zone `json:"zone"`
 }
 
+// GetZones represents the content of a GET Zones response
+type GetZones struct {
+	Zones []Zone `json:"zones"`
+}
+
 // GetZonesByNameResponse represents the content of a GET Zones response
 type GetZonesByNameResponse struct {
 	Zones []Zone `json:"zones"`

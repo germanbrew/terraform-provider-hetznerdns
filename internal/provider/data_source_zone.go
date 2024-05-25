@@ -1,9 +1,9 @@
-package hetznerdns
+package provider
 
 import (
 	"fmt"
 
-	"github.com/germanbrew/terraform-provider-hetznerdns/hetznerdns/api"
+	"github.com/germanbrew/terraform-provider-hetznerdns/internal/provider/api"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )

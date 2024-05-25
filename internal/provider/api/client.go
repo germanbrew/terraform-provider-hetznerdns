@@ -5,7 +5,6 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"io"
 	"log"
 	"net/http"
@@ -51,8 +50,8 @@ type Client struct {
 }
 
 // NewClient creates a new API Client using a given api token.
-func NewClient(apiToken string) (*Client, diag.Diagnostics) {
-	return &Client{apiToken: apiToken, createHTTPClient: defaultCreateHTTPClient}, nil
+func NewClient(apiToken string) *Client {
+	return &Client{apiToken: apiToken, createHTTPClient: defaultCreateHTTPClient}
 }
 
 func (c *Client) doHTTPRequest(apiToken string, method string, url string, body io.Reader) (*http.Response, error) {
@@ -171,6 +170,26 @@ func readAndParseJSONBody(resp *http.Response, respType interface{}) error {
 
 func parseJSON(data []byte, respType interface{}) error {
 	return json.Unmarshal(data, &respType)
+}
+
+// GetZones reads the current state of a DNS zone
+func (c *Client) GetZones() ([]Zone, error) {
+	resp, err := c.doGetRequest("https://dns.hetzner.com/api/v1/zones")
+	if err != nil {
+		return nil, fmt.Errorf("error getting zones: %w", err)
+	}
+
+	if resp.StatusCode != http.StatusOK {
+		return nil, fmt.Errorf("Error getting Zone. HTTP status %d unhandled", resp.StatusCode)
+	}
+
+	var response GetZones
+	err = readAndParseJSONBody(resp, &response)
+	if err != nil {
+		return nil, err
+	}
+
+	return response.Zones, nil
 }
 
 // GetZone reads the current state of a DNS zone
