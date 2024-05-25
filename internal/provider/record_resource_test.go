@@ -185,8 +185,8 @@ func TestAccRecordResourcesDKIM(t *testing.T) {
 	aType := "TXT"
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:          func() { testAccAPITokenPresent(t) },
-		ProviderFactories: testAccProviders,
+		PreCheck:                 func() { testAccPreCheck(t) },
+		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
 		Steps: []resource.TestStep{
 			{
 				Config:             testAccRecordResourceConfigCreateDKIM(aZoneName, aTTL, aName, aValue),

@@ -3,6 +3,8 @@ package provider
 import (
 	"context"
 	"fmt"
+	"log"
+	"strings"
 
 	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
 	"github.com/hashicorp/terraform-plugin-framework/path"
@@ -133,11 +135,16 @@ func (r *recordResource) Create(ctx context.Context, req resource.CreateRequest,
 		return
 	}
 
+	value := plan.Value.String()
+	if plan.Type.String() == "TXT" {
+		value = prepareTXTRecordValue(plan.Value.String())
+	}
+
 	httpResp, err := r.client.CreateRecord(ctx, api.CreateRecordOpts{
 		ZoneID: plan.ZoneID.String(),
 		Name:   plan.Name.String(),
 		Type:   plan.Type.String(),
-		Value:  plan.Value.String(),
+		Value:  value,
 		TTL:    plan.TTL.ValueInt64Pointer(),
 	})
 	if err != nil {
@@ -177,6 +184,10 @@ func (r *recordResource) Read(ctx context.Context, req resource.ReadRequest, res
 		return
 	}
 
+	if zone.Type == "TXT" && isEscapedString(zone.Value) {
+		zone.Value = unescapeString(zone.Value)
+	}
+
 	state.Name = types.StringValue(zone.Name)
 	state.TTL = types.Int64PointerValue(zone.TTL)
 	state.ZoneID = types.StringValue(zone.ZoneID)
@@ -198,6 +209,10 @@ func (r *recordResource) Update(ctx context.Context, req resource.UpdateRequest,
 
 	if resp.Diagnostics.HasError() {
 		return
+	}
+
+	if plan.Type.String() == "TXT" && isEscapedString(plan.Value.String()) {
+		plan.Value = types.StringValue(unescapeString(plan.Value.String()))
 	}
 
 	if !plan.Name.Equal(state.Name) || !plan.TTL.Equal(state.TTL) || !plan.Type.Equal(state.Type) || !plan.Value.Equal(state.Value) {
@@ -240,4 +255,60 @@ func (r *recordResource) Delete(ctx context.Context, req resource.DeleteRequest,
 
 func (r *recordResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
 	resource.ImportStatePassthroughID(ctx, path.Root("id"), req, resp)
+}
+
+// prepareTXTRecordValue If the value in a TXT record is longer than 255 bytes,
+// it needs to be split into multiple parts.
+// Each part needs to be enclosed in double quotes and separated by a space.
+//
+// https://datatracker.ietf.org/doc/html/rfc4408#section-3.1.3
+func prepareTXTRecordValue(value string) string {
+	if len(value) < 255 {
+		log.Printf("[DEBUG] TXT record value is shorter than 255 bytes, no need to split it")
+		return value
+	}
+
+	if isEscapedString(value) {
+		log.Printf("[DEBUG] TXT record value is already in the correct format")
+		return value
+	}
+
+	// Split the DKIM key into 255 byte parts
+	parts := splitStringBy255Bytes(value)
+	for i, part := range parts {
+		parts[i] = "\"" + part + "\""
+	}
+
+	log.Printf("[DEBUG] TXT record value has been split into %d parts", len(parts))
+	log.Print(parts)
+	return strings.Join(parts, " ")
+}
+
+// splitStringBy255Bytes Strings in TXT records are by design-limited to 255 bytes.
+// Strings with more characters get split to substrings separated by space every 255 bytes/characters.
+//
+// https://datatracker.ietf.org/doc/html/rfc4408#section-3.1.3
+func splitStringBy255Bytes(value string) []string {
+	var parts []string
+	for len(value) > 0 {
+		if len(value) > 255 {
+			parts = append(parts, value[:255])
+			value = value[255:]
+		} else {
+			parts = append(parts, value)
+			break
+		}
+	}
+
+	return parts
+}
+
+var unescapeReplacer = strings.NewReplacer(`" `, ``, `"`, ``)
+
+func unescapeString(value string) string {
+	return strings.TrimSpace(unescapeReplacer.Replace(value))
+}
+
+func isEscapedString(value string) bool {
+	return strings.HasPrefix(value, `"`) && (strings.HasSuffix(value, `" `) || strings.HasSuffix(value, `"`))
 }
