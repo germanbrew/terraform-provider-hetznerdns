@@ -116,7 +116,7 @@ func (r *zoneResource) Create(ctx context.Context, req resource.CreateRequest, r
 
 	httpResp, err := r.client.CreateZone(ctx, api.CreateZoneOpts{
 		Name: plan.Name.String(),
-		TTL:  plan.TTL.ValueInt64Pointer(),
+		TTL:  plan.TTL.ValueInt64(),
 	})
 	if err != nil {
 		resp.Diagnostics.AddError("API Error", fmt.Sprintf("error creating zone: %s", err))
@@ -156,7 +156,7 @@ func (r *zoneResource) Read(ctx context.Context, req resource.ReadRequest, resp 
 	}
 
 	state.Name = types.StringValue(zone.Name)
-	state.TTL = types.Int64PointerValue(zone.TTL)
+	state.TTL = types.Int64Value(zone.TTL)
 	state.ID = types.StringValue(zone.ID)
 
 	// Save updated state into Terraform state
@@ -178,7 +178,7 @@ func (r *zoneResource) Update(ctx context.Context, req resource.UpdateRequest, r
 	if !plan.TTL.Equal(state.TTL) {
 		_, err := r.client.UpdateZone(ctx, api.Zone{
 			Name: plan.Name.String(),
-			TTL:  plan.TTL.ValueInt64Pointer(),
+			TTL:  plan.TTL.ValueInt64(),
 		})
 		if err != nil {
 			resp.Diagnostics.AddError("API Error", fmt.Sprintf("error updating zone: %s", err))
