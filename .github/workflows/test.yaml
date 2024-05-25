@@ -87,5 +87,5 @@ jobs:
           HETZNER_DNS_API_TOKEN: ${{ secrets.HETZNER_DNS_API_TOKEN }}
         run: |
           TEST_DIRS=$(go list ./...)
-          go test -v -cover $(TEST_DIRS)
+          go test -v -cover ${TEST_DIRS}
         timeout-minutes: 10
