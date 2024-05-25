@@ -2,15 +2,17 @@ package provider
 
 import (
 	"context"
+	"fmt"
 	"os"
 
-	"github.com/germanbrew/terraform-provider-hetznerdns/internal/api"
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
 	"github.com/hashicorp/terraform-plugin-framework/function"
 	"github.com/hashicorp/terraform-plugin-framework/provider"
 	"github.com/hashicorp/terraform-plugin-framework/provider/schema"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/types"
+
+	"github.com/germanbrew/terraform-provider-hetznerdns/internal/api"
 )
 
 // Ensure ScaffoldingProvider satisfies various provider interfaces.
@@ -79,7 +81,7 @@ func (p *hetznerDNSProvider) Configure(ctx context.Context, req provider.Configu
 	if err != nil {
 		resp.Diagnostics.AddError(
 			"API error while configuring provider",
-			err.Error(),
+			fmt.Sprintf("Error while fetching zones: %s", err),
 		)
 	}
 
