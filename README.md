@@ -4,11 +4,9 @@
 ![GitHub release (latest by date)](https://img.shields.io/github/v/release/germanbrew/terraform-provider-hetznerdns)
 ![GitHub](https://img.shields.io/github/license/germanbrew/terraform-provider-hetznerdns)
 
-**This provider is on published on the Terraform registry**. 
+**This provider is on published on the Terraform and OpenTofu registry**.
 
-This project has been forked from 
-[timohirt/terraform-provider-hetznerdns](https://github.com/timohirt/terraform-provider-hetznerdns) 
-which is unfortunately no longer maintained.
+> This project has been forked from [timohirt/terraform-provider-hetznerdns](https://github.com/timohirt/terraform-provider-hetznerdns), which is no longer maintained.
 
 You can find resources and data sources
 [documentation](https://registry.terraform.io/providers/germanbrew/hetznerdns/latest/docs)
@@ -24,6 +22,25 @@ there or [here](docs).
 You most likely want to download the provider from [Terraform
 Registry](https://registry.terraform.io/providers/germanbrew/hetznerdns/latest/docs).
 
+### Migration Guide
+
+If you previously used the `timohirt/hetznerdns` provider, you can easily replace the provider in your terraform state by following these steps:
+
+1. In your `terraform` -> `required_providers` config, replace the provider config:
+  ```diff
+  hetznerdns = {
+  -  source  = "timohirt/hetznerdns"
+  +  source = "germanbrew/hetznerdns"
+  -  version = "2.2.0"
+  +  version = "3.0.0"  # Replace with latest version
+  }
+  ```
+2. Install the new provider and replace it in the state:
+   ```sh
+    terraform init
+    terraform state replace-provider timohirt/hetznerdns germanbrew/hetznerdns
+  ```
+
 ### Using Provider from Terraform Registry (TF >= 1.0)
 
 This provider is published and available there. If you want to use it, just
@@ -34,7 +51,7 @@ terraform {
   required_providers {
     hetznerdns = {
       source = "germanbrew/hetznerdns"
-      version = "2.1.0"
+      version = "3.0.0"
     }
   }
   required_version = ">= 1.0"
