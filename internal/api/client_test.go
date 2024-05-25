@@ -91,7 +91,7 @@ func TestClientGetZoneByName(t *testing.T) {
 	config := RequestConfig{responseHTTPStatus: http.StatusOK, responseBodyJSON: responseBody}
 	client := createTestClient(config)
 
-	zone, err := client.GetZoneByName("zone1.online")
+	zone, err := client.GetZoneByName(context.Background(), "zone1.online")
 
 	assert.NoError(t, err)
 	assert.Equal(t, Zone{ID: "12345678", Name: "zone1.online", TTL: 3600}, *zone)
@@ -101,7 +101,7 @@ func TestClientGetZoneByNameReturnNilIfnotFound(t *testing.T) {
 	config := RequestConfig{responseHTTPStatus: http.StatusNotFound}
 	client := createTestClient(config)
 
-	zone, err := client.GetZoneByName("zone1.online")
+	zone, err := client.GetZoneByName(context.Background(), "zone1.online")
 
 	assert.NoError(t, err)
 	assert.Nil(t, zone)

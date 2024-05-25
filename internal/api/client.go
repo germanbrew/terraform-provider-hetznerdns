@@ -248,29 +248,30 @@ func (c *Client) DeleteZone(ctx context.Context, id string) error {
 }
 
 // GetZoneByName reads the current state of a DNS zone with a given name
-func (c *Client) GetZoneByName(name string) (*Zone, error) {
-	resp, err := c.doGetRequest(context.Background(), fmt.Sprintf("https://dns.hetzner.com/api/v1/zones?name=%s", name))
+func (c *Client) GetZoneByName(ctx context.Context, name string) (*Zone, error) {
+	resp, err := c.doGetRequest(ctx, fmt.Sprintf("https://dns.hetzner.com/api/v1/zones?name=%s", name))
 	if err != nil {
-		return nil, fmt.Errorf("Error getting zone %s: %s", name, err)
+		return nil, fmt.Errorf("error getting zone %s: %s", name, err)
 	}
-
-	if resp.StatusCode == http.StatusOK {
-		var response *GetZonesByNameResponse
-		err = readAndParseJSONBody(resp, &response)
-		if err != nil {
-			return nil, err
-		}
-
-		if len(response.Zones) != 1 {
-			return nil, fmt.Errorf("Error getting zone '%s'. No matching zone or multiple matching zones found", name)
-		}
-
-		return &response.Zones[0], nil
-	} else if resp.StatusCode == http.StatusNotFound {
+	if resp.StatusCode == http.StatusNotFound {
 		return nil, nil
 	}
 
-	return nil, fmt.Errorf("Error getting Zone. HTTP status %d unhandled", resp.StatusCode)
+	if resp.StatusCode != http.StatusOK {
+		return nil, fmt.Errorf("error getting Zone. HTTP status %d unhandled", resp.StatusCode)
+	}
+
+	var response *GetZonesByNameResponse
+	err = readAndParseJSONBody(resp, &response)
+	if err != nil {
+		return nil, err
+	}
+
+	if len(response.Zones) != 1 {
+		return nil, fmt.Errorf("error getting zone '%s'. No matching zone or multiple matching zones found", name)
+	}
+
+	return &response.Zones[0], nil
 }
 
 // CreateZoneOpts covers all parameters used to create a new DNS zone

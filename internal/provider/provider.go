@@ -96,15 +96,15 @@ func (p *hetznerDNSProvider) Resources(_ context.Context) []func() resource.Reso
 	}
 }
 
-func (p *hetznerDNSProvider) DataSources(ctx context.Context) []func() datasource.DataSource {
+func (p *hetznerDNSProvider) DataSources(_ context.Context) []func() datasource.DataSource {
 	return []func() datasource.DataSource{
 		func() datasource.DataSource {
-			return dataSourceExample{}
+			return NewZoneDataSource()
 		},
 	}
 }
 
-func (p *hetznerDNSProvider) Functions(ctx context.Context) []func() function.Function {
+func (p *hetznerDNSProvider) Functions(_ context.Context) []func() function.Function {
 	return []func() function.Function{}
 }
 
