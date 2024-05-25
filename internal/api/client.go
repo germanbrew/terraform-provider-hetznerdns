@@ -303,7 +303,7 @@ func (c *Client) CreateZone(ctx context.Context, opts CreateZoneOpts) (*Zone, er
 		return nil, fmt.Errorf("error creating zone. The name '%s' is not a valid domain. It must correspond to the schema <domain>.<tld>", opts.Name)
 	}
 
-	reqBody := CreateZoneRequest{Name: opts.Name, TTL: opts.TTL}
+	reqBody := CreateZoneRequest(opts)
 
 	resp, err := c.doPostRequest(ctx, "https://dns.hetzner.com/api/v1/zones", reqBody)
 	if err != nil {
@@ -391,7 +391,7 @@ type CreateRecordOpts struct {
 
 // CreateRecord create a new DNS records.
 func (c *Client) CreateRecord(ctx context.Context, opts CreateRecordOpts) (*Record, error) {
-	reqBody := CreateRecordRequest{ZoneID: opts.ZoneID, Name: opts.Name, TTL: opts.TTL, Type: opts.Type, Value: opts.Value}
+	reqBody := CreateRecordRequest(opts)
 
 	resp, err := c.doPostRequest(ctx, "https://dns.hetzner.com/api/v1/records", reqBody)
 	if err != nil {

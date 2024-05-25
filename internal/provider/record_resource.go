@@ -142,6 +142,7 @@ func (r *recordResource) Create(ctx context.Context, req resource.CreateRequest,
 	})
 	if err != nil {
 		resp.Diagnostics.AddError("API Error", fmt.Sprintf("error creating zone: %s", err))
+
 		return
 	}
 
@@ -166,11 +167,13 @@ func (r *recordResource) Read(ctx context.Context, req resource.ReadRequest, res
 	zone, err := r.client.GetRecord(ctx, state.ID.String())
 	if err != nil {
 		resp.Diagnostics.AddError("Client Error", fmt.Sprintf("Unable to read zene, got error: %s", err))
+
 		return
 	}
 
 	if zone == nil {
 		resp.Diagnostics.AddWarning("Resource Not Found", fmt.Sprintf("DNS zone with id %s doesn't exist, removing it from state", state.ID))
+
 		return
 	}
 
@@ -207,6 +210,7 @@ func (r *recordResource) Update(ctx context.Context, req resource.UpdateRequest,
 		})
 		if err != nil {
 			resp.Diagnostics.AddError("API Error", fmt.Sprintf("error updating zone: %s", err))
+
 			return
 		}
 	}

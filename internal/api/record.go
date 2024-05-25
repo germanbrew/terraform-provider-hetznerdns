@@ -10,7 +10,7 @@ type Record struct {
 	TTL    *int64 `json:"ttl,omitempty"`
 }
 
-// HasTTL returns true if a Record has a TTL set and false if TTL is undefined
+// HasTTL returns true if a Record has a TTL set and false if TTL is undefined.
 func (r *Record) HasTTL() bool {
 	return r.TTL != nil
 }

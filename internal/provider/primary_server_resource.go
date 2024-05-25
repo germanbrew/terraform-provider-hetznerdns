@@ -4,7 +4,6 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/germanbrew/terraform-provider-hetznerdns/internal/api"
 	"github.com/hashicorp/terraform-plugin-framework-validators/int64validator"
 	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
 	"github.com/hashicorp/terraform-plugin-framework/path"
@@ -15,6 +14,8 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
+
+	"github.com/germanbrew/terraform-provider-hetznerdns/internal/api"
 )
 
 // Ensure provider defined types fully satisfy framework interfaces.
@@ -124,6 +125,7 @@ func (r *primaryServerResource) Create(ctx context.Context, req resource.CreateR
 	})
 	if err != nil {
 		resp.Diagnostics.AddError("API Error", fmt.Sprintf("creating primary server: %s", err))
+
 		return
 	}
 
@@ -148,11 +150,13 @@ func (r *primaryServerResource) Read(ctx context.Context, req resource.ReadReque
 	record, err := r.client.GetPrimaryServer(ctx, state.ID.String())
 	if err != nil {
 		resp.Diagnostics.AddError("Client Error", fmt.Sprintf("Unable to read zene, got error: %s", err))
+
 		return
 	}
 
 	if record == nil {
 		resp.Diagnostics.AddWarning("Resource Not Found", fmt.Sprintf("Primary server with id %s doesn't exist, removing it from state", state.ID))
+
 		return
 	}
 
@@ -184,6 +188,7 @@ func (r *primaryServerResource) Update(ctx context.Context, req resource.UpdateR
 		})
 		if err != nil {
 			resp.Diagnostics.AddError("API Error", fmt.Sprintf("error primary server: %s", err))
+
 			return
 		}
 	}
@@ -206,6 +211,7 @@ func (r *primaryServerResource) Delete(ctx context.Context, req resource.DeleteR
 
 	if err := r.client.DeletePrimaryServer(ctx, state.ID.String()); err != nil {
 		resp.Diagnostics.AddError("API Error", fmt.Sprintf("Error deleting primary server %s: %s", state.ID, err))
+
 		return
 	}
 }

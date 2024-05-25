@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"regexp"
 
-	"github.com/germanbrew/terraform-provider-hetznerdns/internal/api"
 	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
@@ -15,6 +14,8 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
+
+	"github.com/germanbrew/terraform-provider-hetznerdns/internal/api"
 )
 
 // Ensure provider defined types fully satisfy framework interfaces.
@@ -119,6 +120,7 @@ func (r *zoneResource) Create(ctx context.Context, req resource.CreateRequest, r
 	})
 	if err != nil {
 		resp.Diagnostics.AddError("API Error", fmt.Sprintf("error creating zone: %s", err))
+
 		return
 	}
 
@@ -143,11 +145,13 @@ func (r *zoneResource) Read(ctx context.Context, req resource.ReadRequest, resp 
 	zone, err := r.client.GetZone(ctx, state.ID.String())
 	if err != nil {
 		resp.Diagnostics.AddError("Client Error", fmt.Sprintf("Unable to read zene, got error: %s", err))
+
 		return
 	}
 
 	if zone == nil {
 		resp.Diagnostics.AddWarning("Resource Not Found", fmt.Sprintf("DNS zone with id %s doesn't exist, removing it from state", state.ID))
+
 		return
 	}
 
@@ -178,6 +182,7 @@ func (r *zoneResource) Update(ctx context.Context, req resource.UpdateRequest, r
 		})
 		if err != nil {
 			resp.Diagnostics.AddError("API Error", fmt.Sprintf("error updating zone: %s", err))
+
 			return
 		}
 	}
@@ -200,6 +205,7 @@ func (r *zoneResource) Delete(ctx context.Context, req resource.DeleteRequest, r
 
 	if err := r.client.DeleteZone(ctx, state.ID.String()); err != nil {
 		resp.Diagnostics.AddError("API Error", fmt.Sprintf("error deleting zone: %s", err))
+
 		return
 	}
 }
