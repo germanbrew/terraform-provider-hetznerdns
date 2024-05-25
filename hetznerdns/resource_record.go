@@ -186,7 +186,7 @@ func resourceRecordDelete(c context.Context, d *schema.ResourceData, m interface
 	return nil
 }
 
-// If the value in a TXT record is longer than 255 bytes, it needs to be split into multiple parts. 
+// If the value in a TXT record is longer than 255 bytes, it needs to be split into multiple parts.
 // Each part needs to be enclosed in double quotes and separated by a space.
 // https://datatracker.ietf.org/doc/html/rfc4408#section-3.1.3
 func prepareTXTRecordValue(value string) string {
@@ -207,7 +207,7 @@ func prepareTXTRecordValue(value string) string {
 	return strings.Join(parts, " ")
 }
 
-// Strings in TXT records are by design limited to 255 bytes. 
+// Strings in TXT records are by design limited to 255 bytes.
 // Strings with more characters get split to substrings separated by space every 255 bytes/characters.
 // https://datatracker.ietf.org/doc/html/rfc4408#section-3.1.3
 func splitStringBy255Bytes(value string) []string {
