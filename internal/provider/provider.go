@@ -88,7 +88,7 @@ func (p *hetznerDNSProvider) Configure(ctx context.Context, req provider.Configu
 	resp.ResourceData = client
 }
 
-func (p *hetznerDNSProvider) Resources(ctx context.Context) []func() resource.Resource {
+func (p *hetznerDNSProvider) Resources(_ context.Context) []func() resource.Resource {
 	return []func() resource.Resource{
 		func() resource.Resource {
 			return NewZoneResource()

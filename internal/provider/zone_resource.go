@@ -52,6 +52,9 @@ func (r *zoneResource) Schema(_ context.Context, _ resource.SchemaRequest, resp 
 					"`sub.<domain>.io`. The Hetzner API rejects attempts to create a zone with a sub domain name." +
 					"Use a record to create the sub domain.",
 				Required: true,
+				PlanModifiers: []planmodifier.String{
+					stringplanmodifier.RequiresReplace(),
+				},
 			},
 			"ttl": schema.Int64Attribute{
 				MarkdownDescription: "Time to live of this zone",
