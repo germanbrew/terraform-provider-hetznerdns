@@ -100,6 +100,11 @@ export HETZNER_DNS_API_TOKEN=<your api token>
 The provider uses this token and you don't have to enter it
 anymore.
 
+## All provider options
+
+- `apitoken` (Required, string) The Hetzner DNS API token. You can pass it using the env variable `HETZNER_DNS_API_TOKEN` as well.
+- `max_retries` (Optional, int, default: 10) How often an API request should be retried before it fails. You can pass it using the env variable `HETZNER_DNS_MAX_RETRIES` as well.
+
 ### Example Usage
 
 ```terraform
