@@ -36,7 +36,7 @@ If you previously used the `timohirt/hetznerdns` provider, you can easily replac
   }
   ```
 2. Install the new provider and replace it in the state:
-   ```sh
+  ```sh
     terraform init
     terraform state replace-provider timohirt/hetznerdns germanbrew/hetznerdns
   ```
