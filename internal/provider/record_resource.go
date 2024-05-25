@@ -292,12 +292,14 @@ func prepareTXTRecordValue(ctx context.Context, value string) string {
 // https://datatracker.ietf.org/doc/html/rfc4408#section-3.1.3
 func splitStringBy255Bytes(value string) []string {
 	var parts []string
+
 	for len(value) > 0 {
 		if len(value) > 255 {
 			parts = append(parts, value[:255])
 			value = value[255:]
 		} else {
 			parts = append(parts, value)
+
 			break
 		}
 	}
