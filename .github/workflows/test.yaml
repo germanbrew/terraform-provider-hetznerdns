@@ -59,7 +59,6 @@ jobs:
   test:
     name: Terraform Provider Acceptance Tests
     needs: build
-    if: "false"
     runs-on: ubuntu-latest
     timeout-minutes: 15
     strategy:
