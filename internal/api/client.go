@@ -195,6 +195,11 @@ func (c *Client) GetZones() ([]Zone, error) {
 		return nil, fmt.Errorf("error getting zones: %w", err)
 	}
 
+	// Undocumented API behavior: Hetzner DNS API returns 404 when there are no zones
+	if resp.StatusCode == http.StatusNotFound {
+		return nil, nil
+	}
+
 	if resp.StatusCode != http.StatusOK {
 		return nil, fmt.Errorf("error getting zones. HTTP status %d unhandled", resp.StatusCode)
 	}
