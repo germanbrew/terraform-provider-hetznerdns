@@ -14,7 +14,7 @@ func TestAccPrimaryServerResources(t *testing.T) {
 	aZoneName := fmt.Sprintf("%s.online", acctest.RandString(10))
 	aZoneTTL := 60
 
-	psAddress := "1.1.1.1"
+	psAddress := "1.1.0.0"
 	psPort := 53
 
 	resource.Test(t, resource.TestCase{
@@ -57,10 +57,10 @@ func TestAccTwoPrimaryServersResources(t *testing.T) {
 	aZoneName := fmt.Sprintf("%s.online", acctest.RandString(10))
 	aZoneTTL := 60
 
-	ps1Address := "1.1.1.1"
+	ps1Address := "1.1.0.0"
 	ps1Port := 53
 
-	ps2Address := "1.1.0.0"
+	ps2Address := "2.2.0.0"
 	ps2Port := 53
 
 	resource.Test(t, resource.TestCase{

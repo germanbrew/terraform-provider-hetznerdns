@@ -3,6 +3,7 @@ package hetznerdns
 import (
 	"context"
 	"log"
+	"strings"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 
@@ -71,6 +72,10 @@ func resourceRecordCreate(c context.Context, d *schema.ResourceData, m interface
 		return diag.Errorf("Value of record not set")
 	}
 
+	if recordType.(string) == "TXT" {
+		value = prepareTXTRecordValue(value.(string))
+	}
+
 	opts := api.CreateRecordOpts{
 		ZoneID: zoneID.(string),
 		Name:   name.(string),
@@ -110,6 +115,12 @@ func resourceRecordRead(c context.Context, d *schema.ResourceData, m interface{}
 		return nil
 	}
 
+	if record.Type == "TXT" {
+		if isEscapedString(record.Value) {
+			record.Value = unescapeString(record.Value)
+		}
+	}
+
 	d.SetId(record.ID)
 	d.Set("name", record.Name)
 	d.Set("zone_id", record.ZoneID)
@@ -140,6 +151,12 @@ func resourceRecordUpdate(c context.Context, d *schema.ResourceData, m interface
 		return nil
 	}
 
+	if record.Type == "TXT" {
+		if isEscapedString(record.Value) {
+			record.Value = unescapeString(record.Value)
+		}
+	}
+
 	if d.HasChanges("name", "ttl", "type", "value") {
 		record.Name = d.Get("name").(string)
 
@@ -151,8 +168,7 @@ func resourceRecordUpdate(c context.Context, d *schema.ResourceData, m interface
 		}
 		record.Type = d.Get("type").(string)
 		record.Value = d.Get("value").(string)
-
-		record, err = client.UpdateRecord(*record)
+		_, err = client.UpdateRecord(*record)
 		if err != nil {
 			return diag.FromErr(err)
 		}
@@ -174,4 +190,56 @@ func resourceRecordDelete(c context.Context, d *schema.ResourceData, m interface
 	}
 
 	return nil
+}
+
+// If the value in a TXT record is longer than 255 bytes, it needs to be split into multiple parts.
+// Each part needs to be enclosed in double quotes and separated by a space.
+// https://datatracker.ietf.org/doc/html/rfc4408#section-3.1.3
+func prepareTXTRecordValue(value string) string {
+	if len(value) < 255 {
+		log.Printf("[DEBUG] TXT record value is shorter than 255 bytes, no need to split it")
+		return value
+	}
+
+	if isEscapedString(value) {
+		log.Printf("[DEBUG] TXT record value is already in the correct format")
+		return value
+	}
+
+	// Split the DKIM key into 255 byte parts
+	parts := splitStringBy255Bytes(value)
+	for i, part := range parts {
+		parts[i] = "\"" + part + "\""
+	}
+
+	log.Printf("[DEBUG] TXT record value has been split into %d parts", len(parts))
+	log.Print(parts)
+	return strings.Join(parts, " ")
+}
+
+// Strings in TXT records are by design limited to 255 bytes.
+// Strings with more characters get split to substrings separated by space every 255 bytes/characters.
+// https://datatracker.ietf.org/doc/html/rfc4408#section-3.1.3
+func splitStringBy255Bytes(value string) []string {
+	var parts []string
+	for len(value) > 0 {
+		if len(value) > 255 {
+			parts = append(parts, value[:255])
+			value = value[255:]
+		} else {
+			parts = append(parts, value)
+			break
+		}
+	}
+	return parts
+}
+
+func unescapeString(value string) string {
+	value = strings.ReplaceAll(value, "\" ", "")
+	value = strings.ReplaceAll(value, "\"", "")
+	return strings.TrimSpace(value)
+}
+
+func isEscapedString(value string) bool {
+	return strings.HasPrefix(value, "\"") && (strings.HasSuffix(value, "\" ") || strings.HasSuffix(value, "\""))
 }
