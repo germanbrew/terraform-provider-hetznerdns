@@ -206,7 +206,7 @@ resource "hetznerdns_record" "record1" {
 	zone_id = "${hetznerdns_zone.zone1.id}"
 	type = "TXT"
 	name = "%s"
-	value = "%s"
+	value = "%q"
 }
 `, aZoneName, aZoneTTL, aName, aValue)
 }
