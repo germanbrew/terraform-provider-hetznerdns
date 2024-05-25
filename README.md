@@ -23,8 +23,6 @@ there or [here](docs).
 
 You most likely want to download the provider from [Terraform
 Registry](https://registry.terraform.io/providers/germanbrew/hetznerdns/latest/docs).
-If you want or need to install the provider locally, take a look at
-[INSTALL](./INSTALL.md). 
 
 ### Using Provider from Terraform Registry (TF >= 1.0)
 
@@ -47,7 +45,7 @@ Then run `terraform init` to download the provider.
 
 ## Authentication
 
-Once installed you have three options to provide the required API token that
+Once installed, you have three options to provide the required API token that
 is used to authenticate at the Hetzner DNS API.
 
 ### Enter API Token when needed
