@@ -155,7 +155,7 @@ resource "hetznerdns_record" "example_com_spf" {
 }
 
 # SRV record
-resource "hetznerdns_record" "example_com_rv" {
+resource "hetznerdns_record" "example_com_srv" {
   zone_id = hetznerdns_zone.example_com.id
   name    = "_ldap._tcp"
   value   = "10 0 389 ldap.example.com."
