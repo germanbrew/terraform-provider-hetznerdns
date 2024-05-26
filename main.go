@@ -5,8 +5,9 @@ import (
 	"flag"
 	"log"
 
-	"github.com/germanbrew/terraform-provider-hetznerdns/internal/provider"
 	"github.com/hashicorp/terraform-plugin-framework/providerserver"
+
+	"github.com/germanbrew/terraform-provider-hetznerdns/internal/provider"
 )
 
 // Run "go generate" to format example terraform files and generate the docs for the registry/website
