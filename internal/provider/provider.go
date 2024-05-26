@@ -72,6 +72,7 @@ func (p *hetznerDNSProvider) Configure(ctx context.Context, req provider.Configu
 	apiToken := os.Getenv("HETZNER_DNS_API_TOKEN")
 
 	maxRetries := int64(1)
+
 	if v, ok := os.LookupEnv("HETZNER_DNS_MAX_RETRIES"); ok {
 		var err error
 
@@ -86,8 +87,8 @@ func (p *hetznerDNSProvider) Configure(ctx context.Context, req provider.Configu
 
 	if v, ok := os.LookupEnv("HETZNER_DNS_ENABLE_TXT_FORMATTER"); ok {
 		var err error
-		HasTxtValueFormatter, err = strconv.ParseBool(v)
 
+		HasTxtValueFormatter, err = strconv.ParseBool(v)
 		if err != nil {
 			resp.Diagnostics.AddError(
 				"enable_txt_formatter must be an boolean",
