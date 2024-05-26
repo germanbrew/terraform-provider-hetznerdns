@@ -18,6 +18,7 @@ linters:
     - makezero
     - misspell
     - nilerr
+    - nlreturn
     - predeclared
     - staticcheck
     - tenv
@@ -25,3 +26,4 @@ linters:
     - unparam
     - unused
     - vet
+    - wsl

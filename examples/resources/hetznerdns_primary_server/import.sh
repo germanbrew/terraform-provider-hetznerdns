@@ -1,0 +1,1 @@
+terraform import hetznerdns_zone.zone1 rMu2waTJPbHr4
