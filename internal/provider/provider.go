@@ -57,7 +57,7 @@ func (p *hetznerDNSProvider) Schema(_ context.Context, _ provider.SchemaRequest,
 				},
 			},
 			"enable_txt_formatter": schema.BoolAttribute{
-				Description: "Toggles the automatic formatter for TXT record values. You can pass it using the env variable `HETZNER_DNS_TXT_FORMATTER_ENABLE` as well. Default: true",
+				Description: "Toggles the automatic formatter for TXT record values. Values greater than 255 bytes needs to be chunked and quotes separetly. You can pass it using the env variable `HETZNER_DNS_TXT_FORMATTER_ENABLE` as well. Default: true",
 				Optional:    true,
 			},
 		},
