@@ -37,8 +37,12 @@ func TXTRecordToPlainValue(value string) string {
 
 	record := strings.Builder{}
 
-	for _, chunk := range strings.Fields(value) {
-		record.WriteString(unescapeString(chunk))
+	value = strings.TrimSpace(value)
+	value = strings.TrimPrefix(value, `"`)
+	value = strings.TrimSuffix(value, `"`)
+
+	for _, chunk := range strings.Split(value, `" "`) {
+		record.WriteString(strings.ReplaceAll(chunk, `\"`, `"`))
 	}
 
 	return record.String()
@@ -66,11 +70,4 @@ func chunkSlice(slice string, chunkSize int) []string {
 	}
 
 	return chunks
-}
-
-//nolint:gochecknoglobals
-var unescapeReplacer = strings.NewReplacer(`"`, ``, `\"`, `"`)
-
-func unescapeString(value string) string {
-	return strings.TrimSpace(unescapeReplacer.Replace(value))
 }
