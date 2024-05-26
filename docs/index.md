@@ -14,7 +14,7 @@ This providers helps you automate management of DNS zones and records at Hetzner
 
 ```terraform
 provider "hetznerdns" {
-  apitoken = ""
+  api_token = ""
 }
 
 data "hetznerdns_zone" "dns_zone" {

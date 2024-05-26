@@ -1,5 +1,5 @@
 provider "hetznerdns" {
-  apitoken = ""
+  api_token = ""
 }
 
 data "hetznerdns_zone" "dns_zone" {
