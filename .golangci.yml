@@ -58,7 +58,6 @@ linters:
     - wsl
     - wrapcheck
 
-
 linters-settings:
   lll:
     line-length: 160
