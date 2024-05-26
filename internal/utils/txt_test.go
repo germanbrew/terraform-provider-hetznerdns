@@ -53,7 +53,7 @@ func TestPlainToTXTRecordValue(t *testing.T) {
 	}
 }
 
-func TestTXTToPlainRecordValue(t *testing.T) {
+func TestTXTRecordToPlainValue(t *testing.T) {
 	t.Parallel()
 
 	for _, tc := range []struct {
@@ -92,7 +92,45 @@ func TestTXTToPlainRecordValue(t *testing.T) {
 		t.Run(tc.name, func(t *testing.T) {
 			t.Parallel()
 
-			require.Equal(t, tc.output, utils.TXTToPlainRecordValue(tc.input))
+			require.Equal(t, tc.output, utils.TXTRecordToPlainValue(tc.input))
+		})
+	}
+}
+
+func TestPlainToTXTRecordToPlainValue(t *testing.T) {
+	t.Parallel()
+
+	for _, tc := range []struct {
+		name  string
+		value string
+	}{
+		{
+			name:  "empty",
+			value: "",
+		},
+		{
+			name:  "small string",
+			value: "test",
+		},
+		{
+			name:  "small string with quotes",
+			value: `te"st`,
+		},
+		{
+			name:  "large string",
+			value: strings.Repeat("test", 100),
+		},
+		{
+			name:  "large string with quotes",
+			value: strings.Repeat(`te"st`, 100),
+		},
+	} {
+		tc := tc
+
+		t.Run(tc.name, func(t *testing.T) {
+			t.Parallel()
+
+			require.Equal(t, tc.value, utils.TXTRecordToPlainValue(utils.TXTRecordToPlainValue(tc.value)))
 		})
 	}
 }
