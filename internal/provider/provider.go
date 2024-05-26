@@ -54,17 +54,17 @@ func (p *hetznerDNSProvider) Schema(_ context.Context, _ provider.SchemaRequest,
 				Sensitive:   true,
 			},
 			"max_retries": schema.Int64Attribute{
-				Description: "The maximum number of retries to perform when an API request fails. " +
-					"You can pass it using the env variable `HETZNER_DNS_MAX_RETRIES` as well. Default: 1",
+				Description: "`Default: 1` The maximum number of retries to perform when an API request fails. " +
+					"You can pass it using the env variable `HETZNER_DNS_MAX_RETRIES` as well.",
 				Optional: true,
 				Validators: []validator.Int64{
 					int64validator.AtLeast(0),
 				},
 			},
 			"enable_txt_formatter": schema.BoolAttribute{
-				Description: "Toggles the automatic formatter for TXT record values. " +
-					"Values greater than 255 bytes needs to be chunked and quotes separately. " +
-					"You can pass it using the env variable `HETZNER_DNS_ENABLE_TXT_FORMATTER` as well. Default: true",
+				Description: "`Default: true` Toggles the automatic formatter for TXT record values. " +
+					"Values greater than 255 bytes get split into multiple quoted chunks ([RFC4408](https://datatracker.ietf.org/doc/html/rfc4408#section-3.1.3)). " +
+					"You can pass it using the env variable `HETZNER_DNS_ENABLE_TXT_FORMATTER` as well.",
 				Optional: true,
 			},
 		},
