@@ -1,23 +1,17 @@
-TEST?=$$(go list ./...)
-GOFMT_FILES?=$$(find . -name '*.go')
-
 BINARY_DIR=bin
 BINARY_NAME=terraform-provider-hetznerdns
 
-.PHONY: build testacc test lint fmt
+.PHONY: build testacc test fmt
 
 build:
 	mkdir -p $(BINARY_DIR)
 	go build -o $(BINARY_DIR)/$(BINARY_NAME)
 
 testacc:
-	TF_ACC=1 go test $(TEST) -v -timeout 30m
+	TF_ACC=1 go test -v ./internal/provider -timeout 30m
 
 test: 
-	go test $(TEST) || exit 1
-
-lint:
-	@sh -c "'$(CURDIR)/scripts/gofmtcheck.sh'"
+	go test -v ./... -timeout 30m
 
 fmt:
-	gofmt -w $(GOFMT_FILES)
+	go fmt ./...

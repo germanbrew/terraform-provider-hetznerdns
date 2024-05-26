@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"regexp"
 
+	"github.com/hashicorp/terraform-plugin-framework-validators/int64validator"
 	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
@@ -70,6 +71,9 @@ func (r *zoneResource) Schema(_ context.Context, _ resource.SchemaRequest, resp 
 			"ttl": schema.Int64Attribute{
 				MarkdownDescription: "Time to live of this zone",
 				Optional:            true,
+				Validators: []validator.Int64{
+					int64validator.AtLeast(0),
+				},
 			},
 			"id": schema.StringAttribute{
 				Computed:            true,
