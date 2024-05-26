@@ -5,12 +5,15 @@ import (
 	"fmt"
 	"net/http"
 	"os"
+	"strconv"
 
+	"github.com/hashicorp/terraform-plugin-framework-validators/int64validator"
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
 	"github.com/hashicorp/terraform-plugin-framework/function"
 	"github.com/hashicorp/terraform-plugin-framework/provider"
 	"github.com/hashicorp/terraform-plugin-framework/provider/schema"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
+	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 
 	"github.com/germanbrew/terraform-provider-hetznerdns/internal/api"
@@ -27,7 +30,8 @@ type hetznerDNSProvider struct {
 }
 
 type hetznerDNSProviderModel struct {
-	ApiToken types.String `tfsdk:"apitoken"`
+	ApiToken   types.String `tfsdk:"apitoken"`
+	MaxRetries types.Int64  `tfsdk:"max_retries"`
 }
 
 func (p *hetznerDNSProvider) Metadata(_ context.Context, _ provider.MetadataRequest, resp *provider.MetadataResponse) {
@@ -40,9 +44,16 @@ func (p *hetznerDNSProvider) Schema(_ context.Context, _ provider.SchemaRequest,
 		Description: "This providers helps you automate management of DNS zones and records at Hetzner DNS.",
 		Attributes: map[string]schema.Attribute{
 			"apitoken": schema.StringAttribute{
-				Description: "The Hetzner DNS API token. You can pass it using the env variable `HETZNER_DNS_API_TOKEN`as well.",
+				Description: "The Hetzner DNS API token. You can pass it using the env variable `HETZNER_DNS_API_TOKEN` as well.",
 				Optional:    true,
 				Sensitive:   true,
+			},
+			"max_retries": schema.Int64Attribute{
+				Description: "The maximum number of retries to perform when an API request fails. Default: 1",
+				Optional:    true,
+				Validators: []validator.Int64{
+					int64validator.AtLeast(0),
+				},
 			},
 		},
 	}
@@ -53,6 +64,20 @@ func (p *hetznerDNSProvider) Configure(ctx context.Context, req provider.Configu
 
 	apiToken := os.Getenv("HETZNER_DNS_API_TOKEN")
 
+	maxRetries := int64(1)
+
+	if v, ok := os.LookupEnv("HETZNER_DNS_MAX_RETRIES"); ok {
+		var err error
+		maxRetries, err = strconv.ParseInt(v, 10, 64)
+
+		if err != nil {
+			resp.Diagnostics.AddError(
+				"max_retries must be an positive integer",
+				"While configuring the provider, the max_retry option was not an positive integer",
+			)
+		}
+	}
+
 	resp.Diagnostics.Append(req.Config.Get(ctx, &data)...)
 
 	if resp.Diagnostics.HasError() {
@@ -61,6 +86,10 @@ func (p *hetznerDNSProvider) Configure(ctx context.Context, req provider.Configu
 
 	if data.ApiToken.ValueString() != "" {
 		apiToken = data.ApiToken.ValueString()
+	}
+
+	if data.MaxRetries.ValueInt64Pointer() != nil {
+		maxRetries = data.MaxRetries.ValueInt64()
 	}
 
 	if apiToken == "" {
@@ -76,7 +105,7 @@ func (p *hetznerDNSProvider) Configure(ctx context.Context, req provider.Configu
 		return
 	}
 
-	client, err := api.New("https://dns.hetzner.com", apiToken, 10, http.DefaultClient)
+	client, err := api.New("https://dns.hetzner.com", apiToken, uint(maxRetries), http.DefaultClient)
 	if err != nil {
 		resp.Diagnostics.AddError(
 			"API error while configuring provider",
