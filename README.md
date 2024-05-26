@@ -106,3 +106,39 @@ export HETZNER_DNS_API_TOKEN=<your api token>
 ```
 
 The provider uses this token, and you don't have to enter it anymore.
+
+## Development
+
+### Testing the provider locally
+
+To test the provider locally:
+
+1. Build the provider binary with `make build`
+2. Create a new file `~/.terraform.rc` and point the provider to the absolute **directory** path of the binary file:
+    ```json
+    provider_installation {
+        dev_overrides {
+            "germanbrew/hetznerdns" = "/path/to/your/terraform-provider-hetznerdns/bin/"
+        }
+        direct {}
+    }
+    ```
+3.
+   - Set the variable before running terraform commands:
+    ```sh
+    TF_CLI_CONFIG_FILE=~/.terraform.rc terraform plan
+    ```
+   - Or set the env variable `TF_CLI_CONFIG_FILE` and point it to `~/.terraform.rc`: e.g.
+    ```sh
+    export TF_CLI_CONFIG_FILE=~/.terraform.rc`
+    ```
+
+1. Now you can just use terraform normally. A warning will appear, that notifies you that you are using an provider override
+    ```
+    Warning: Provider development overrides are in effect
+    ...
+    ```
+2. Unset the env variable if you don't want to use the local provider anymore:
+    ```sh
+    unset TF_CLI_CONFIG_FILE
+    ```
