@@ -83,7 +83,7 @@ func (p *hetznerDNSProvider) Configure(ctx context.Context, req provider.Configu
 	}
 
 	enableTxtValueFormatter := false
-	if v, ok := os.LookupEnv("HETZNER_DNS_TXT_FORMATTER_DISABLE"); ok {
+	if v, ok := os.LookupEnv("HETZNER_DNS_TXT_FORMATTER_ENABLE"); ok {
 		var err error
 		enableTxtValueFormatter, err = strconv.ParseBool(v)
 
