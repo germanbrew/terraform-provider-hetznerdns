@@ -95,6 +95,7 @@ func (c *Client) request(ctx context.Context, method string, path string, bodyJS
 	req.Header.Set("Auth-API-Token", c.apiToken)
 	req.Header.Set("Accept", "application/json; charset=utf-8")
 	req.Header.Set("Content-Type", "application/json; charset=utf-8")
+
 	if c.userAgent != "" {
 		req.Header.Set("User-Agent", c.userAgent)
 	}
