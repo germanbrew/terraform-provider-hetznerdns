@@ -29,13 +29,13 @@ type hetznerDNSProvider struct {
 }
 
 type hetznerDNSProviderModel struct {
-	ApiToken           types.String `tfsdk:"apitoken"` //nolint:tagliatelle // TODO: apitoken should be api_token
+	ApiToken           types.String `tfsdk:"api_token"`
 	MaxRetries         types.Int64  `tfsdk:"max_retries"`
 	EnableTxtFormatter types.Bool   `tfsdk:"enable_txt_formatter"`
 }
 
 type providerClient struct {
-	client       *api.Client
+	apiClient    *api.Client
 	txtFormatter bool
 }
 
@@ -48,7 +48,7 @@ func (p *hetznerDNSProvider) Schema(_ context.Context, _ provider.SchemaRequest,
 	resp.Schema = schema.Schema{
 		Description: "This providers helps you automate management of DNS zones and records at Hetzner DNS.",
 		Attributes: map[string]schema.Attribute{
-			"apitoken": schema.StringAttribute{
+			"api_token": schema.StringAttribute{
 				Description: "The Hetzner DNS API token. You can pass it using the env variable `HETZNER_DNS_API_TOKEN` as well.",
 				Optional:    true,
 				Sensitive:   true,
@@ -63,7 +63,7 @@ func (p *hetznerDNSProvider) Schema(_ context.Context, _ provider.SchemaRequest,
 			},
 			"enable_txt_formatter": schema.BoolAttribute{
 				Description: "Toggles the automatic formatter for TXT record values. " +
-					"Values greater than 255 bytes needs to be chunked and quotes separetly. " +
+					"Values greater than 255 bytes needs to be chunked and quotes separately. " +
 					"You can pass it using the env variable `HETZNER_DNS_ENABLE_TXT_FORMATTER` as well. Default: true",
 				Optional: true,
 			},
@@ -75,36 +75,15 @@ func (p *hetznerDNSProvider) Schema(_ context.Context, _ provider.SchemaRequest,
 //
 //nolint:funlen // TODO: The attributes logic should be moved to a separate function
 func (p *hetznerDNSProvider) Configure(ctx context.Context, req provider.ConfigureRequest, resp *provider.ConfigureResponse) {
-	var data hetznerDNSProviderModel
+	var (
+		data hetznerDNSProviderModel
 
-	apiToken := os.Getenv("HETZNER_DNS_API_TOKEN")
+		err error
 
-	maxRetries := int64(1)
-	hasTxtValueFormatter := true
-
-	if v, ok := os.LookupEnv("HETZNER_DNS_MAX_RETRIES"); ok {
-		var err error
-
-		maxRetries, err = strconv.ParseInt(v, 10, 64)
-		if err != nil {
-			resp.Diagnostics.AddError(
-				"max_retries must be an positive integer",
-				"While configuring the provider, the max_retry option was not a positive integer",
-			)
-		}
-	}
-
-	if v, ok := os.LookupEnv("HETZNER_DNS_ENABLE_TXT_FORMATTER"); ok {
-		var err error
-
-		hasTxtValueFormatter, err = strconv.ParseBool(v)
-		if err != nil {
-			resp.Diagnostics.AddError(
-				"enable_txt_formatter must be a boolean",
-				"While configuring the provider, the enable_txt_formatter option was not a boolean value",
-			)
-		}
-	}
+		apiToken     string
+		maxRetries   int64
+		txtFormatter bool
+	)
 
 	resp.Diagnostics.Append(req.Config.Get(ctx, &data)...)
 
@@ -112,23 +91,45 @@ func (p *hetznerDNSProvider) Configure(ctx context.Context, req provider.Configu
 		return
 	}
 
-	if data.ApiToken.ValueString() != "" {
+	if !data.ApiToken.IsNull() {
 		apiToken = data.ApiToken.ValueString()
+	} else {
+		apiToken = os.Getenv("HETZNER_DNS_API_TOKEN")
 	}
 
-	if data.MaxRetries.ValueInt64Pointer() != nil {
+	if !data.MaxRetries.IsNull() {
 		maxRetries = data.MaxRetries.ValueInt64()
+	} else if v, ok := os.LookupEnv("HETZNER_DNS_MAX_RETRIES"); ok {
+		maxRetries, err = strconv.ParseInt(v, 10, 64)
+		if err != nil {
+			resp.Diagnostics.AddError(
+				"max_retries must be an positive integer",
+				"While configuring the client, the max_retry option was not a positive integer",
+			)
+		}
+	} else {
+		maxRetries = 1
 	}
 
-	if data.EnableTxtFormatter.ValueBool() {
-		hasTxtValueFormatter = data.EnableTxtFormatter.ValueBool()
+	if !data.EnableTxtFormatter.IsNull() {
+		txtFormatter = data.EnableTxtFormatter.ValueBool()
+	} else if v, ok := os.LookupEnv("HETZNER_DNS_ENABLE_TXT_FORMATTER"); ok {
+		txtFormatter, err = strconv.ParseBool(v)
+		if err != nil {
+			resp.Diagnostics.AddError(
+				"enable_txt_formatter must be a boolean",
+				"While configuring the client, the enable_txt_formatter option was not a boolean value",
+			)
+		}
+	} else {
+		txtFormatter = true
 	}
 
 	if apiToken == "" {
 		resp.Diagnostics.AddError(
 			"Missing API Token Configuration",
-			"While configuring the provider, the API token was not found in "+
-				"the HETZNER_DNS_API_TOKEN environment variable or provider "+
+			"While configuring the client, the API token was not found in "+
+				"the HETZNER_DNS_API_TOKEN environment variable or client "+
 				"configuration block apitoken attribute.",
 		)
 	}
@@ -137,22 +138,22 @@ func (p *hetznerDNSProvider) Configure(ctx context.Context, req provider.Configu
 		return
 	}
 
-	client, err := api.New("https://dns.hetzner.com", apiToken, uint(maxRetries), http.DefaultClient)
+	apiClient, err := api.New("https://dns.hetzner.com", apiToken, uint(maxRetries), http.DefaultClient)
 	if err != nil {
 		resp.Diagnostics.AddError(
-			"API error while configuring provider",
-			fmt.Sprintf("Error while creating API client: %s", err),
+			"API error while configuring client",
+			fmt.Sprintf("Error while creating API apiClient: %s", err),
 		)
 	}
 
-	client.SetUserAgent(fmt.Sprintf("terraform-provider-hetznerdns/%s (+https://github.com/germanbrew/terraform-provider-hetznerdns) ", p.version))
+	apiClient.SetUserAgent(fmt.Sprintf("terraform-client-hetznerdns/%s (+https://github.com/germanbrew/terraform-client-hetznerdns) ", p.version))
 
-	provider := &providerClient{client: client, txtFormatter: hasTxtValueFormatter}
+	client := &providerClient{apiClient, txtFormatter}
 
-	_, err = provider.client.GetZones(ctx)
+	_, err = client.apiClient.GetZones(ctx)
 	if err != nil {
 		resp.Diagnostics.AddError(
-			"API error while configuring provider",
+			"API error while configuring client",
 			fmt.Sprintf("Error while fetching zones: %s", err),
 		)
 	}
@@ -161,8 +162,8 @@ func (p *hetznerDNSProvider) Configure(ctx context.Context, req provider.Configu
 		return
 	}
 
-	resp.DataSourceData = provider
-	resp.ResourceData = provider
+	resp.DataSourceData = client
+	resp.ResourceData = client
 }
 
 func (p *hetznerDNSProvider) Resources(_ context.Context) []func() resource.Resource {
