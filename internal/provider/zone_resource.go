@@ -31,7 +31,7 @@ func NewZoneResource() resource.Resource {
 
 // zoneResource defines the resource implementation.
 type zoneResource struct {
-	client *api.Client
+	provider *providerClient
 }
 
 // zoneResourceModel describes the resource data model.
@@ -101,18 +101,18 @@ func (r *zoneResource) Configure(_ context.Context, req resource.ConfigureReques
 		return
 	}
 
-	client, ok := req.ProviderData.(*api.Client)
+	provider, ok := req.ProviderData.(*providerClient)
 
 	if !ok {
 		resp.Diagnostics.AddError(
 			"Unexpected Resource Configure Type",
-			fmt.Sprintf("Expected *http.Client, got: %T. Please report this issue to the provider developers.", req.ProviderData),
+			fmt.Sprintf("Expected *providerClient, got: %T. Please report this issue to the provider developers.", req.ProviderData),
 		)
 
 		return
 	}
 
-	r.client = client
+	r.provider = provider
 }
 
 func (r *zoneResource) Create(ctx context.Context, req resource.CreateRequest, resp *resource.CreateResponse) {
@@ -127,7 +127,7 @@ func (r *zoneResource) Create(ctx context.Context, req resource.CreateRequest, r
 		return
 	}
 
-	zone, err := r.client.GetZoneByName(ctx, plan.Name.ValueString())
+	zone, err := r.provider.client.GetZoneByName(ctx, plan.Name.ValueString())
 	if err != nil {
 		resp.Diagnostics.AddError("API Error", fmt.Sprintf("error creating zone: %s", err))
 
@@ -140,7 +140,7 @@ func (r *zoneResource) Create(ctx context.Context, req resource.CreateRequest, r
 		return
 	}
 
-	zone, err = r.client.CreateZone(ctx, api.CreateZoneOpts{
+	zone, err = r.provider.client.CreateZone(ctx, api.CreateZoneOpts{
 		Name: plan.Name.ValueString(),
 		TTL:  plan.TTL.ValueInt64(),
 	})
@@ -177,7 +177,7 @@ func (r *zoneResource) Read(ctx context.Context, req resource.ReadRequest, resp 
 		return
 	}
 
-	zone, err := r.client.GetZone(ctx, state.ID.ValueString())
+	zone, err := r.provider.client.GetZone(ctx, state.ID.ValueString())
 	if err != nil {
 		resp.Diagnostics.AddError("Client Error", fmt.Sprintf("Unable to read zene, got error: %s", err))
 
@@ -220,7 +220,7 @@ func (r *zoneResource) Update(ctx context.Context, req resource.UpdateRequest, r
 	}
 
 	if !plan.TTL.Equal(state.TTL) {
-		zone, err := r.client.UpdateZone(ctx, api.Zone{
+		zone, err := r.provider.client.UpdateZone(ctx, api.Zone{
 			ID:   state.ID.ValueString(),
 			Name: plan.Name.ValueString(),
 			TTL:  plan.TTL.ValueInt64(),
@@ -258,7 +258,7 @@ func (r *zoneResource) Delete(ctx context.Context, req resource.DeleteRequest, r
 		return
 	}
 
-	if err := r.client.DeleteZone(ctx, state.ID.ValueString()); err != nil {
+	if err := r.provider.client.DeleteZone(ctx, state.ID.ValueString()); err != nil {
 		resp.Diagnostics.AddError("API Error", fmt.Sprintf("error deleting zone: %s", err))
 
 		return

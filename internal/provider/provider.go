@@ -29,8 +29,14 @@ type hetznerDNSProvider struct {
 }
 
 type hetznerDNSProviderModel struct {
-	ApiToken   types.String `tfsdk:"apitoken"`
-	MaxRetries types.Int64  `tfsdk:"max_retries"`
+	ApiToken             types.String `tfsdk:"apitoken"`
+	MaxRetries           types.Int64  `tfsdk:"max_retries"`
+	HasTxtValueFormatter types.Bool   `tfsdk:"enable_txt_formatter"`
+}
+
+type providerClient struct {
+	client               *api.Client
+	hasTxtValueFormatter bool
 }
 
 func (p *hetznerDNSProvider) Metadata(_ context.Context, _ provider.MetadataRequest, resp *provider.MetadataResponse) {
@@ -48,11 +54,18 @@ func (p *hetznerDNSProvider) Schema(_ context.Context, _ provider.SchemaRequest,
 				Sensitive:   true,
 			},
 			"max_retries": schema.Int64Attribute{
-				Description: "The maximum number of retries to perform when an API request fails. Default: 1",
-				Optional:    true,
+				Description: "The maximum number of retries to perform when an API request fails. " +
+					"You can pass it using the env variable `HETZNER_DNS_MAX_RETRIES` as well. Default: 1",
+				Optional: true,
 				Validators: []validator.Int64{
 					int64validator.AtLeast(0),
 				},
+			},
+			"enable_txt_formatter": schema.BoolAttribute{
+				Description: "Toggles the automatic formatter for TXT record values. " +
+					"Values greater than 255 bytes needs to be chunked and quotes separetly. " +
+					"You can pass it using the env variable `HETZNER_DNS_ENABLE_TXT_FORMATTER` as well. Default: true",
+				Optional: true,
 			},
 		},
 	}
@@ -67,6 +80,7 @@ func (p *hetznerDNSProvider) Configure(ctx context.Context, req provider.Configu
 	apiToken := os.Getenv("HETZNER_DNS_API_TOKEN")
 
 	maxRetries := int64(1)
+	hasTxtValueFormatter := true
 
 	if v, ok := os.LookupEnv("HETZNER_DNS_MAX_RETRIES"); ok {
 		var err error
@@ -75,7 +89,19 @@ func (p *hetznerDNSProvider) Configure(ctx context.Context, req provider.Configu
 		if err != nil {
 			resp.Diagnostics.AddError(
 				"max_retries must be an positive integer",
-				"While configuring the provider, the max_retry option was not an positive integer",
+				"While configuring the provider, the max_retry option was not a positive integer",
+			)
+		}
+	}
+
+	if v, ok := os.LookupEnv("HETZNER_DNS_ENABLE_TXT_FORMATTER"); ok {
+		var err error
+
+		hasTxtValueFormatter, err = strconv.ParseBool(v)
+		if err != nil {
+			resp.Diagnostics.AddError(
+				"enable_txt_formatter must be a boolean",
+				"While configuring the provider, the enable_txt_formatter option was not a boolean value",
 			)
 		}
 	}
@@ -92,6 +118,10 @@ func (p *hetznerDNSProvider) Configure(ctx context.Context, req provider.Configu
 
 	if data.MaxRetries.ValueInt64Pointer() != nil {
 		maxRetries = data.MaxRetries.ValueInt64()
+	}
+
+	if data.HasTxtValueFormatter.ValueBool() {
+		hasTxtValueFormatter = data.HasTxtValueFormatter.ValueBool()
 	}
 
 	if apiToken == "" {
@@ -117,7 +147,9 @@ func (p *hetznerDNSProvider) Configure(ctx context.Context, req provider.Configu
 
 	client.SetUserAgent(fmt.Sprintf("terraform-provider-hetznerdns/%s (+https://github.com/germanbrew/terraform-provider-hetznerdns) ", p.version))
 
-	_, err = client.GetZones(ctx)
+	provider := &providerClient{client: client, hasTxtValueFormatter: hasTxtValueFormatter}
+
+	_, err = provider.client.GetZones(ctx)
 	if err != nil {
 		resp.Diagnostics.AddError(
 			"API error while configuring provider",
@@ -129,8 +161,8 @@ func (p *hetznerDNSProvider) Configure(ctx context.Context, req provider.Configu
 		return
 	}
 
-	resp.DataSourceData = client
-	resp.ResourceData = client
+	resp.DataSourceData = provider
+	resp.ResourceData = provider
 }
 
 func (p *hetznerDNSProvider) Resources(_ context.Context) []func() resource.Resource {

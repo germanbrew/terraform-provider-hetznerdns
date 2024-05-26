@@ -30,7 +30,7 @@ func NewRecordResource() resource.Resource {
 
 // recordResource defines the resource implementation.
 type recordResource struct {
-	client *api.Client
+	provider *providerClient
 }
 
 // recordResourceModel describes the resource data model.
@@ -111,18 +111,18 @@ func (r *recordResource) Configure(_ context.Context, req resource.ConfigureRequ
 		return
 	}
 
-	client, ok := req.ProviderData.(*api.Client)
+	provider, ok := req.ProviderData.(*providerClient)
 
 	if !ok {
 		resp.Diagnostics.AddError(
 			"Unexpected Resource Configure Type",
-			fmt.Sprintf("Expected *api.Client, got: %T. Please report this issue to the provider developers.", req.ProviderData),
+			fmt.Sprintf("Expected *providerClient, got: %T. Please report this issue to the provider developers.", req.ProviderData),
 		)
 
 		return
 	}
 
-	r.client = client
+	r.provider = provider
 }
 
 func (r *recordResource) Create(ctx context.Context, req resource.CreateRequest, resp *resource.CreateResponse) {
@@ -138,14 +138,14 @@ func (r *recordResource) Create(ctx context.Context, req resource.CreateRequest,
 	}
 
 	value := plan.Value.ValueString()
-	if plan.Type.ValueString() == "TXT" {
+	if plan.Type.ValueString() == "TXT" && r.provider.hasTxtValueFormatter {
 		value = utils.PlainToTXTRecordValue(value)
 		if plan.Value.ValueString() != value {
 			tflog.Debug(ctx, fmt.Sprintf("split TXT record value %d chunks: %q", len(value), value))
 		}
 	}
 
-	httpResp, err := r.client.CreateRecord(ctx, api.CreateRecordOpts{
+	httpResp, err := r.provider.client.CreateRecord(ctx, api.CreateRecordOpts{
 		ZoneID: plan.ZoneID.ValueString(),
 		Name:   plan.Name.ValueString(),
 		Type:   plan.Type.ValueString(),
@@ -176,7 +176,7 @@ func (r *recordResource) Read(ctx context.Context, req resource.ReadRequest, res
 		return
 	}
 
-	zone, err := r.client.GetRecord(ctx, state.ID.ValueString())
+	zone, err := r.provider.client.GetRecord(ctx, state.ID.ValueString())
 	if err != nil {
 		resp.Diagnostics.AddError("Client Error", fmt.Sprintf("Unable to read zene, got error: %s", err))
 
@@ -189,7 +189,7 @@ func (r *recordResource) Read(ctx context.Context, req resource.ReadRequest, res
 		return
 	}
 
-	if zone.Type == "TXT" {
+	if zone.Type == "TXT" && r.provider.hasTxtValueFormatter {
 		zone.Value = utils.TXTRecordToPlainValue(zone.Value)
 	}
 
@@ -217,12 +217,12 @@ func (r *recordResource) Update(ctx context.Context, req resource.UpdateRequest,
 	}
 
 	value := plan.Value.ValueString()
-	if plan.Type.ValueString() == "TXT" {
+	if plan.Type.ValueString() == "TXT" && r.provider.hasTxtValueFormatter {
 		value = utils.PlainToTXTRecordValue(value)
 	}
 
 	if !plan.Name.Equal(state.Name) || !plan.TTL.Equal(state.TTL) || !plan.Type.Equal(state.Type) || !plan.Value.Equal(state.Value) {
-		_, err := r.client.UpdateRecord(ctx, api.Record{
+		_, err := r.provider.client.UpdateRecord(ctx, api.Record{
 			ID:     state.ID.ValueString(),
 			Name:   plan.Name.ValueString(),
 			Type:   plan.Type.ValueString(),
@@ -253,7 +253,7 @@ func (r *recordResource) Delete(ctx context.Context, req resource.DeleteRequest,
 		return
 	}
 
-	if err := r.client.DeleteRecord(ctx, state.ID.ValueString()); err != nil {
+	if err := r.provider.client.DeleteRecord(ctx, state.ID.ValueString()); err != nil {
 		resp.Diagnostics.AddError("API Error", fmt.Sprintf("error deleting zone: %s", err))
 
 		return

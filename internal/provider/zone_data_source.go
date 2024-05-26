@@ -4,7 +4,6 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/germanbrew/terraform-provider-hetznerdns/internal/api"
 	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
 	"github.com/hashicorp/terraform-plugin-framework/datasource/schema"
@@ -21,7 +20,7 @@ func NewZoneDataSource() datasource.DataSource {
 
 // zoneDataSource defines the data source implementation.
 type zoneDataSource struct {
-	client *api.Client
+	provider *providerClient
 }
 
 // zoneDataSourceModel describes the data source data model.
@@ -72,18 +71,18 @@ func (d *zoneDataSource) Configure(_ context.Context, req datasource.ConfigureRe
 		return
 	}
 
-	client, ok := req.ProviderData.(*api.Client)
+	provider, ok := req.ProviderData.(*providerClient)
 
 	if !ok {
 		resp.Diagnostics.AddError(
 			"Unexpected Data Source Configure Type",
-			fmt.Sprintf("Expected *api.Client, got: %T. Please report this issue to the provider developers.", req.ProviderData),
+			fmt.Sprintf("Expected *providerClient, got: %T. Please report this issue to the provider developers.", req.ProviderData),
 		)
 
 		return
 	}
 
-	d.client = client
+	d.provider = provider
 }
 
 func (d *zoneDataSource) Read(ctx context.Context, req datasource.ReadRequest, resp *datasource.ReadResponse) {
@@ -100,7 +99,7 @@ func (d *zoneDataSource) Read(ctx context.Context, req datasource.ReadRequest, r
 		return
 	}
 
-	zone, err := d.client.GetZoneByName(ctx, data.Name.ValueString())
+	zone, err := d.provider.client.GetZoneByName(ctx, data.Name.ValueString())
 	if err != nil {
 		resp.Diagnostics.AddError("API Error", fmt.Sprintf("Unable to get zone, got error: %s", err))
 
