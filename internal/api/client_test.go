@@ -11,6 +11,8 @@ import (
 )
 
 func TestClientCreateZoneSuccess(t *testing.T) {
+	t.Parallel()
+
 	var requestBodyReader io.Reader
 
 	responseBody := []byte(`{"zone":{"id":"12345","name":"mydomain.com","ttl":3600}}`)
@@ -28,6 +30,8 @@ func TestClientCreateZoneSuccess(t *testing.T) {
 }
 
 func TestClientCreateZoneInvalidDomain(t *testing.T) {
+	t.Parallel()
+
 	responseBody := []byte(`{"zone":{"id":"","name":"","ttl":0,"registrar":"","legacy_dns_host":"","legacy_ns":null,"ns":null,"created":"","verified":"","modified":"","project":"","owner":"","permission":"","zone_type":{"id":"","name":"","description":"","prices":null},"status":"","paused":false,"is_secondary_dns":false,"txt_verification":{"name":"","token":""},"records_count":0},"error":{"message":"422 : invalid TLD","code":422}}`)
 	config := RequestConfig{responseHTTPStatus: http.StatusUnprocessableEntity, responseBodyJSON: responseBody}
 
@@ -40,6 +44,8 @@ func TestClientCreateZoneInvalidDomain(t *testing.T) {
 }
 
 func TestClientCreateZoneInvalidTLD(t *testing.T) {
+	t.Parallel()
+
 	var irrelevantConfig RequestConfig
 	client := createTestClient(irrelevantConfig)
 	opts := CreateZoneOpts{Name: "thisisinvalid", TTL: 3600}
@@ -50,6 +56,8 @@ func TestClientCreateZoneInvalidTLD(t *testing.T) {
 }
 
 func TestClientUpdateZoneSuccess(t *testing.T) {
+	t.Parallel()
+
 	zoneWithUpdates := Zone{ID: "12345678", Name: "zone1.online", TTL: 3600, NS: []string{"ns1.zone1.online", "ns2.zone1.online"}}
 	zoneWithUpdatesJSON := `{"id":"12345678","name":"zone1.online","ns":["ns1.zone1.online","ns2.zone1.online"],"ttl":3600}`
 
@@ -69,6 +77,8 @@ func TestClientUpdateZoneSuccess(t *testing.T) {
 }
 
 func TestClientGetZone(t *testing.T) {
+	t.Parallel()
+
 	responseBody := []byte(`{"zone":{"id":"12345678","name":"zone1.online","ttl":3600}}`)
 	config := RequestConfig{responseHTTPStatus: http.StatusOK, responseBodyJSON: responseBody}
 	client := createTestClient(config)
@@ -80,6 +90,8 @@ func TestClientGetZone(t *testing.T) {
 }
 
 func TestClientGetZoneReturnNilIfNotFound(t *testing.T) {
+	t.Parallel()
+
 	config := RequestConfig{responseHTTPStatus: http.StatusNotFound}
 	client := createTestClient(config)
 
@@ -90,6 +102,8 @@ func TestClientGetZoneReturnNilIfNotFound(t *testing.T) {
 }
 
 func TestClientGetZoneByName(t *testing.T) {
+	t.Parallel()
+
 	responseBody := []byte(`{"zones":[{"id":"12345678","name":"zone1.online","ttl":3600}]}`)
 	config := RequestConfig{responseHTTPStatus: http.StatusOK, responseBodyJSON: responseBody}
 	client := createTestClient(config)
@@ -101,6 +115,8 @@ func TestClientGetZoneByName(t *testing.T) {
 }
 
 func TestClientGetZoneByNameReturnNilIfnotFound(t *testing.T) {
+	t.Parallel()
+
 	config := RequestConfig{responseHTTPStatus: http.StatusNotFound}
 	client := createTestClient(config)
 
@@ -111,6 +127,8 @@ func TestClientGetZoneByNameReturnNilIfnotFound(t *testing.T) {
 }
 
 func TestClientDeleteZone(t *testing.T) {
+	t.Parallel()
+
 	config := RequestConfig{responseHTTPStatus: http.StatusOK}
 	client := createTestClient(config)
 
@@ -120,6 +138,8 @@ func TestClientDeleteZone(t *testing.T) {
 }
 
 func TestClientGetRecord(t *testing.T) {
+	t.Parallel()
+
 	aTTL := int64(3600)
 	responseBody := []byte(`{"record":{"zone_id":"wwwlsksjjenm","id":"12345678","name":"zone1.online","ttl":3600,"type":"A","value":"192.168.1.1"}}`)
 	config := RequestConfig{responseHTTPStatus: http.StatusOK, responseBodyJSON: responseBody}
@@ -132,6 +152,8 @@ func TestClientGetRecord(t *testing.T) {
 }
 
 func TestClientGetRecordWithUndefinedTTL(t *testing.T) {
+	t.Parallel()
+
 	responseBody := []byte(`{"record":{"zone_id":"wwwlsksjjenm","id":"12345678","name":"zone1.online","type":"A","value":"192.168.1.1"}}`)
 	config := RequestConfig{responseHTTPStatus: http.StatusOK, responseBodyJSON: responseBody}
 	client := createTestClient(config)
@@ -143,6 +165,8 @@ func TestClientGetRecordWithUndefinedTTL(t *testing.T) {
 }
 
 func TestClientGetRecordReturnNilIfNotFound(t *testing.T) {
+	t.Parallel()
+
 	config := RequestConfig{responseHTTPStatus: http.StatusNotFound}
 	client := createTestClient(config)
 
@@ -153,6 +177,8 @@ func TestClientGetRecordReturnNilIfNotFound(t *testing.T) {
 }
 
 func TestClientCreateRecordSuccess(t *testing.T) {
+	t.Parallel()
+
 	var requestBodyReader io.Reader
 
 	responseBody := []byte(`{"record":{"zone_id":"wwwlsksjjenm","id":"12345678","name":"zone1.online","ttl":3600,"type":"A","value":"192.168.1.1"}}`)
@@ -171,6 +197,8 @@ func TestClientCreateRecordSuccess(t *testing.T) {
 }
 
 func TestClientRecordZone(t *testing.T) {
+	t.Parallel()
+
 	config := RequestConfig{responseHTTPStatus: http.StatusOK}
 	client := createTestClient(config)
 
@@ -180,6 +208,8 @@ func TestClientRecordZone(t *testing.T) {
 }
 
 func TestClientUpdateRecordSuccess(t *testing.T) {
+	t.Parallel()
+
 	aTTL := int64(3600)
 	recordWithUpdates := Record{ZoneID: "wwwlsksjjenm", ID: "12345678", Name: "zone2.online", TTL: &aTTL, Type: "A", Value: "192.168.1.1"}
 	recordWithUpdatesJSON := `{"zone_id":"wwwlsksjjenm","id":"12345678","type":"A","name":"zone2.online","value":"192.168.1.1","ttl":3600}`
@@ -200,6 +230,8 @@ func TestClientUpdateRecordSuccess(t *testing.T) {
 }
 
 func TestClientHandleUnauthorizedRequest(t *testing.T) {
+	t.Parallel()
+
 	responseBody := []byte(`{"message":"Invalid API key"}`)
 	config := RequestConfig{responseHTTPStatus: http.StatusUnauthorized, responseBodyJSON: responseBody}
 	client := createTestClient(config)
