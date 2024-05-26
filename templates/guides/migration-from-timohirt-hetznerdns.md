@@ -1,16 +1,16 @@
 ---
 subcategory: ""
 layout: "hetznerdns"
-page_title: "Migration Guide from timohirt/hetznerdns"
+page_title: "Migration from timohirt/hetznerdns"
 description: |-
-    A Guide to migrate your Terraform State from timohirt/hetznerdns to germanbrew/hetznerdns
+    A Guide on how to migrate your Terraform State from timohirt/hetznerdns to germanbrew/hetznerdns
 ---
 
-# Terraform Provider Hetzner DNS Migration Guide
+# How to migrate from timohirt/hetznerdns to germanbrew/hetznerdns
 
 If you previously used the `timohirt/hetznerdns` provider, you can easily replace the provider in your terraform state by following these steps:
 
-~> **NOTE:** It is recommended to backup your Terraform state before migrating: `terraform state pull > terraform-state-backup.json`
+~> **NOTE:** It is recommended to backup your Terraform state before migrating by running this command: `terraform state pull > terraform-state-backup.json`
 
 ## Migration Steps
 
