@@ -145,7 +145,7 @@ func (r *recordResource) Create(ctx context.Context, req resource.CreateRequest,
 		}
 	}
 
-	httpResp, err := r.provider.client.CreateRecord(ctx, api.CreateRecordOpts{
+	httpResp, err := r.provider.apiClient.CreateRecord(ctx, api.CreateRecordOpts{
 		ZoneID: plan.ZoneID.ValueString(),
 		Name:   plan.Name.ValueString(),
 		Type:   plan.Type.ValueString(),
@@ -176,7 +176,7 @@ func (r *recordResource) Read(ctx context.Context, req resource.ReadRequest, res
 		return
 	}
 
-	zone, err := r.provider.client.GetRecord(ctx, state.ID.ValueString())
+	zone, err := r.provider.apiClient.GetRecord(ctx, state.ID.ValueString())
 	if err != nil {
 		resp.Diagnostics.AddError("Client Error", fmt.Sprintf("Unable to read zene, got error: %s", err))
 
@@ -222,7 +222,7 @@ func (r *recordResource) Update(ctx context.Context, req resource.UpdateRequest,
 	}
 
 	if !plan.Name.Equal(state.Name) || !plan.TTL.Equal(state.TTL) || !plan.Type.Equal(state.Type) || !plan.Value.Equal(state.Value) {
-		_, err := r.provider.client.UpdateRecord(ctx, api.Record{
+		_, err := r.provider.apiClient.UpdateRecord(ctx, api.Record{
 			ID:     state.ID.ValueString(),
 			Name:   plan.Name.ValueString(),
 			Type:   plan.Type.ValueString(),
@@ -253,7 +253,7 @@ func (r *recordResource) Delete(ctx context.Context, req resource.DeleteRequest,
 		return
 	}
 
-	if err := r.provider.client.DeleteRecord(ctx, state.ID.ValueString()); err != nil {
+	if err := r.provider.apiClient.DeleteRecord(ctx, state.ID.ValueString()); err != nil {
 		resp.Diagnostics.AddError("API Error", fmt.Sprintf("error deleting zone: %s", err))
 
 		return

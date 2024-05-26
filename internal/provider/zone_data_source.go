@@ -99,7 +99,7 @@ func (d *zoneDataSource) Read(ctx context.Context, req datasource.ReadRequest, r
 		return
 	}
 
-	zone, err := d.provider.client.GetZoneByName(ctx, data.Name.ValueString())
+	zone, err := d.provider.apiClient.GetZoneByName(ctx, data.Name.ValueString())
 	if err != nil {
 		resp.Diagnostics.AddError("API Error", fmt.Sprintf("Unable to get zone, got error: %s", err))
 
