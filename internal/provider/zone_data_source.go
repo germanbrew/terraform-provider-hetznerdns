@@ -87,7 +87,7 @@ func (d *zoneDataSource) Read(ctx context.Context, req datasource.ReadRequest, r
 	// Read Terraform configuration data into the model
 	resp.Diagnostics.Append(req.Config.Get(ctx, &data)...)
 
-	if data.Name.String() == "" {
+	if data.Name.ValueString() == "" {
 		resp.Diagnostics.AddError("Attribute Error", "no 'name' set")
 	}
 
@@ -95,7 +95,7 @@ func (d *zoneDataSource) Read(ctx context.Context, req datasource.ReadRequest, r
 		return
 	}
 
-	zone, err := d.client.GetZoneByName(ctx, data.Name.String())
+	zone, err := d.client.GetZoneByName(ctx, data.Name.ValueString())
 	if err != nil {
 		resp.Diagnostics.AddError("API Error", fmt.Sprintf("Unable to get zone, got error: %s", err))
 
@@ -103,7 +103,7 @@ func (d *zoneDataSource) Read(ctx context.Context, req datasource.ReadRequest, r
 	}
 
 	if zone == nil {
-		resp.Diagnostics.AddError("API Error", fmt.Sprintf("DNS zone '%s' doesn't exist", data.Name.String()))
+		resp.Diagnostics.AddError("API Error", fmt.Sprintf("DNS zone '%s' doesn't exist", data.Name.ValueString()))
 
 		return
 	}

@@ -5,12 +5,10 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"io"
 	"net/http"
-	"strings"
+	"net/url"
 	"sync"
 
-	"github.com/hashicorp/go-retryablehttp"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
 )
 
@@ -27,53 +25,73 @@ type ErrorMessage struct {
 	Message string `json:"message"`
 }
 
-type createHTTPClient func() *http.Client
-
-func defaultCreateHTTPClient() *http.Client {
-	retryableClient := retryablehttp.NewClient()
-	retryableClient.CheckRetry = func(ctx context.Context, resp *http.Response, err error) (bool, error) {
-		ok, err := retryablehttp.DefaultRetryPolicy(ctx, resp, err)
-		if !ok && resp.StatusCode == http.StatusUnprocessableEntity {
-			return true, nil
-		}
-
-		return ok, err
-	}
-	retryableClient.RetryMax = 10
-
-	return retryableClient.StandardClient()
-}
-
 // Client for the Hetzner DNS API.
 type Client struct {
-	requestLock      sync.Mutex
-	apiToken         string
-	createHTTPClient createHTTPClient
+	requestLock sync.Mutex
+	apiToken    string
+	httpClient  *http.Client
+	endPoint    *url.URL
 }
 
-// NewClient creates a new API Client using a given api token.
-func NewClient(apiToken string) *Client {
-	return &Client{apiToken: apiToken, createHTTPClient: defaultCreateHTTPClient}
-}
-
-func (c *Client) doHTTPRequest(ctx context.Context, method string, url string, body io.Reader) (*http.Response, error) {
-	client := c.createHTTPClient()
-
-	tflog.Debug(ctx, fmt.Sprintf("HTTP request to API %s %s", method, url))
-
-	req, err := http.NewRequestWithContext(ctx, method, url, body)
+// New creates a new API Client using a given api token.
+func New(apiEndpoint string, apiToken string, maxRetires uint, httpClient *http.Client) (*Client, error) {
+	endPoint, err := url.Parse(apiEndpoint)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("error parsing API endpoint URL: %w", err)
 	}
 
-	req.Header.Add("Auth-API-Token", c.apiToken)
-	req.Header.Add("Accept", "application/json; charset=utf-8")
-
-	if body != nil {
-		req.Header.Set("Content-Type", "application/json; charset=utf-8")
+	if httpClient == nil {
+		httpClient = http.DefaultClient
 	}
 
-	resp, err := client.Do(req)
+	client := &Client{
+		apiToken:   apiToken,
+		endPoint:   endPoint,
+		httpClient: httpClient,
+	}
+
+	client.httpClient.Transport = &retryableTransport{
+		transport:  httpClient.Transport,
+		maxRetries: int(maxRetires),
+	}
+
+	return client, nil
+}
+
+func (c *Client) request(ctx context.Context, method string, path string, bodyJSON any) (*http.Response, error) {
+	uri := c.endPoint.JoinPath(path).String()
+
+	tflog.Debug(ctx, fmt.Sprintf("HTTP request to API %s %s", method, uri))
+
+	var (
+		err     error
+		reqBody []byte
+	)
+
+	if bodyJSON != nil {
+		reqBody, err = json.Marshal(bodyJSON)
+		if err != nil {
+			return nil, fmt.Errorf("error serializing JSON body %s", err)
+		}
+	}
+
+	req, err := http.NewRequestWithContext(ctx, method, uri, bytes.NewReader(reqBody))
+	if err != nil {
+		return nil, fmt.Errorf("error building request: %w", err)
+	}
+
+	// This lock ensures that only one request is sent to Hetzner API at a time.
+	// See issue #5 for context.
+	if method == http.MethodPost || method == http.MethodPut || method == http.MethodDelete {
+		c.requestLock.Lock()
+		defer c.requestLock.Unlock()
+	}
+
+	req.Header.Set("Auth-API-Token", c.apiToken)
+	req.Header.Set("Accept", "application/json; charset=utf-8")
+	req.Header.Set("Content-Type", "application/json; charset=utf-8")
+
+	resp, err := c.httpClient.Do(req)
 	if err != nil {
 		return nil, err
 	}
@@ -95,447 +113,4 @@ func (c *Client) doHTTPRequest(ctx context.Context, method string, url string, b
 	}
 
 	return resp, nil
-}
-
-func parseUnprocessableEntityError(resp *http.Response) (*UnprocessableEntityError, error) {
-	body, err := io.ReadAll(resp.Body)
-	defer resp.Body.Close()
-
-	if err != nil {
-		return nil, fmt.Errorf("error reading HTTP response body: %e", err)
-	}
-
-	var unprocessableEntityError UnprocessableEntityError
-
-	err = parseJSON(body, &unprocessableEntityError)
-	if err != nil {
-		return nil, err
-	}
-
-	return &unprocessableEntityError, nil
-}
-
-func parseUnauthorizedError(resp *http.Response) (*UnauthorizedError, error) {
-	var unauthorizedError UnauthorizedError
-
-	err := readAndParseJSONBody(resp, &unauthorizedError)
-	if err != nil {
-		return nil, err
-	}
-
-	return &unauthorizedError, nil
-}
-
-func (c *Client) doGetRequest(ctx context.Context, url string) (*http.Response, error) {
-	return c.doHTTPRequest(ctx, http.MethodGet, url, nil)
-}
-
-func (c *Client) doDeleteRequest(ctx context.Context, url string) (*http.Response, error) {
-	return c.doHTTPRequest(ctx, http.MethodDelete, url, nil)
-}
-
-func (c *Client) doPostRequest(ctx context.Context, url string, bodyJSON interface{}) (*http.Response, error) {
-	reqJSON, err := json.Marshal(bodyJSON)
-	if err != nil {
-		return nil, fmt.Errorf("error serializing JSON body %s", err)
-	}
-
-	body := bytes.NewReader(reqJSON)
-
-	// This lock ensures that only one Post request is sent to Hetzner API
-	// at a time. See issue #5 for context.
-	c.requestLock.Lock()
-	response, err := c.doHTTPRequest(ctx, http.MethodPost, url, body)
-	c.requestLock.Unlock()
-
-	return response, err
-}
-
-func (c *Client) doPutRequest(ctx context.Context, url string, bodyJSON interface{}) (*http.Response, error) {
-	reqJSON, err := json.Marshal(bodyJSON)
-	if err != nil {
-		return nil, fmt.Errorf("error serializing JSON body %s", err)
-	}
-
-	body := bytes.NewReader(reqJSON)
-
-	// This lock ensures that only one Post request is sent to Hetzner API
-	// at a time. See issue #5 for context.
-	c.requestLock.Lock()
-	response, err := c.doHTTPRequest(ctx, http.MethodPut, url, body)
-	c.requestLock.Unlock()
-
-	return response, err
-}
-
-func readBody(resp *http.Response) ([]byte, error) {
-	body, err := io.ReadAll(resp.Body)
-	defer resp.Body.Close()
-
-	return body, err
-}
-
-func readAndParseJSONBody(resp *http.Response, respType interface{}) error {
-	body, err := readBody(resp)
-	if err != nil {
-		return fmt.Errorf("error reading HTTP response body %w", err)
-	}
-
-	return parseJSON(body, respType)
-}
-
-func parseJSON(data []byte, respType interface{}) error {
-	return json.Unmarshal(data, &respType)
-}
-
-// GetZones reads the current state of a DNS zone.
-func (c *Client) GetZones() ([]Zone, error) {
-	resp, err := c.doGetRequest(context.Background(), "https://dns.hetzner.com/api/v1/zones")
-	if err != nil {
-		return nil, fmt.Errorf("error getting zones: %w", err)
-	}
-
-	// Undocumented API behavior: Hetzner DNS API returns 404 when there are no zones
-	if resp.StatusCode == http.StatusNotFound {
-		return nil, nil
-	}
-
-	if resp.StatusCode != http.StatusOK {
-		return nil, fmt.Errorf("error getting zones. HTTP status %d unhandled", resp.StatusCode)
-	}
-
-	var response GetZones
-
-	err = readAndParseJSONBody(resp, &response)
-	if err != nil {
-		return nil, err
-	}
-
-	return response.Zones, nil
-}
-
-// GetZone reads the current state of a DNS zone.
-func (c *Client) GetZone(ctx context.Context, id string) (*Zone, error) {
-	resp, err := c.doGetRequest(ctx, "https://dns.hetzner.com/api/v1/zones/"+id)
-	if err != nil {
-		return nil, fmt.Errorf("error getting zone %s: %s", id, err)
-	}
-
-	if resp.StatusCode == http.StatusOK {
-		var response GetZoneResponse
-
-		err = readAndParseJSONBody(resp, &response)
-		if err != nil {
-			return nil, err
-		}
-
-		return &response.Zone, nil
-	} else if resp.StatusCode == http.StatusNotFound {
-		return nil, nil
-	}
-
-	return nil, fmt.Errorf("error getting Zone. HTTP status %d unhandled", resp.StatusCode)
-}
-
-// UpdateZone takes the passed state and updates the respective Zone.
-func (c *Client) UpdateZone(ctx context.Context, zone Zone) (*Zone, error) {
-	resp, err := c.doPutRequest(ctx, "https://dns.hetzner.com/api/v1/zones/"+zone.ID, zone)
-	if err != nil {
-		return nil, fmt.Errorf("error updating zone %s: %s", zone.ID, err)
-	}
-
-	if resp.StatusCode != http.StatusOK {
-		return nil, fmt.Errorf("error updating Zone. HTTP status %d unhandled", resp.StatusCode)
-	}
-
-	var response ZoneResponse
-
-	err = readAndParseJSONBody(resp, &response)
-	if err != nil {
-		return nil, err
-	}
-
-	return &response.Zone, nil
-}
-
-// DeleteZone deletes a given DNS zone.
-func (c *Client) DeleteZone(ctx context.Context, id string) error {
-	resp, err := c.doDeleteRequest(ctx, "https://dns.hetzner.com/api/v1/zones/"+id)
-	if err != nil {
-		return fmt.Errorf("error deleting zone %s: %s", id, err)
-	}
-
-	if resp.StatusCode != http.StatusOK {
-		return fmt.Errorf("error deleting Zone. HTTP status %d unhandled", resp.StatusCode)
-	}
-
-	return nil
-}
-
-// GetZoneByName reads the current state of a DNS zone with a given name.
-func (c *Client) GetZoneByName(ctx context.Context, name string) (*Zone, error) {
-	resp, err := c.doGetRequest(ctx, "https://dns.hetzner.com/api/v1/zones?name="+name)
-	if err != nil {
-		return nil, fmt.Errorf("error getting zone %s: %s", name, err)
-	}
-
-	if resp.StatusCode == http.StatusNotFound {
-		return nil, nil
-	}
-
-	if resp.StatusCode != http.StatusOK {
-		return nil, fmt.Errorf("error getting GetZoneByName. HTTP status %d unhandled", resp.StatusCode)
-	}
-
-	var response *GetZonesByNameResponse
-
-	err = readAndParseJSONBody(resp, &response)
-	if err != nil {
-		return nil, err
-	}
-
-	if len(response.Zones) != 1 {
-		return nil, fmt.Errorf("error getting zone '%s'. No matching zone or multiple matching zones found", name)
-	}
-
-	return &response.Zones[0], nil
-}
-
-// CreateZoneOpts covers all parameters used to create a new DNS zone.
-type CreateZoneOpts struct {
-	Name string `json:"name"`
-	TTL  int64  `json:"ttl"`
-}
-
-// CreateZone creates a new DNS zone.
-func (c *Client) CreateZone(ctx context.Context, opts CreateZoneOpts) (*Zone, error) {
-	if !strings.Contains(opts.Name, ".") {
-		return nil, fmt.Errorf("error creating zone. The name '%s' is not a valid domain. It must correspond to the schema <domain>.<tld>", opts.Name)
-	}
-
-	reqBody := CreateZoneRequest(opts)
-
-	resp, err := c.doPostRequest(ctx, "https://dns.hetzner.com/api/v1/zones", reqBody)
-	if err != nil {
-		return nil, err
-	}
-
-	if resp.StatusCode != http.StatusOK {
-		return nil, fmt.Errorf("http status %d unhandled", resp.StatusCode)
-	}
-
-	var response CreateZoneResponse
-
-	err = readAndParseJSONBody(resp, &response)
-	if err != nil {
-		return nil, err
-	}
-
-	return &response.Zone, nil
-}
-
-// GetRecordByName reads the current state of a DNS Record with a given name and zone id.
-func (c *Client) GetRecordByName(zoneID string, name string) (*Record, error) {
-	resp, err := c.doGetRequest(context.Background(), "https://dns.hetzner.com/api/v1/records?zone_id="+zoneID)
-	if err != nil {
-		return nil, err
-	}
-
-	if resp.StatusCode != http.StatusOK {
-		return nil, fmt.Errorf("http status %d unhandled", resp.StatusCode)
-	}
-
-	var response *RecordsResponse
-
-	err = readAndParseJSONBody(resp, &response)
-	if err != nil {
-		return nil, err
-	}
-
-	if len(response.Records) == 0 {
-		return nil, fmt.Errorf("it seems there are no records in zone %s at all", zoneID)
-	}
-
-	for _, record := range response.Records {
-		if record.Name == name {
-			return &record, nil
-		}
-	}
-
-	return nil, fmt.Errorf("there are records in zone %s, but %s isn't included", zoneID, name)
-}
-
-// GetRecord reads the current state of a DNS Record.
-func (c *Client) GetRecord(ctx context.Context, recordID string) (*Record, error) {
-	resp, err := c.doGetRequest(ctx, "https://dns.hetzner.com/api/v1/records/"+recordID)
-	if err != nil {
-		return nil, fmt.Errorf("error getting record %s: %s", recordID, err)
-	}
-
-	if resp.StatusCode == http.StatusNotFound {
-		return nil, nil
-	}
-
-	if resp.StatusCode != http.StatusOK {
-		return nil, fmt.Errorf("error getting Record. HTTP status %d unhandled", resp.StatusCode)
-	}
-
-	var response *RecordResponse
-
-	err = readAndParseJSONBody(resp, &response)
-	if err != nil {
-		return nil, fmt.Errorf("error Reading json response of get record %s request: %s", recordID, err)
-	}
-
-	return &response.Record, nil
-}
-
-// CreateRecordOpts covers all parameters used to create a new DNS record.
-type CreateRecordOpts struct {
-	ZoneID string `json:"zone_id"`
-	Type   string `json:"type"`
-	Name   string `json:"name"`
-	Value  string `json:"value"`
-	TTL    *int64 `json:"ttl,omitempty"`
-}
-
-// CreateRecord create a new DNS records.
-func (c *Client) CreateRecord(ctx context.Context, opts CreateRecordOpts) (*Record, error) {
-	reqBody := CreateRecordRequest(opts)
-
-	resp, err := c.doPostRequest(ctx, "https://dns.hetzner.com/api/v1/records", reqBody)
-	if err != nil {
-		return nil, fmt.Errorf("error creating record %s: %s", opts.Name, err)
-	}
-
-	if resp.StatusCode == http.StatusOK {
-		var response RecordResponse
-
-		err = readAndParseJSONBody(resp, &response)
-		if err != nil {
-			return nil, err
-		}
-
-		return &response.Record, nil
-	}
-
-	return nil, fmt.Errorf("error creating Record. HTTP status %d unhandled", resp.StatusCode)
-}
-
-// DeleteRecord deletes a given record.
-func (c *Client) DeleteRecord(ctx context.Context, id string) error {
-	resp, err := c.doDeleteRequest(ctx, "https://dns.hetzner.com/api/v1/records/"+id)
-	if err != nil {
-		return fmt.Errorf("error deleting zone %s: %s", id, err)
-	}
-
-	if resp.StatusCode != http.StatusOK {
-		return fmt.Errorf("error deleting Record. HTTP status %d unhandled", resp.StatusCode)
-	}
-
-	return nil
-}
-
-// UpdateRecord create a new DNS records.
-func (c *Client) UpdateRecord(ctx context.Context, record Record) (*Record, error) {
-	resp, err := c.doPutRequest(ctx, "https://dns.hetzner.com/api/v1/records/"+record.ID, record)
-	if err != nil {
-		return nil, fmt.Errorf("error updating record %s: %s", record.ID, err)
-	}
-
-	if resp.StatusCode != http.StatusOK {
-		return nil, fmt.Errorf("error creating Record. HTTP status %d unhandled", resp.StatusCode)
-	}
-
-	var response RecordResponse
-
-	err = readAndParseJSONBody(resp, &response)
-	if err != nil {
-		return nil, err
-	}
-
-	return &response.Record, nil
-}
-
-func (c *Client) GetPrimaryServer(ctx context.Context, id string) (*PrimaryServer, error) {
-	resp, err := c.doGetRequest(ctx, "https://dns.hetzner.com/api/v1/primary_servers/"+id)
-	if err != nil {
-		return nil, fmt.Errorf("error getting primary server %s: %s", id, err)
-	}
-
-	if resp.StatusCode == http.StatusNotFound {
-		return nil, nil
-	}
-
-	if resp.StatusCode != http.StatusOK {
-		return nil, fmt.Errorf("error getting primary server. HTTP status %d unhandled", resp.StatusCode)
-	}
-
-	var response *PrimaryServerResponse
-
-	err = readAndParseJSONBody(resp, &response)
-	if err != nil {
-		return nil, fmt.Errorf("error Reading json response of get primary server %s request: %s", id, err)
-	}
-
-	return &response.PrimaryServer, nil
-}
-
-func (c *Client) CreatePrimaryServer(ctx context.Context, server CreatePrimaryServerRequest) (*PrimaryServer, error) {
-	reqBody := CreatePrimaryServerRequest{
-		ZoneID:  server.ZoneID,
-		Address: server.Address,
-		Port:    server.Port,
-	}
-
-	resp, err := c.doPostRequest(ctx, "https://dns.hetzner.com/api/v1/primary_servers", reqBody)
-	if err != nil {
-		return nil, fmt.Errorf("error creating primary server %s: %w", server.Address, err)
-	}
-
-	if resp.StatusCode != http.StatusOK {
-		return nil, fmt.Errorf("error creating primary server. HTTP status %d unhandled", resp.StatusCode)
-	}
-
-	var response PrimaryServerResponse
-
-	err = readAndParseJSONBody(resp, &response)
-	if err != nil {
-		return nil, err
-	}
-
-	return &response.PrimaryServer, nil
-}
-
-func (c *Client) UpdatePrimaryServer(ctx context.Context, server PrimaryServer) (*PrimaryServer, error) {
-	resp, err := c.doPutRequest(ctx, "https://dns.hetzner.com/api/v1/primary_servers/"+server.ID, server)
-	if err != nil {
-		return nil, fmt.Errorf("error updating primary server %s: %w", server.ID, err)
-	}
-
-	if resp.StatusCode != http.StatusOK {
-		return nil, fmt.Errorf("error updating primary server. HTTP status %d unhandled", resp.StatusCode)
-	}
-
-	var response PrimaryServerResponse
-
-	err = readAndParseJSONBody(resp, &response)
-	if err != nil {
-		return nil, err
-	}
-
-	return &response.PrimaryServer, nil
-}
-
-func (c *Client) DeletePrimaryServer(ctx context.Context, id string) error {
-	resp, err := c.doDeleteRequest(ctx, "https://dns.hetzner.com/api/v1/primary_servers/"+id)
-	if err != nil {
-		return fmt.Errorf("error deleting primary server %s: %s", id, err)
-	}
-
-	if resp.StatusCode != http.StatusOK {
-		return fmt.Errorf("error deleting primary server. HTTP status %d unhandled", resp.StatusCode)
-	}
-
-	return nil
 }

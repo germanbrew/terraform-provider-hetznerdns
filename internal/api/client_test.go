@@ -217,13 +217,13 @@ type RequestConfig struct {
 	requestBodyReader  *io.Reader
 }
 
-func createTestClient(config RequestConfig) Client {
-	fakeHTTPClient := TestClient{config: config}
-	createFakeHTTPClient := func() *http.Client {
-		return &http.Client{Transport: fakeHTTPClient}
+func createTestClient(config RequestConfig) *Client {
+	client, err := New("http://localhost/", "irrelevant", 1, &http.Client{Transport: TestClient{config: config}})
+	if err != nil {
+		panic(err)
 	}
 
-	return Client{apiToken: "irrelevant", createHTTPClient: createFakeHTTPClient}
+	return client
 }
 
 type TestClient struct {

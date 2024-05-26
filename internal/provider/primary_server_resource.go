@@ -119,8 +119,8 @@ func (r *primaryServerResource) Create(ctx context.Context, req resource.CreateR
 	}
 
 	httpResp, err := r.client.CreatePrimaryServer(ctx, api.CreatePrimaryServerRequest{
-		ZoneID:  plan.ZoneID.String(),
-		Address: plan.Address.String(),
+		ZoneID:  plan.ZoneID.ValueString(),
+		Address: plan.Address.ValueString(),
 		Port:    uint16(plan.Port.ValueInt64()),
 	})
 	if err != nil {
@@ -147,7 +147,7 @@ func (r *primaryServerResource) Read(ctx context.Context, req resource.ReadReque
 		return
 	}
 
-	record, err := r.client.GetPrimaryServer(ctx, state.ID.String())
+	record, err := r.client.GetPrimaryServer(ctx, state.ID.ValueString())
 	if err != nil {
 		resp.Diagnostics.AddError("Client Error", fmt.Sprintf("Unable to read zene, got error: %s", err))
 
@@ -183,7 +183,8 @@ func (r *primaryServerResource) Update(ctx context.Context, req resource.UpdateR
 
 	if !plan.Address.Equal(state.Address) || !plan.Port.Equal(state.Port) {
 		_, err := r.client.UpdatePrimaryServer(ctx, api.PrimaryServer{
-			Address: plan.Address.String(),
+			ID:      state.ID.String(),
+			Address: plan.Address.ValueString(),
 			Port:    uint16(plan.Port.ValueInt64()),
 		})
 		if err != nil {
@@ -209,7 +210,7 @@ func (r *primaryServerResource) Delete(ctx context.Context, req resource.DeleteR
 		return
 	}
 
-	if err := r.client.DeletePrimaryServer(ctx, state.ID.String()); err != nil {
+	if err := r.client.DeletePrimaryServer(ctx, state.ID.ValueString()); err != nil {
 		resp.Diagnostics.AddError("API Error", fmt.Sprintf("Error deleting primary server %s: %s", state.ID, err))
 
 		return

@@ -46,9 +46,10 @@ func TestAccRecordResources(t *testing.T) {
 			},
 			// Update and Read testing
 			{
-				Config: testAccExampleResourceConfig(aZoneName, aZoneTTL*2),
+				Config: testAccRecordResourceConfigCreate(aZoneName, aZoneTTL, aName, aType, aValue, aTTL*2),
 				Check: resource.ComposeAggregateTestCheckFunc(
-					resource.TestCheckResourceAttr("hetznerdns_zone.test", "ttl", strconv.Itoa(aZoneTTL*2)),
+					resource.TestCheckResourceAttr(
+						"hetznerdns_record.record1", "ttl", strconv.Itoa(aTTL*2)),
 				),
 			},
 			// Delete testing automatically occurs in TestCase
@@ -59,16 +60,16 @@ func TestAccRecordResources(t *testing.T) {
 func testAccRecordResourceConfigCreate(aZoneName string, aZoneTTL int, aName string, aType string, aValue string, aTTL int) string {
 	return fmt.Sprintf(`
 resource "hetznerdns_zone" "zone1" {
-	name = "%s"
-	ttl = %d
+    name = %[1]q
+    ttl  = %[2]d
 }
 
 resource "hetznerdns_record" "record1" {
-	zone_id = "${hetznerdns_zone.zone1.id}"
-	type = "%s"
-	name = "%s"
-	value = "%s"
-	ttl = %d
+	zone_id = hetznerdns_zone.zone1.id
+	type    = "%s"
+	name    = "%s"
+	value   = "%s"
+	ttl     = %d
 }
 `, aZoneName, aZoneTTL, aType, aName, aValue, aTTL)
 }
@@ -108,15 +109,15 @@ func TestAccRecordWithDefaultTTLResources(t *testing.T) {
 func testAccRecordResourceConfigCreateWithDefaultTTL(aZoneName string, aZoneTTL int, aName string, aType string, aValue string) string {
 	return fmt.Sprintf(`
 resource "hetznerdns_zone" "zone1" {
-	name = "%s"
-	ttl = %d
+    name = %[1]q
+    ttl  = %[2]d
 }
 
 resource "hetznerdns_record" "record1" {
-	zone_id = "${hetznerdns_zone.zone1.id}"
-	type = "%s"
-	name = "%s"
-	value = "%s"
+	zone_id = hetznerdns_zone.zone1.id
+	type    = "%s"
+	name    = "%s"
+	value   = "%s"
 }
 `, aZoneName, aZoneTTL, aType, aName, aValue)
 }
@@ -153,24 +154,24 @@ func TestAccTwoRecordResources(t *testing.T) {
 func testAccRecordResourceConfigCreateTwo(aZoneName string, aName string, anotherName string, aType string, aValue string, anotherValue string, aTTL int) string {
 	return fmt.Sprintf(`
 resource "hetznerdns_zone" "zone1" {
-	name = "%s"
-	ttl = %d
+    name = %[1]q
+    ttl  = %[2]d
 }
 
 resource "hetznerdns_record" "record1" {
-	zone_id = "${hetznerdns_zone.zone1.id}"
-	type = "%s"
-	name = "%s"
-	value = "%s"
-	ttl = %d
+	zone_id = hetznerdns_zone.zone1.id
+	type    = "%s"
+	name    = "%s"
+	value   = "%s"
+	ttl     = %d
 }
 
 resource "hetznerdns_record" "record2" {
-	zone_id = "${hetznerdns_zone.zone1.id}"
-	type = "%s"
-	name = "%s"
-	value = "%s"
-	ttl = %d
+	zone_id = hetznerdns_zone.zone1.id
+	type    = "%s"
+	name    = "%s"
+	value   = "%s"
+	ttl     = %d
 }
 `, aZoneName, aTTL, aType, aName, aValue, aTTL, aType, anotherName, anotherValue, aTTL)
 }
@@ -211,12 +212,12 @@ func TestAccRecordResourcesDKIM(t *testing.T) {
 func testAccRecordResourceConfigCreateDKIM(aZoneName string, aTTL int, aName string, aValue string) string {
 	return fmt.Sprintf(`
 resource "hetznerdns_zone" "zone1" {
-	name = "%s"
-	ttl = %d
+    name = %[1]q
+    ttl  = %[2]d
 }
 
 resource "hetznerdns_record" "record1" {
-	zone_id = "${hetznerdns_zone.zone1.id}"
+	zone_id = hetznerdns_zone.zone1.id
 	type 	= "TXT"
 	name 	= "%s"
 	value 	= "%s"

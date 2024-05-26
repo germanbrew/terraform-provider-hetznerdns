@@ -134,15 +134,15 @@ func (r *recordResource) Create(ctx context.Context, req resource.CreateRequest,
 		return
 	}
 
-	value := plan.Value.String()
-	if plan.Type.String() == "TXT" {
-		value = prepareTXTRecordValue(ctx, plan.Value.String())
+	value := plan.Value.ValueString()
+	if plan.Type.ValueString() == "TXT" {
+		value = prepareTXTRecordValue(ctx, value)
 	}
 
 	httpResp, err := r.client.CreateRecord(ctx, api.CreateRecordOpts{
-		ZoneID: plan.ZoneID.String(),
-		Name:   plan.Name.String(),
-		Type:   plan.Type.String(),
+		ZoneID: plan.ZoneID.ValueString(),
+		Name:   plan.Name.ValueString(),
+		Type:   plan.Type.ValueString(),
 		Value:  value,
 		TTL:    plan.TTL.ValueInt64Pointer(),
 	})
@@ -170,7 +170,7 @@ func (r *recordResource) Read(ctx context.Context, req resource.ReadRequest, res
 		return
 	}
 
-	zone, err := r.client.GetRecord(ctx, state.ID.String())
+	zone, err := r.client.GetRecord(ctx, state.ID.ValueString())
 	if err != nil {
 		resp.Diagnostics.AddError("Client Error", fmt.Sprintf("Unable to read zene, got error: %s", err))
 
@@ -210,17 +210,18 @@ func (r *recordResource) Update(ctx context.Context, req resource.UpdateRequest,
 		return
 	}
 
-	if plan.Type.String() == "TXT" && isEscapedString(plan.Value.String()) {
-		plan.Value = types.StringValue(unescapeString(plan.Value.String()))
+	if plan.Type.ValueString() == "TXT" && isEscapedString(plan.Value.ValueString()) {
+		plan.Value = types.StringValue(unescapeString(plan.Value.ValueString()))
 	}
 
 	if !plan.Name.Equal(state.Name) || !plan.TTL.Equal(state.TTL) || !plan.Type.Equal(state.Type) || !plan.Value.Equal(state.Value) {
 		_, err := r.client.UpdateRecord(ctx, api.Record{
-			Name:   plan.Name.String(),
-			Type:   plan.Type.String(),
-			Value:  plan.Value.String(),
+			ID:     state.ID.String(),
+			Name:   plan.Name.ValueString(),
+			Type:   plan.Type.ValueString(),
+			Value:  plan.Value.ValueString(),
 			TTL:    plan.TTL.ValueInt64Pointer(),
-			ZoneID: plan.ZoneID.String(),
+			ZoneID: plan.ZoneID.ValueString(),
 		})
 		if err != nil {
 			resp.Diagnostics.AddError("API Error", fmt.Sprintf("error updating zone: %s", err))
@@ -245,7 +246,7 @@ func (r *recordResource) Delete(ctx context.Context, req resource.DeleteRequest,
 		return
 	}
 
-	if err := r.client.DeleteRecord(ctx, state.ID.String()); err != nil {
+	if err := r.client.DeleteRecord(ctx, state.ID.ValueString()); err != nil {
 		resp.Diagnostics.AddError("API Error", fmt.Sprintf("error deleting zone: %s", err))
 
 		return

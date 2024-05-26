@@ -33,12 +33,12 @@ func TestAccZoneDataSource(t *testing.T) {
 func testAccZoneDataSourceConfig(name string, ttl int) string {
 	return fmt.Sprintf(`
 resource "hetznerdns_zone" "zone1" {
-	name = "%s"
-	ttl = "%d"
+    name = %[1]q
+    ttl  = %[2]d
 }
 
 data "hetznerdns_zone" "zone1" {
-	name = "${hetznerdns_zone.zone1.name}"
+	name = hetznerdns_zone.zone1.name
 }
 `, name, ttl)
 }

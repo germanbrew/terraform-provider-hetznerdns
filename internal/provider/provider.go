@@ -3,6 +3,7 @@ package provider
 import (
 	"context"
 	"fmt"
+	"net/http"
 	"os"
 
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
@@ -75,9 +76,15 @@ func (p *hetznerDNSProvider) Configure(ctx context.Context, req provider.Configu
 		return
 	}
 
-	client := api.NewClient(apiToken)
+	client, err := api.New("https://dns.hetzner.com", apiToken, 10, http.DefaultClient)
+	if err != nil {
+		resp.Diagnostics.AddError(
+			"API error while configuring provider",
+			fmt.Sprintf("Error while creating API client: %s", err),
+		)
+	}
 
-	_, err := client.GetZones()
+	_, err = client.GetZones(ctx)
 	if err != nil {
 		resp.Diagnostics.AddError(
 			"API error while configuring provider",
@@ -116,7 +123,11 @@ func (p *hetznerDNSProvider) DataSources(_ context.Context) []func() datasource.
 }
 
 func (p *hetznerDNSProvider) Functions(_ context.Context) []func() function.Function {
-	return []func() function.Function{}
+	return []func() function.Function{
+		func() function.Function {
+			return NewIdnaFunction()
+		},
+	}
 }
 
 func New(version string) func() provider.Provider {

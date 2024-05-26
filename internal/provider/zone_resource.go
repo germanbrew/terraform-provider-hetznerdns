@@ -115,7 +115,7 @@ func (r *zoneResource) Create(ctx context.Context, req resource.CreateRequest, r
 	}
 
 	httpResp, err := r.client.CreateZone(ctx, api.CreateZoneOpts{
-		Name: plan.Name.String(),
+		Name: plan.Name.ValueString(),
 		TTL:  plan.TTL.ValueInt64(),
 	})
 	if err != nil {
@@ -142,7 +142,7 @@ func (r *zoneResource) Read(ctx context.Context, req resource.ReadRequest, resp 
 		return
 	}
 
-	zone, err := r.client.GetZone(ctx, state.ID.String())
+	zone, err := r.client.GetZone(ctx, state.ID.ValueString())
 	if err != nil {
 		resp.Diagnostics.AddError("Client Error", fmt.Sprintf("Unable to read zene, got error: %s", err))
 
@@ -177,7 +177,8 @@ func (r *zoneResource) Update(ctx context.Context, req resource.UpdateRequest, r
 
 	if !plan.TTL.Equal(state.TTL) {
 		_, err := r.client.UpdateZone(ctx, api.Zone{
-			Name: plan.Name.String(),
+			ID:   state.ID.ValueString(),
+			Name: plan.Name.ValueString(),
 			TTL:  plan.TTL.ValueInt64(),
 		})
 		if err != nil {
@@ -203,7 +204,7 @@ func (r *zoneResource) Delete(ctx context.Context, req resource.DeleteRequest, r
 		return
 	}
 
-	if err := r.client.DeleteZone(ctx, state.ID.String()); err != nil {
+	if err := r.client.DeleteZone(ctx, state.ID.ValueString()); err != nil {
 		resp.Diagnostics.AddError("API Error", fmt.Sprintf("error deleting zone: %s", err))
 
 		return

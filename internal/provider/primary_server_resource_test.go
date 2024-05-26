@@ -11,7 +11,7 @@ import (
 
 func TestAccOnePrimaryServersResources(t *testing.T) {
 	aZoneName := acctest.RandString(10) + ".online"
-	aZoneTTL := 60
+	aZoneTTL := 3600
 
 	psAddress := "1.1.0.0"
 	psPort := 53
@@ -40,7 +40,7 @@ func TestAccOnePrimaryServersResources(t *testing.T) {
 			},
 			// Update and Read testing
 			{
-				Config: testAccExampleResourceConfig(aZoneName, psPort*2),
+				Config: testAccPrimaryServerResourceConfigCreate(aZoneName, aZoneTTL, psAddress, psPort*2),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					resource.TestCheckResourceAttr("hetznerdns_primary_server.test", "port", strconv.Itoa(psPort*2)),
 				),
@@ -53,8 +53,8 @@ func TestAccOnePrimaryServersResources(t *testing.T) {
 func testAccPrimaryServerResourceConfigCreate(aZoneName string, aZoneTTL int, psAddress string, psPort int) string {
 	return fmt.Sprintf(`
 resource "hetznerdns_zone" "zone1" {
-	name = "%s"
-	ttl = %d
+    name = %[1]q
+    ttl  = %[2]d
 }
 
 resource "hetznerdns_primary_server" "test" {
@@ -67,7 +67,7 @@ resource "hetznerdns_primary_server" "test" {
 
 func TestAccTwoPrimaryServersResources(t *testing.T) {
 	aZoneName := acctest.RandString(10) + ".online"
-	aZoneTTL := 60
+	aZoneTTL := 3600
 
 	ps1Address := "1.1.0.0"
 	ps1Port := 53
@@ -95,8 +95,8 @@ func TestAccTwoPrimaryServersResources(t *testing.T) {
 func testAccPrimaryServerResourceConfigCreateTwo(aZoneName string, aTTL int, ps1Address string, ps1Port int, ps2Address string, ps2Port int) string {
 	return fmt.Sprintf(`
 resource "hetznerdns_zone" "zone1" {
-	name = "%s"
-	ttl = %d
+    name = %[1]q
+    ttl  = %[2]d
 }
 
 resource "hetznerdns_primary_server" "ps1" {

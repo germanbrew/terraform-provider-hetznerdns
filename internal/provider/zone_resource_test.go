@@ -9,7 +9,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 )
 
-func TestAccExampleResource(t *testing.T) {
+func TestAccZoneResource(t *testing.T) {
 	aZoneName := acctest.RandString(10) + ".online"
 	aZoneTTL := 60
 
@@ -19,7 +19,7 @@ func TestAccExampleResource(t *testing.T) {
 		Steps: []resource.TestStep{
 			// Create and Read testing
 			{
-				Config: testAccExampleResourceConfig(aZoneName, aZoneTTL),
+				Config: testAccZoneResourceConfig(aZoneName, aZoneTTL),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					resource.TestCheckResourceAttrSet("hetznerdns_zone.test", "id"),
 					resource.TestCheckResourceAttr("hetznerdns_zone.test", "name", aZoneName),
@@ -34,7 +34,7 @@ func TestAccExampleResource(t *testing.T) {
 			},
 			// Update and Read testing
 			{
-				Config: testAccExampleResourceConfig(aZoneName, aZoneTTL*2),
+				Config: testAccZoneResourceConfig(aZoneName, aZoneTTL*2),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					resource.TestCheckResourceAttr("hetznerdns_zone.test", "ttl", strconv.Itoa(aZoneTTL*2)),
 				),
@@ -44,11 +44,11 @@ func TestAccExampleResource(t *testing.T) {
 	})
 }
 
-func testAccExampleResourceConfig(name string, ttl int) string {
+func testAccZoneResourceConfig(name string, ttl int) string {
 	return fmt.Sprintf(`
 resource "hetznerdns_zone" "test" {
-  name = %[1]q
-  ttl = %[2]d
+    name = %[1]q
+    ttl  = %[2]d
 }
 `, name, ttl)
 }
