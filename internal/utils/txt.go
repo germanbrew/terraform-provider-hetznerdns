@@ -35,13 +35,17 @@ func TXTRecordToPlainValue(value string) string {
 		return value
 	}
 
-	record := strings.Builder{}
+	// remove the last space
+	value = strings.TrimSuffix(value, " ")
 
-	for _, chunk := range strings.Fields(value) {
-		record.WriteString(unescapeString(chunk))
-	}
+	// remove the first and last double quote
+	value = strings.Trim(value, `"`)
 
-	return record.String()
+	// remove the inner double quotes
+	value = strings.Join(strings.Split(value, `" "`), "")
+
+	// unescape the escaped double quotes
+	return strings.ReplaceAll(value, `\"`, `"`)
 }
 
 // isChunkedTXTRecordValue checks if the value is a chunked TXT record value. A chunked TXT record value is a string
@@ -66,11 +70,4 @@ func chunkSlice(slice string, chunkSize int) []string {
 	}
 
 	return chunks
-}
-
-//nolint:gochecknoglobals
-var unescapeReplacer = strings.NewReplacer(`"`, ``, `\"`, `"`)
-
-func unescapeString(value string) string {
-	return strings.TrimSpace(unescapeReplacer.Replace(value))
 }
