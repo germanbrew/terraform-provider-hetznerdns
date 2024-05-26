@@ -1,12 +1,12 @@
+//nolint:lll
 package utils_test
 
 import (
 	"strings"
 	"testing"
 
-	"github.com/stretchr/testify/require"
-
 	"github.com/germanbrew/terraform-provider-hetznerdns/internal/utils"
+	"github.com/stretchr/testify/require"
 )
 
 func TestPlainToTXTRecordValue(t *testing.T) {
@@ -33,6 +33,11 @@ func TestPlainToTXTRecordValue(t *testing.T) {
 			output: `te"st`,
 		},
 		{
+			name:   "small string with spaces",
+			input:  `v=STSv1; id=20230523103000Z`,
+			output: `v=STSv1; id=20230523103000Z`,
+		},
+		{
 			name:   "large string",
 			input:  strings.Repeat("test", 100),
 			output: `"testtesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttes" "ttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttest" `,
@@ -41,6 +46,11 @@ func TestPlainToTXTRecordValue(t *testing.T) {
 			name:   "large string with quotes",
 			input:  strings.Repeat(`te"st`, 100),
 			output: `"te\"stte\"stte\"stte\"stte\"stte\"stte\"stte\"stte\"stte\"stte\"stte\"stte\"stte\"stte\"stte\"stte\"stte\"stte\"stte\"stte\"stte\"stte\"stte\"stte\"stte\"stte\"stte\"stte\"stte\"stte\"stte\"stte\"stte\"stte\"stte\"stte\"stte\"stte\"stte\"stte\"stte\"stte\"stte\"stte\"stte\"stte\"stte\"stte\"stte\"stte\"st" "te\"stte\"stte\"stte\"stte\"stte\"stte\"stte\"stte\"stte\"stte\"stte\"stte\"stte\"stte\"stte\"stte\"stte\"stte\"stte\"stte\"stte\"stte\"stte\"stte\"stte\"stte\"stte\"stte\"stte\"stte\"stte\"stte\"stte\"stte\"stte\"stte\"stte\"stte\"stte\"stte\"stte\"stte\"stte\"stte\"stte\"stte\"stte\"stte\"st" `,
+		},
+		{
+			name:   "large string with quotes",
+			input:  strings.Repeat(`te st`, 100),
+			output: `"te stte stte stte stte stte stte stte stte stte stte stte stte stte stte stte stte stte stte stte stte stte stte stte stte stte stte stte stte stte stte stte stte stte stte stte stte stte stte stte stte stte stte stte stte stte stte stte stte stte stte st" "te stte stte stte stte stte stte stte stte stte stte stte stte stte stte stte stte stte stte stte stte stte stte stte stte stte stte stte stte stte stte stte stte stte stte stte stte stte stte stte stte stte stte stte stte stte stte stte stte st" `,
 		},
 	} {
 		tc := tc
@@ -77,6 +87,11 @@ func TestTXTRecordToPlainValue(t *testing.T) {
 			output: `te"st`,
 		},
 		{
+			name:   "small string with spaces",
+			input:  `v=STSv1; id=20230523103000Z`,
+			output: `v=STSv1; id=20230523103000Z`,
+		},
+		{
 			name:   "large string",
 			input:  `"testtesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttes" "ttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttest" `,
 			output: strings.Repeat("test", 100),
@@ -85,6 +100,11 @@ func TestTXTRecordToPlainValue(t *testing.T) {
 			name:   "large string with quotes",
 			input:  `"te\"stte\"stte\"stte\"stte\"stte\"stte\"stte\"stte\"stte\"stte\"stte\"stte\"stte\"stte\"stte\"stte\"stte\"stte\"stte\"stte\"stte\"stte\"stte\"stte\"stte\"stte\"stte\"stte\"stte\"stte\"stte\"stte\"stte\"stte\"stte\"stte\"stte\"stte\"stte\"stte\"stte\"stte\"stte\"stte\"stte\"stte\"stte\"stte\"stte\"stte\"st" "te\"stte\"stte\"stte\"stte\"stte\"stte\"stte\"stte\"stte\"stte\"stte\"stte\"stte\"stte\"stte\"stte\"stte\"stte\"stte\"stte\"stte\"stte\"stte\"stte\"stte\"stte\"stte\"stte\"stte\"stte\"stte\"stte\"stte\"stte\"stte\"stte\"stte\"stte\"stte\"stte\"stte\"stte\"stte\"stte\"stte\"stte\"stte\"stte\"st" `,
 			output: strings.Repeat(`te"st`, 100),
+		},
+		{
+			name:   "large string with spaces",
+			input:  `"te stte stte stte stte stte stte stte stte stte stte stte stte stte stte stte stte stte stte stte stte stte stte stte stte stte stte stte stte stte stte stte stte stte stte stte stte stte stte stte stte stte stte stte stte stte stte stte stte stte stte st" "te stte stte stte stte stte stte stte stte stte stte stte stte stte stte stte stte stte stte stte stte stte stte stte stte stte stte stte stte stte stte stte stte stte stte stte stte stte stte stte stte stte stte stte stte stte stte stte stte st" `,
+			output: strings.Repeat(`te st`, 100),
 		},
 	} {
 		tc := tc
@@ -117,12 +137,20 @@ func TestPlainToTXTRecordToPlainValue(t *testing.T) {
 			value: `te"st`,
 		},
 		{
+			name:  "small string with spaces",
+			value: `v=STSv1; id=20230523103000Z`,
+		},
+		{
 			name:  "large string",
 			value: strings.Repeat("test", 100),
 		},
 		{
 			name:  "large string with quotes",
 			value: strings.Repeat(`te"st`, 100),
+		},
+		{
+			name:  "large string with spaces",
+			value: strings.Repeat("te st", 100),
 		},
 	} {
 		tc := tc

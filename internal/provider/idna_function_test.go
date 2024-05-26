@@ -11,6 +11,7 @@ import (
 
 func TestIdnaFunction_Valid(t *testing.T) {
 	t.Parallel()
+
 	resource.UnitTest(t, resource.TestCase{
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
 			tfversion.SkipBelow(tfversion.Version1_8_0),

@@ -3,28 +3,63 @@
 issues:
   max-issues-per-linter: 0
   max-same-issues: 0
+  exclude-rules:
+    - path: _test\.go
+      linters:
+        - funlen
+        - dupword
 
 linters:
   disable-all: true
   enable:
+    - asciicheck
     - contextcheck
     - durationcheck
+    - dupword
+    - dupl
     - errcheck
     - exportloopref
     - forcetypeassert
+    - forbidigo
+    - funlen
+    - gci
+    - gochecknoglobals
+    - gocheckcompilerdirectives
+    - gochecknoinits
+    - gocognit
+    - gocritic
     - godot
     - gofmt
+    - gofumpt
+    - goimports
+    - gomoddirectives
     - gosimple
+    - gosec
     - govet
     - ineffassign
+    - lll
     - makezero
     - misspell
+    - mirror
     - nilerr
     - nlreturn
+    - noctx
+    - nolintlint
+    - nonamedreturns
+    - prealloc
+    - perfsprint
     - predeclared
     - staticcheck
     - tenv
+    - testifylint
     - unconvert
     - unparam
     - unused
+    - wastedassign
     - wsl
+    - wrapcheck
+
+linters-settings:
+  lll:
+    line-length: 160
+    tab-width: 4
