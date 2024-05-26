@@ -9,9 +9,10 @@ import (
 
 // Zone represents a DNS Zone.
 type Zone struct {
-	ID   string `json:"id"`
-	Name string `json:"name"`
-	TTL  int64  `json:"ttl"`
+	ID   string   `json:"id"`
+	Name string   `json:"name"`
+	NS   []string `json:"ns"`
+	TTL  int64    `json:"ttl"`
 }
 
 // CreateZoneOpts covers all parameters used to create a new DNS zone.

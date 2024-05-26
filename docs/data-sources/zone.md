@@ -28,4 +28,5 @@ data "hetznerdns_zone" "zone1" {
 ### Read-Only
 
 - `id` (String) The ID of the DNS zone
+- `ns` (List of String) Name Servers of the zone
 - `ttl` (Number) Time to live of this zone

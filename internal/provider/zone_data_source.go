@@ -30,6 +30,7 @@ type zoneDataSourceModel struct {
 	ID   types.String `tfsdk:"id"`
 	Name types.String `tfsdk:"name"`
 	TTL  types.Int64  `tfsdk:"ttl"`
+	NS   types.List   `tfsdk:"ns"`
 }
 
 func (d *zoneDataSource) Metadata(_ context.Context, req datasource.MetadataRequest, resp *datasource.MetadataResponse) {
@@ -56,6 +57,11 @@ func (d *zoneDataSource) Schema(_ context.Context, _ datasource.SchemaRequest, r
 			"id": schema.StringAttribute{
 				MarkdownDescription: "The ID of the DNS zone",
 				Computed:            true,
+			},
+			"ns": schema.ListAttribute{
+				MarkdownDescription: "Name Servers of the zone",
+				Computed:            true,
+				ElementType:         types.StringType,
 			},
 		},
 	}
@@ -108,9 +114,18 @@ func (d *zoneDataSource) Read(ctx context.Context, req datasource.ReadRequest, r
 		return
 	}
 
+	ns, diags := types.ListValueFrom(ctx, types.StringType, zone.NS)
+
+	resp.Diagnostics.Append(diags...)
+
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
 	data.ID = types.StringValue(zone.ID)
 	data.Name = types.StringValue(zone.Name)
 	data.TTL = types.Int64Value(zone.TTL)
+	data.NS = ns
 
 	// Save data into Terraform state
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)

@@ -24,22 +24,22 @@ func TestCreateZoneRequestJson(t *testing.T) {
 }
 
 func TestGetZoneResponseJson(t *testing.T) {
-	resp := GetZoneResponse{Zone: Zone{ID: "aId", Name: "aName", TTL: 60}}
-	expectedJSON := `{"zone":{"id":"aId","name":"aName","ttl":60}}`
+	resp := GetZoneResponse{Zone: Zone{ID: "aId", Name: "aName", TTL: 60, NS: []string{"ns1", "ns2"}}}
+	expectedJSON := `{"zone":{"id":"aId","name":"aName","ns":["ns1","ns2"],"ttl":60}}`
 
 	assertSerializeAndAssertEqual(t, resp, expectedJSON)
 }
 
 func TestGetZoneByNameResponseJson(t *testing.T) {
-	resp := GetZonesByNameResponse{[]Zone{{ID: "aId", Name: "aName", TTL: 60}}}
-	expectedJSON := `{"zones":[{"id":"aId","name":"aName","ttl":60}]}`
+	resp := GetZonesByNameResponse{[]Zone{{ID: "aId", Name: "aName", TTL: 60, NS: []string{"ns1", "ns2"}}}}
+	expectedJSON := `{"zones":[{"id":"aId","name":"aName","ns":["ns1","ns2"],"ttl":60}]}`
 
 	assertSerializeAndAssertEqual(t, resp, expectedJSON)
 }
 
 func TestCreateZoneResponseJson(t *testing.T) {
-	resp := CreateZoneResponse{Zone: Zone{ID: "aId", Name: "aName", TTL: 60}}
-	expectedJSON := `{"zone":{"id":"aId","name":"aName","ttl":60}}`
+	resp := CreateZoneResponse{Zone: Zone{ID: "aId", Name: "aName", TTL: 60, NS: []string{"ns1", "ns2"}}}
+	expectedJSON := `{"zone":{"id":"aId","name":"aName","ns":["ns1","ns2"],"ttl":60}}`
 
 	assertSerializeAndAssertEqual(t, resp, expectedJSON)
 }
