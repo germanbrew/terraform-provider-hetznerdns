@@ -35,7 +35,7 @@ type hetznerDNSProviderModel struct {
 	HasTxtValueFormatter types.Bool   `tfsdk:"enable_txt_formatter"`
 }
 
-type ProviderClient struct {
+type providerClient struct {
 	client               *api.Client
 	hasTxtValueFormatter bool
 }
@@ -75,6 +75,7 @@ func (p *hetznerDNSProvider) Configure(ctx context.Context, req provider.Configu
 	apiToken := os.Getenv("HETZNER_DNS_API_TOKEN")
 
 	maxRetries := int64(1)
+	hasTxtValueFormatter := true
 
 	if v, ok := os.LookupEnv("HETZNER_DNS_MAX_RETRIES"); ok {
 		var err error
@@ -88,7 +89,6 @@ func (p *hetznerDNSProvider) Configure(ctx context.Context, req provider.Configu
 		}
 	}
 
-	hasTxtValueFormatter := true
 	if v, ok := os.LookupEnv("HETZNER_DNS_ENABLE_TXT_FORMATTER"); ok {
 		var err error
 
@@ -142,7 +142,8 @@ func (p *hetznerDNSProvider) Configure(ctx context.Context, req provider.Configu
 
 	client.SetUserAgent(fmt.Sprintf("terraform-provider-hetznerdns/%s (+https://github.com/germanbrew/terraform-provider-hetznerdns) ", p.version))
 
-	provider := ProviderClient{client: client, hasTxtValueFormatter: hasTxtValueFormatter}
+	provider := &providerClient{client: client, hasTxtValueFormatter: hasTxtValueFormatter}
+
 	_, err = provider.client.GetZones(ctx)
 	if err != nil {
 		resp.Diagnostics.AddError(
@@ -155,8 +156,8 @@ func (p *hetznerDNSProvider) Configure(ctx context.Context, req provider.Configu
 		return
 	}
 
-	resp.DataSourceData = provider.client
-	resp.ResourceData = provider.client
+	resp.DataSourceData = provider
+	resp.ResourceData = provider
 }
 
 func (p *hetznerDNSProvider) Resources(_ context.Context) []func() resource.Resource {

@@ -30,7 +30,7 @@ func NewPrimaryServerResource() resource.Resource {
 
 // primaryServerResource defines the resource implementation.
 type primaryServerResource struct {
-	client *api.Client
+	provider *providerClient
 }
 
 // primaryServerResourceModel describes the resource data model.
@@ -92,18 +92,18 @@ func (r *primaryServerResource) Configure(_ context.Context, req resource.Config
 		return
 	}
 
-	client, ok := req.ProviderData.(*api.Client)
+	provider, ok := req.ProviderData.(*providerClient)
 
 	if !ok {
 		resp.Diagnostics.AddError(
 			"Unexpected Resource Configure Type",
-			fmt.Sprintf("Expected *api.Client, got: %T. Please report this issue to the provider developers.", req.ProviderData),
+			fmt.Sprintf("Expected *providerClient, got: %T. Please report this issue to the provider developers.", req.ProviderData),
 		)
 
 		return
 	}
 
-	r.client = client
+	r.provider = provider
 }
 
 func (r *primaryServerResource) Create(ctx context.Context, req resource.CreateRequest, resp *resource.CreateResponse) {
@@ -118,7 +118,7 @@ func (r *primaryServerResource) Create(ctx context.Context, req resource.CreateR
 		return
 	}
 
-	httpResp, err := r.client.CreatePrimaryServer(ctx, api.CreatePrimaryServerRequest{
+	httpResp, err := r.provider.client.CreatePrimaryServer(ctx, api.CreatePrimaryServerRequest{
 		ZoneID:  plan.ZoneID.ValueString(),
 		Address: plan.Address.ValueString(),
 		Port:    uint16(plan.Port.ValueInt64()),
@@ -147,7 +147,7 @@ func (r *primaryServerResource) Read(ctx context.Context, req resource.ReadReque
 		return
 	}
 
-	record, err := r.client.GetPrimaryServer(ctx, state.ID.ValueString())
+	record, err := r.provider.client.GetPrimaryServer(ctx, state.ID.ValueString())
 	if err != nil {
 		resp.Diagnostics.AddError("Client Error", fmt.Sprintf("Unable to read zene, got error: %s", err))
 
@@ -182,7 +182,7 @@ func (r *primaryServerResource) Update(ctx context.Context, req resource.UpdateR
 	}
 
 	if !plan.Address.Equal(state.Address) || !plan.Port.Equal(state.Port) {
-		_, err := r.client.UpdatePrimaryServer(ctx, api.PrimaryServer{
+		_, err := r.provider.client.UpdatePrimaryServer(ctx, api.PrimaryServer{
 			ID:      state.ID.ValueString(),
 			Address: plan.Address.ValueString(),
 			Port:    uint16(plan.Port.ValueInt64()),
@@ -211,7 +211,7 @@ func (r *primaryServerResource) Delete(ctx context.Context, req resource.DeleteR
 		return
 	}
 
-	if err := r.client.DeletePrimaryServer(ctx, state.ID.ValueString()); err != nil {
+	if err := r.provider.client.DeletePrimaryServer(ctx, state.ID.ValueString()); err != nil {
 		resp.Diagnostics.AddError("API Error", fmt.Sprintf("Error deleting primary server %s: %s", state.ID, err))
 
 		return
