@@ -25,6 +25,8 @@ var (
 	_ provider.ProviderWithFunctions = &hetznerDNSProvider{}
 )
 
+var HasTxtValueFormatter = true
+
 type hetznerDNSProvider struct {
 	version string
 }
@@ -32,7 +34,7 @@ type hetznerDNSProvider struct {
 type hetznerDNSProviderModel struct {
 	ApiToken                types.String `tfsdk:"apitoken"`
 	MaxRetries              types.Int64  `tfsdk:"max_retries"`
-	EnableTxtValueFormatter types.Bool   `tfsdk:"enable_txt_formatter"`
+	HasTxtValueFormatter types.Bool   `tfsdk:"enable_txt_formatter"`
 }
 
 func (p *hetznerDNSProvider) Metadata(_ context.Context, _ provider.MetadataRequest, resp *provider.MetadataResponse) {
@@ -82,10 +84,9 @@ func (p *hetznerDNSProvider) Configure(ctx context.Context, req provider.Configu
 		}
 	}
 
-	enableTxtValueFormatter := false
 	if v, ok := os.LookupEnv("HETZNER_DNS_ENABLE_TXT_FORMATTER"); ok {
 		var err error
-		enableTxtValueFormatter, err = strconv.ParseBool(v)
+		HasTxtValueFormatter, err = strconv.ParseBool(v)
 
 		if err != nil {
 			resp.Diagnostics.AddError(
@@ -109,8 +110,8 @@ func (p *hetznerDNSProvider) Configure(ctx context.Context, req provider.Configu
 		maxRetries = data.MaxRetries.ValueInt64()
 	}
 
-	if data.EnableTxtValueFormatter.ValueBool() {
-		enableTxtValueFormatter = data.EnableTxtValueFormatter.ValueBool()
+	if data.HasTxtValueFormatter.ValueBool() {
+		HasTxtValueFormatter = data.HasTxtValueFormatter.ValueBool()
 	}
 
 	if apiToken == "" {
@@ -126,7 +127,7 @@ func (p *hetznerDNSProvider) Configure(ctx context.Context, req provider.Configu
 		return
 	}
 
-	client, err := api.New("https://dns.hetzner.com", apiToken, uint(maxRetries), enableTxtValueFormatter, http.DefaultClient)
+	client, err := api.New("https://dns.hetzner.com", apiToken, uint(maxRetries), http.DefaultClient)
 	if err != nil {
 		resp.Diagnostics.AddError(
 			"API error while configuring provider",
