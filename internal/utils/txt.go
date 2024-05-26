@@ -6,7 +6,7 @@ import (
 )
 
 // PlainToTXTRecordValue Converts a plain string to a TXT record value.
-// if [value] in a TXT record is longer than 255 bytes, it needs to be split into multiple parts.
+// if the value in a TXT record is longer than 255 bytes, it needs to be split into multiple parts.
 // each part needs to be enclosed in double quotes and separated by a space.
 //
 // https://datatracker.ietf.org/doc/html/rfc4408#section-3.1.3
@@ -28,7 +28,9 @@ func PlainToTXTRecordValue(value string) string {
 	return record.String()
 }
 
-func TXTToPlainRecordValue(value string) string {
+// TXTRecordToPlainValue converts a TXT record value to a plain string.
+// It reverses the operation of PlainToTXTRecordValue.
+func TXTRecordToPlainValue(value string) string {
 	if !isChunkedTXTRecordValue(value) {
 		return value
 	}

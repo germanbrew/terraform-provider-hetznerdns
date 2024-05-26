@@ -191,7 +191,7 @@ func (r *recordResource) Read(ctx context.Context, req resource.ReadRequest, res
 	}
 
 	if zone.Type == "TXT" {
-		zone.Value = utils.TXTToPlainRecordValue(zone.Value)
+		zone.Value = utils.TXTRecordToPlainValue(zone.Value)
 	}
 
 	state.Name = types.StringValue(zone.Name)
