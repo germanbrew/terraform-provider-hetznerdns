@@ -27,14 +27,15 @@ type ErrorMessage struct {
 
 // Client for the Hetzner DNS API.
 type Client struct {
-	requestLock sync.Mutex
-	apiToken    string
-	httpClient  *http.Client
-	endPoint    *url.URL
+	requestLock          sync.Mutex
+	apiToken             string
+	httpClient           *http.Client
+	endPoint             *url.URL
+	HasTxtValueFormatter bool
 }
 
 // New creates a new API Client using a given api token.
-func New(apiEndpoint string, apiToken string, maxRetires uint, httpClient *http.Client) (*Client, error) {
+func New(apiEndpoint string, apiToken string, maxRetires uint, hasTxtValueFormatter bool, httpClient *http.Client) (*Client, error) {
 	endPoint, err := url.Parse(apiEndpoint)
 	if err != nil {
 		return nil, fmt.Errorf("error parsing API endpoint URL: %w", err)
@@ -45,9 +46,10 @@ func New(apiEndpoint string, apiToken string, maxRetires uint, httpClient *http.
 	}
 
 	client := &Client{
-		apiToken:   apiToken,
-		endPoint:   endPoint,
-		httpClient: httpClient,
+		apiToken:             apiToken,
+		endPoint:             endPoint,
+		httpClient:           httpClient,
+		HasTxtValueFormatter: hasTxtValueFormatter,
 	}
 
 	client.httpClient.Transport = &retryableTransport{

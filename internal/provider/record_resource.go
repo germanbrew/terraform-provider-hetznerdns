@@ -139,7 +139,7 @@ func (r *recordResource) Create(ctx context.Context, req resource.CreateRequest,
 	}
 
 	value := plan.Value.ValueString()
-	if plan.Type.ValueString() == "TXT" {
+	if plan.Type.ValueString() == "TXT" && r.client.HasTxtValueFormatter {
 		value = prepareTXTRecordValue(ctx, value)
 	}
 
@@ -187,7 +187,7 @@ func (r *recordResource) Read(ctx context.Context, req resource.ReadRequest, res
 		return
 	}
 
-	if zone.Type == "TXT" && isEscapedString(zone.Value) {
+	if zone.Type == "TXT" && isEscapedString(zone.Value) && r.client.HasTxtValueFormatter {
 		zone.Value = unescapeString(zone.Value)
 	}
 
@@ -214,7 +214,7 @@ func (r *recordResource) Update(ctx context.Context, req resource.UpdateRequest,
 		return
 	}
 
-	if plan.Type.ValueString() == "TXT" && isEscapedString(plan.Value.ValueString()) {
+	if plan.Type.ValueString() == "TXT" && isEscapedString(plan.Value.ValueString()) && r.client.HasTxtValueFormatter {
 		plan.Value = types.StringValue(unescapeString(plan.Value.ValueString()))
 	}
 

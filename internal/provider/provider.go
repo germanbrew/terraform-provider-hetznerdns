@@ -30,8 +30,9 @@ type hetznerDNSProvider struct {
 }
 
 type hetznerDNSProviderModel struct {
-	ApiToken   types.String `tfsdk:"apitoken"`
-	MaxRetries types.Int64  `tfsdk:"max_retries"`
+	ApiToken                types.String `tfsdk:"apitoken"`
+	MaxRetries              types.Int64  `tfsdk:"max_retries"`
+	EnableTxtValueFormatter types.Bool   `tfsdk:"enable_txt_formatter"`
 }
 
 func (p *hetznerDNSProvider) Metadata(_ context.Context, _ provider.MetadataRequest, resp *provider.MetadataResponse) {
@@ -55,6 +56,10 @@ func (p *hetznerDNSProvider) Schema(_ context.Context, _ provider.SchemaRequest,
 					int64validator.AtLeast(0),
 				},
 			},
+			"enable_txt_formatter": schema.BoolAttribute{
+				Description: "Enable the automatic formatter for TXT record values. Default: true",
+				Optional:    true,
+			},
 		},
 	}
 }
@@ -65,7 +70,6 @@ func (p *hetznerDNSProvider) Configure(ctx context.Context, req provider.Configu
 	apiToken := os.Getenv("HETZNER_DNS_API_TOKEN")
 
 	maxRetries := int64(1)
-
 	if v, ok := os.LookupEnv("HETZNER_DNS_MAX_RETRIES"); ok {
 		var err error
 		maxRetries, err = strconv.ParseInt(v, 10, 64)
@@ -73,7 +77,20 @@ func (p *hetznerDNSProvider) Configure(ctx context.Context, req provider.Configu
 		if err != nil {
 			resp.Diagnostics.AddError(
 				"max_retries must be an positive integer",
-				"While configuring the provider, the max_retry option was not an positive integer",
+				"While configuring the provider, the max_retry option was not a positive integer",
+			)
+		}
+	}
+
+	enableTxtValueFormatter := false
+	if v, ok := os.LookupEnv("HETZNER_DNS_TXT_FORMATTER_DISABLE"); ok {
+		var err error
+		enableTxtValueFormatter, err = strconv.ParseBool(v)
+
+		if err != nil {
+			resp.Diagnostics.AddError(
+				"enable_txt_formatter must be an boolean",
+				"While configuring the provider, the enable_txt_formatter option was not a boolean value",
 			)
 		}
 	}
@@ -92,6 +109,10 @@ func (p *hetznerDNSProvider) Configure(ctx context.Context, req provider.Configu
 		maxRetries = data.MaxRetries.ValueInt64()
 	}
 
+	if data.EnableTxtValueFormatter.ValueBool() {
+		enableTxtValueFormatter = data.EnableTxtValueFormatter.ValueBool()
+	}
+
 	if apiToken == "" {
 		resp.Diagnostics.AddError(
 			"Missing API Token Configuration",
@@ -105,7 +126,7 @@ func (p *hetznerDNSProvider) Configure(ctx context.Context, req provider.Configu
 		return
 	}
 
-	client, err := api.New("https://dns.hetzner.com", apiToken, uint(maxRetries), http.DefaultClient)
+	client, err := api.New("https://dns.hetzner.com", apiToken, uint(maxRetries), enableTxtValueFormatter, http.DefaultClient)
 	if err != nil {
 		resp.Diagnostics.AddError(
 			"API error while configuring provider",
