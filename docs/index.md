@@ -40,5 +40,5 @@ resource "hetznerdns_record" "web" {
 ### Optional
 
 - `apitoken` (String, Sensitive) The Hetzner DNS API token. You can pass it using the env variable `HETZNER_DNS_API_TOKEN` as well.
-- `enable_txt_formatter` (Boolean) Enable the automatic formatter for TXT record values. Default: true
-- `max_retries` (Number) The maximum number of retries to perform when an API request fails. Default: 1
+- `enable_txt_formatter` (Boolean) Toggles the automatic formatter for TXT record values. You can pass it using the env variable `HETZNER_DNS_TXT_FORMATTER_ENABLE` as well. Default: true
+- `max_retries` (Number) The maximum number of retries to perform when an API request fails. You can pass it using the env variable `HETZNER_DNS_MAX_RETRIES` as well. Default: 1
