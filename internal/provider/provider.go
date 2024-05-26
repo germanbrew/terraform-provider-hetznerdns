@@ -29,14 +29,14 @@ type hetznerDNSProvider struct {
 }
 
 type hetznerDNSProviderModel struct {
-	ApiToken             types.String `tfsdk:"apitoken"`
-	MaxRetries           types.Int64  `tfsdk:"max_retries"`
-	HasTxtValueFormatter types.Bool   `tfsdk:"enable_txt_formatter"`
+	ApiToken           types.String `tfsdk:"apitoken"` //nolint:tagliatelle // TODO: apitoken should be api_token
+	MaxRetries         types.Int64  `tfsdk:"max_retries"`
+	EnableTxtFormatter types.Bool   `tfsdk:"enable_txt_formatter"`
 }
 
 type providerClient struct {
-	client               *api.Client
-	hasTxtValueFormatter bool
+	client       *api.Client
+	txtFormatter bool
 }
 
 func (p *hetznerDNSProvider) Metadata(_ context.Context, _ provider.MetadataRequest, resp *provider.MetadataResponse) {
@@ -120,8 +120,8 @@ func (p *hetznerDNSProvider) Configure(ctx context.Context, req provider.Configu
 		maxRetries = data.MaxRetries.ValueInt64()
 	}
 
-	if data.HasTxtValueFormatter.ValueBool() {
-		hasTxtValueFormatter = data.HasTxtValueFormatter.ValueBool()
+	if data.EnableTxtFormatter.ValueBool() {
+		hasTxtValueFormatter = data.EnableTxtFormatter.ValueBool()
 	}
 
 	if apiToken == "" {
@@ -147,7 +147,7 @@ func (p *hetznerDNSProvider) Configure(ctx context.Context, req provider.Configu
 
 	client.SetUserAgent(fmt.Sprintf("terraform-provider-hetznerdns/%s (+https://github.com/germanbrew/terraform-provider-hetznerdns) ", p.version))
 
-	provider := &providerClient{client: client, hasTxtValueFormatter: hasTxtValueFormatter}
+	provider := &providerClient{client: client, txtFormatter: hasTxtValueFormatter}
 
 	_, err = provider.client.GetZones(ctx)
 	if err != nil {

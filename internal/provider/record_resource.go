@@ -138,7 +138,7 @@ func (r *recordResource) Create(ctx context.Context, req resource.CreateRequest,
 	}
 
 	value := plan.Value.ValueString()
-	if plan.Type.ValueString() == "TXT" && r.provider.hasTxtValueFormatter {
+	if plan.Type.ValueString() == "TXT" && r.provider.txtFormatter {
 		value = utils.PlainToTXTRecordValue(value)
 		if plan.Value.ValueString() != value {
 			tflog.Debug(ctx, fmt.Sprintf("split TXT record value %d chunks: %q", len(value), value))
@@ -189,7 +189,7 @@ func (r *recordResource) Read(ctx context.Context, req resource.ReadRequest, res
 		return
 	}
 
-	if zone.Type == "TXT" && r.provider.hasTxtValueFormatter {
+	if zone.Type == "TXT" && r.provider.txtFormatter {
 		zone.Value = utils.TXTRecordToPlainValue(zone.Value)
 	}
 
@@ -217,7 +217,7 @@ func (r *recordResource) Update(ctx context.Context, req resource.UpdateRequest,
 	}
 
 	value := plan.Value.ValueString()
-	if plan.Type.ValueString() == "TXT" && r.provider.hasTxtValueFormatter {
+	if plan.Type.ValueString() == "TXT" && r.provider.txtFormatter {
 		value = utils.PlainToTXTRecordValue(value)
 	}
 
