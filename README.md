@@ -4,13 +4,11 @@
 ![GitHub release (latest by date)](https://img.shields.io/github/v/release/germanbrew/terraform-provider-hetznerdns)
 ![GitHub](https://img.shields.io/github/license/germanbrew/terraform-provider-hetznerdns)
 
-**This provider is published on the Terraform and OpenTofu Registry**.
+**This provider is published on the [Terraform](https://registry.terraform.io/providers/germanbrew/hetznerdns/latest) and [OpenTofu Registry](https://github.com/opentofu/registry/tree/main/providers/g/germanbrew)**.
+
+You can find resources and data sources [documentation](https://registry.terraform.io/providers/germanbrew/hetznerdns/latest/docs) there or [here](docs).
 
 > This project has been forked from [timohirt/terraform-provider-hetznerdns](https://github.com/timohirt/terraform-provider-hetznerdns), which is no longer maintained.
-
-You can find resources and data sources
-[documentation](https://registry.terraform.io/providers/germanbrew/hetznerdns/latest/docs)
-there or [here](docs).
 
 ## Requirements
 
@@ -19,8 +17,8 @@ there or [here](docs).
 
 ## Installing and Using this Plugin
 
-You most likely want to download the provider from [Terraform
-Registry](https://registry.terraform.io/providers/germanbrew/hetznerdns/latest/docs).
+You most likely want to download the provider from [Terraform Registry](https://registry.terraform.io/providers/germanbrew/hetznerdns/latest/docs).
+The provider is also published in the [OpenTofu Registry](https://github.com/opentofu/registry/tree/main/providers/g/germanbrew).
 
 ### Migration Guide
 
