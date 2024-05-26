@@ -39,7 +39,7 @@ func (d *zoneDataSource) Metadata(_ context.Context, req datasource.MetadataRequ
 func (d *zoneDataSource) Schema(_ context.Context, _ datasource.SchemaRequest, resp *datasource.SchemaResponse) {
 	resp.Schema = schema.Schema{
 		// This description is used by the documentation generator and the language server.
-		MarkdownDescription: "Example data source",
+		MarkdownDescription: "Provides details about a Hetzner DNS Zone",
 
 		Attributes: map[string]schema.Attribute{
 			"name": schema.StringAttribute{
