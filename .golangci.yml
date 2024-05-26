@@ -50,6 +50,8 @@ linters:
     - perfsprint
     - predeclared
     - staticcheck
+    - tagalign
+    - tagliatelle
     - tenv
     - testifylint
     - unconvert
@@ -63,3 +65,10 @@ linters-settings:
   lll:
     line-length: 160
     tab-width: 4
+
+  tagliatelle:
+    case:
+      use-field-name: true
+      rules:
+        json: snake
+        tfsdk: snake
