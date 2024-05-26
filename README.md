@@ -34,6 +34,8 @@ If you previously used the `timohirt/hetznerdns` provider, you can easily replac
    }
    ```
 2. If you have `apitoken` defined inside you provider config, replace it with `api_token`. The environment variable `HETZNER_DNS_API_TOKEN` has not changed.
+   Also see our [Docs Overview](https://registry.terraform.io/providers/germanbrew/hetznerdns/latest/docs#schema), as we have more configuration options for you to choose.
+
    ```diff
    provider "hetznerdns" {"
    -  apitoken  = "token"
@@ -48,6 +50,7 @@ If you previously used the `timohirt/hetznerdns` provider, you can easily replac
 4. Our provider automatically reformats TXT record values into the correct format ([RFC4408](https://datatracker.ietf.org/doc/html/rfc4408#section-3.1.3)).
    This means you don't need to escape the values yourself with `jsonencode()` or other functions to split the records every 255 bytes.
    You can disable this feature by specifying `enable_txt_formatter = false` in your provider config or setting the env var `HETZNER_DNS_ENABLE_TXT_FORMATTER=false`
+5. Test if the migration was successful by running `terraform plan` and checking the output for any errors.
 
 ### Using Provider from Terraform Registry (TF >= 1.0)
 
