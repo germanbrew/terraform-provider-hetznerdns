@@ -38,6 +38,9 @@ If you previously used the `timohirt/hetznerdns` provider, you can easily replac
     terraform init
     terraform state replace-provider timohirt/hetznerdns germanbrew/hetznerdns
   ```
+3. Our provider automatically reformats TXT record values into the correct format ([RFC4408](https://datatracker.ietf.org/doc/html/rfc4408#section-3.1.3)).
+  This means you don't need to escape the values yourself with `jsonencode()` or other functions to split the records every 255 bytes.  
+  We plan to add an option to disable this behavior if needed ([#33](https://github.com/germanbrew/terraform-provider-hetznerdns/issues/33)).
 
 ### Using Provider from Terraform Registry (TF >= 1.0)
 
