@@ -185,6 +185,8 @@ func TestAccRecordResourcesDKIM(t *testing.T) {
 	aName := "dkim._domainkey"
 	aType := "TXT"
 
+	aRandomValue := acctest.RandString(522)
+
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { testAccPreCheck(t) },
 		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
@@ -205,6 +207,27 @@ func TestAccRecordResourcesDKIM(t *testing.T) {
 						"hetznerdns_record.record1", "ttl", strconv.Itoa(aTTL)),
 				),
 			},
+			// ImportState testing
+			{
+				ResourceName:      "hetznerdns_record.record1",
+				ImportState:       true,
+				ImportStateVerify: true,
+			},
+			// Update and Read testing
+			{
+				Config: testAccRecordResourceConfigCreateDKIM(aZoneName, aTTL, aName, aRandomValue),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					resource.TestCheckResourceAttr(
+						"hetznerdns_record.record1", "value", aRandomValue),
+				),
+			},
+			// ImportState testing
+			{
+				ResourceName:      "hetznerdns_record.record1",
+				ImportState:       true,
+				ImportStateVerify: true,
+			},
+			// Delete testing automatically occurs in TestCase
 		},
 	})
 }

@@ -113,6 +113,8 @@ func (p *hetznerDNSProvider) Configure(ctx context.Context, req provider.Configu
 		)
 	}
 
+	client.SetUserAgent(fmt.Sprintf("terraform-provider-hetznerdns/%s (+https://github.com/germanbrew/terraform-provider-hetznerdns) ", p.version))
+
 	_, err = client.GetZones(ctx)
 	if err != nil {
 		resp.Diagnostics.AddError(
