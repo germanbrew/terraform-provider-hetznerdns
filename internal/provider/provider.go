@@ -32,8 +32,8 @@ type hetznerDNSProvider struct {
 }
 
 type hetznerDNSProviderModel struct {
-	ApiToken                types.String `tfsdk:"apitoken"`
-	MaxRetries              types.Int64  `tfsdk:"max_retries"`
+	ApiToken             types.String `tfsdk:"apitoken"`
+	MaxRetries           types.Int64  `tfsdk:"max_retries"`
 	HasTxtValueFormatter types.Bool   `tfsdk:"enable_txt_formatter"`
 }
 
