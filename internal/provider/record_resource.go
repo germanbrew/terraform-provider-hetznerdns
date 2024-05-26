@@ -3,7 +3,6 @@ package provider
 import (
 	"context"
 	"fmt"
-	"strings"
 
 	"github.com/hashicorp/terraform-plugin-framework-validators/int64validator"
 	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
@@ -17,6 +16,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-log/tflog"
 
 	"github.com/germanbrew/terraform-provider-hetznerdns/internal/api"
+	"github.com/germanbrew/terraform-provider-hetznerdns/internal/utils"
 )
 
 // Ensure provider defined types fully satisfy framework interfaces.
@@ -141,6 +141,9 @@ func (r *recordResource) Create(ctx context.Context, req resource.CreateRequest,
 	value := plan.Value.ValueString()
 	if plan.Type.ValueString() == "TXT" && HasTxtValueFormatter {
 		value = prepareTXTRecordValue(ctx, value)
+		if plan.Value.ValueString() != value {
+			tflog.Debug(ctx, fmt.Sprintf("split TXT record value %d chunks: %q", len(value), value))
+		}
 	}
 
 	httpResp, err := r.client.CreateRecord(ctx, api.CreateRecordOpts{
@@ -188,7 +191,7 @@ func (r *recordResource) Read(ctx context.Context, req resource.ReadRequest, res
 	}
 
 	if zone.Type == "TXT" && isEscapedString(zone.Value) && HasTxtValueFormatter {
-		zone.Value = unescapeString(zone.Value)
+		zone.Value = utils.TXTRecordToPlainValue(zone.Value)
 	}
 
 	state.Name = types.StringValue(zone.Name)
@@ -214,8 +217,9 @@ func (r *recordResource) Update(ctx context.Context, req resource.UpdateRequest,
 		return
 	}
 
-	if plan.Type.ValueString() == "TXT" && isEscapedString(plan.Value.ValueString()) && HasTxtValueFormatter {
-		plan.Value = types.StringValue(unescapeString(plan.Value.ValueString()))
+	value := plan.Value.ValueString()
+	if plan.Type.ValueString() == "TXT" && HasTxtValueFormatter {
+		value = utils.PlainToTXTRecordValue(value)
 	}
 
 	if !plan.Name.Equal(state.Name) || !plan.TTL.Equal(state.TTL) || !plan.Type.Equal(state.Type) || !plan.Value.Equal(state.Value) {
@@ -223,7 +227,7 @@ func (r *recordResource) Update(ctx context.Context, req resource.UpdateRequest,
 			ID:     state.ID.ValueString(),
 			Name:   plan.Name.ValueString(),
 			Type:   plan.Type.ValueString(),
-			Value:  plan.Value.ValueString(),
+			Value:  value,
 			TTL:    plan.TTL.ValueInt64Pointer(),
 			ZoneID: plan.ZoneID.ValueString(),
 		})
@@ -259,65 +263,4 @@ func (r *recordResource) Delete(ctx context.Context, req resource.DeleteRequest,
 
 func (r *recordResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
 	resource.ImportStatePassthroughID(ctx, path.Root("id"), req, resp)
-}
-
-// prepareTXTRecordValue If the value in a TXT record is longer than 255 bytes,
-// it needs to be split into multiple parts.
-// Each part needs to be enclosed in double quotes and separated by a space.
-//
-// https://datatracker.ietf.org/doc/html/rfc4408#section-3.1.3
-func prepareTXTRecordValue(ctx context.Context, value string) string {
-	if len(value) < 255 {
-		tflog.Debug(ctx, "TXT record value is shorter than 255 bytes, no need to split it")
-
-		return value
-	}
-
-	if isEscapedString(value) {
-		tflog.Debug(ctx, "TXT record value is already in the correct format")
-
-		return value
-	}
-
-	// Split the DKIM key into 255 byte parts
-	parts := splitStringBy255Bytes(value)
-	for i, part := range parts {
-		parts[i] = "\"" + part + "\""
-	}
-
-	tflog.Debug(ctx, fmt.Sprintf("TXT record value has been split into %d parts", len(parts)))
-	tflog.Debug(ctx, fmt.Sprintf("%v", parts))
-
-	return strings.Join(parts, " ")
-}
-
-// splitStringBy255Bytes Strings in TXT records are by design-limited to 255 bytes.
-// Strings with more characters get split to substrings separated by space every 255 bytes/characters.
-//
-// https://datatracker.ietf.org/doc/html/rfc4408#section-3.1.3
-func splitStringBy255Bytes(value string) []string {
-	var parts []string
-
-	for len(value) > 0 {
-		if len(value) > 255 {
-			parts = append(parts, value[:255])
-			value = value[255:]
-		} else {
-			parts = append(parts, value)
-
-			break
-		}
-	}
-
-	return parts
-}
-
-var unescapeReplacer = strings.NewReplacer(`" `, ``, `"`, ``)
-
-func unescapeString(value string) string {
-	return strings.TrimSpace(unescapeReplacer.Replace(value))
-}
-
-func isEscapedString(value string) bool {
-	return strings.HasPrefix(value, `"`) && (strings.HasSuffix(value, `" `) || strings.HasSuffix(value, `"`))
 }
