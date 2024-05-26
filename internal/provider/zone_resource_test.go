@@ -38,7 +38,7 @@ func TestAccZoneResource(t *testing.T) {
 				Config: testAccZoneResourceConfig(aZoneName, aZoneTTL*2),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					resource.TestCheckResourceAttr("hetznerdns_zone.test", "ttl", strconv.Itoa(aZoneTTL*2)),
-					resource.TestCheckResourceAttrSet("hetznerdns_zone.test", "ns"),
+					resource.TestCheckResourceAttrSet("hetznerdns_zone.test", "ns.#"),
 				),
 			},
 			// Delete testing automatically occurs in TestCase
