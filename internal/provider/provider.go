@@ -68,8 +68,8 @@ func (p *hetznerDNSProvider) Configure(ctx context.Context, req provider.Configu
 
 	if v, ok := os.LookupEnv("HETZNER_DNS_MAX_RETRIES"); ok {
 		var err error
-		maxRetries, err = strconv.ParseInt(v, 10, 64)
 
+		maxRetries, err = strconv.ParseInt(v, 10, 64)
 		if err != nil {
 			resp.Diagnostics.AddError(
 				"max_retries must be an positive integer",

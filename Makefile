@@ -13,5 +13,12 @@ testacc:
 test: 
 	go test -v ./... -timeout 30m
 
+lint:
+	golangci-lint run ./... --fix
+
 fmt:
 	go fmt ./...
+	-go run mvdan.cc/gofumpt@latest -l -w .
+	-go run golang.org/x/tools/cmd/goimports@latest -l -w .
+	-go run github.com/bombsimon/wsl/v4/cmd...@latest -strict-append -test=true -fix ./...
+	-go run github.com/catenacyber/perfsprint@latest -fix ./...

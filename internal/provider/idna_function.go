@@ -10,9 +10,7 @@ import (
 	"golang.org/x/net/idna"
 )
 
-var (
-	_ function.Function = idnaFunction{}
-)
+var _ function.Function = idnaFunction{}
 
 func NewIdnaFunction() function.Function {
 	return idnaFunction{}

@@ -3,7 +3,6 @@ module github.com/germanbrew/terraform-provider-hetznerdns
 go 1.21
 
 require (
-	github.com/hashicorp/go-retryablehttp v0.7.6
 	github.com/hashicorp/terraform-plugin-docs v0.19.2
 	github.com/hashicorp/terraform-plugin-framework v1.8.0
 	github.com/hashicorp/terraform-plugin-framework-validators v0.12.0
@@ -11,6 +10,7 @@ require (
 	github.com/hashicorp/terraform-plugin-log v0.9.0
 	github.com/hashicorp/terraform-plugin-testing v1.8.0
 	github.com/stretchr/testify v1.9.0
+	golang.org/x/net v0.25.0
 )
 
 require (
@@ -75,7 +75,6 @@ require (
 	golang.org/x/crypto v0.23.0 // indirect
 	golang.org/x/exp v0.0.0-20230626212559-97b1e661b5df // indirect
 	golang.org/x/mod v0.16.0 // indirect
-	golang.org/x/net v0.25.0 // indirect
 	golang.org/x/sys v0.20.0 // indirect
 	golang.org/x/text v0.15.0 // indirect
 	golang.org/x/tools v0.13.0 // indirect

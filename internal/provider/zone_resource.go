@@ -10,6 +10,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/listplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
@@ -39,6 +40,7 @@ type zoneResourceModel struct {
 	ID   types.String `tfsdk:"id"`
 	Name types.String `tfsdk:"name"`
 	TTL  types.Int64  `tfsdk:"ttl"`
+	NS   types.List   `tfsdk:"ns"`
 }
 
 func (r *zoneResource) Metadata(_ context.Context, req resource.MetadataRequest, resp *resource.MetadataResponse) {
@@ -82,6 +84,14 @@ func (r *zoneResource) Schema(_ context.Context, _ resource.SchemaRequest, resp 
 					stringplanmodifier.UseStateForUnknown(),
 				},
 			},
+			"ns": schema.ListAttribute{
+				Computed:            true,
+				MarkdownDescription: "Name Servers of the zone",
+				ElementType:         types.StringType,
+				PlanModifiers: []planmodifier.List{
+					listplanmodifier.UseStateForUnknown(),
+				},
+			},
 		},
 	}
 }
@@ -118,20 +128,20 @@ func (r *zoneResource) Create(ctx context.Context, req resource.CreateRequest, r
 		return
 	}
 
-	httpResp, err := r.client.GetZoneByName(ctx, plan.Name.ValueString())
+	zone, err := r.client.GetZoneByName(ctx, plan.Name.ValueString())
 	if err != nil {
 		resp.Diagnostics.AddError("API Error", fmt.Sprintf("error creating zone: %s", err))
 
 		return
 	}
 
-	if httpResp != nil {
+	if zone != nil {
 		resp.Diagnostics.AddError("Error", fmt.Sprintf("zone %q already exists", plan.Name.ValueString()))
 
 		return
 	}
 
-	httpResp, err = r.client.CreateZone(ctx, api.CreateZoneOpts{
+	zone, err = r.client.CreateZone(ctx, api.CreateZoneOpts{
 		Name: plan.Name.ValueString(),
 		TTL:  plan.TTL.ValueInt64(),
 	})
@@ -141,7 +151,16 @@ func (r *zoneResource) Create(ctx context.Context, req resource.CreateRequest, r
 		return
 	}
 
-	plan.ID = types.StringValue(httpResp.ID)
+	ns, diags := types.ListValueFrom(ctx, types.StringType, zone.NS)
+
+	resp.Diagnostics.Append(diags...)
+
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
+	plan.ID = types.StringValue(zone.ID)
+	plan.NS = ns
 
 	// Save plan into Terraform state
 	resp.Diagnostics.Append(resp.State.Set(ctx, &plan)...)
@@ -172,9 +191,18 @@ func (r *zoneResource) Read(ctx context.Context, req resource.ReadRequest, resp 
 		return
 	}
 
+	ns, diags := types.ListValueFrom(ctx, types.StringType, zone.NS)
+
+	resp.Diagnostics.Append(diags...)
+
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
 	state.Name = types.StringValue(zone.Name)
 	state.TTL = types.Int64Value(zone.TTL)
 	state.ID = types.StringValue(zone.ID)
+	state.NS = ns
 
 	// Save updated state into Terraform state
 	resp.Diagnostics.Append(resp.State.Set(ctx, &state)...)
@@ -193,7 +221,7 @@ func (r *zoneResource) Update(ctx context.Context, req resource.UpdateRequest, r
 	}
 
 	if !plan.TTL.Equal(state.TTL) {
-		_, err := r.client.UpdateZone(ctx, api.Zone{
+		zone, err := r.client.UpdateZone(ctx, api.Zone{
 			ID:   state.ID.ValueString(),
 			Name: plan.Name.ValueString(),
 			TTL:  plan.TTL.ValueInt64(),
@@ -203,6 +231,16 @@ func (r *zoneResource) Update(ctx context.Context, req resource.UpdateRequest, r
 
 			return
 		}
+
+		ns, diags := types.ListValueFrom(ctx, types.StringType, zone.NS)
+
+		resp.Diagnostics.Append(diags...)
+
+		if resp.Diagnostics.HasError() {
+			return
+		}
+
+		plan.NS = ns
 	}
 
 	// Save updated data into Terraform state
