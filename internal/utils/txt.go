@@ -50,6 +50,7 @@ func isChunkedTXTRecordValue(value string) bool {
 
 func chunkSlice(slice string, chunkSize int) []string {
 	var chunks []string
+
 	for i := 0; i < len(slice); i += chunkSize {
 		end := i + chunkSize
 
