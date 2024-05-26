@@ -27,11 +27,11 @@ type ErrorMessage struct {
 
 // Client for the Hetzner DNS API.
 type Client struct {
-	requestLock          sync.Mutex
-	apiToken             string
-  userAgent            string
-	httpClient           *http.Client
-	endPoint             *url.URL
+	requestLock sync.Mutex
+	apiToken    string
+	userAgent   string
+	httpClient  *http.Client
+	endPoint    *url.URL
 }
 
 // New creates a new API Client using a given api token.
@@ -46,9 +46,9 @@ func New(apiEndpoint string, apiToken string, maxRetires uint, httpClient *http.
 	}
 
 	client := &Client{
-		apiToken:             apiToken,
-		endPoint:             endPoint,
-		httpClient:           httpClient,
+		apiToken:   apiToken,
+		endPoint:   endPoint,
+		httpClient: httpClient,
 	}
 
 	client.httpClient.Transport = &retryableTransport{
