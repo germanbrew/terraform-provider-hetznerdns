@@ -15,6 +15,12 @@ max_line_length = off
 [*.go]
 indent_size = tab
 indent_style = tab
+ij_go_group_stdlib_imports = true
+ij_go_import_sorting = goimports
+ij_go_move_all_imports_in_one_declaration = true
+ij_go_move_all_stdlib_imports_in_one_group = true
+ij_go_remove_redundant_import_aliases = true
+ij_go_run_go_fmt_on_reformat = true
 
 [*.{yaml,yml}]
 indent_size = 2
