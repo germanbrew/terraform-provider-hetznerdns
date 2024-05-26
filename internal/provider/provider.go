@@ -95,7 +95,7 @@ func (p *hetznerDNSProvider) Configure(ctx context.Context, req provider.Configu
 		hasTxtValueFormatter, err = strconv.ParseBool(v)
 		if err != nil {
 			resp.Diagnostics.AddError(
-				"enable_txt_formatter must be an boolean",
+				"enable_txt_formatter must be a boolean",
 				"While configuring the provider, the enable_txt_formatter option was not a boolean value",
 			)
 		}
