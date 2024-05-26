@@ -25,8 +25,6 @@ var (
 	_ provider.ProviderWithFunctions = &hetznerDNSProvider{}
 )
 
-var HasTxtValueFormatter = true
-
 type hetznerDNSProvider struct {
 	version string
 }
@@ -35,6 +33,11 @@ type hetznerDNSProviderModel struct {
 	ApiToken             types.String `tfsdk:"apitoken"`
 	MaxRetries           types.Int64  `tfsdk:"max_retries"`
 	HasTxtValueFormatter types.Bool   `tfsdk:"enable_txt_formatter"`
+}
+
+type ProviderClient struct {
+	client               *api.Client
+	hasTxtValueFormatter bool
 }
 
 func (p *hetznerDNSProvider) Metadata(_ context.Context, _ provider.MetadataRequest, resp *provider.MetadataResponse) {
@@ -85,10 +88,11 @@ func (p *hetznerDNSProvider) Configure(ctx context.Context, req provider.Configu
 		}
 	}
 
+	hasTxtValueFormatter := true
 	if v, ok := os.LookupEnv("HETZNER_DNS_ENABLE_TXT_FORMATTER"); ok {
 		var err error
 
-		HasTxtValueFormatter, err = strconv.ParseBool(v)
+		hasTxtValueFormatter, err = strconv.ParseBool(v)
 		if err != nil {
 			resp.Diagnostics.AddError(
 				"enable_txt_formatter must be an boolean",
@@ -112,7 +116,7 @@ func (p *hetznerDNSProvider) Configure(ctx context.Context, req provider.Configu
 	}
 
 	if data.HasTxtValueFormatter.ValueBool() {
-		HasTxtValueFormatter = data.HasTxtValueFormatter.ValueBool()
+		hasTxtValueFormatter = data.HasTxtValueFormatter.ValueBool()
 	}
 
 	if apiToken == "" {
@@ -138,7 +142,8 @@ func (p *hetznerDNSProvider) Configure(ctx context.Context, req provider.Configu
 
 	client.SetUserAgent(fmt.Sprintf("terraform-provider-hetznerdns/%s (+https://github.com/germanbrew/terraform-provider-hetznerdns) ", p.version))
 
-	_, err = client.GetZones(ctx)
+	provider := ProviderClient{client: client, hasTxtValueFormatter: hasTxtValueFormatter}
+	_, err = provider.client.GetZones(ctx)
 	if err != nil {
 		resp.Diagnostics.AddError(
 			"API error while configuring provider",
@@ -150,8 +155,8 @@ func (p *hetznerDNSProvider) Configure(ctx context.Context, req provider.Configu
 		return
 	}
 
-	resp.DataSourceData = client
-	resp.ResourceData = client
+	resp.DataSourceData = provider.client
+	resp.ResourceData = provider.client
 }
 
 func (p *hetznerDNSProvider) Resources(_ context.Context) []func() resource.Resource {
