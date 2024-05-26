@@ -61,7 +61,7 @@ func (t *retryableTransport) RoundTrip(req *http.Request) (*http.Response, error
 		retries++
 	}
 
-	return resp, err
+	return resp, err //nolint:wrapcheck
 }
 
 func shouldRetry(err error, resp *http.Response) bool {

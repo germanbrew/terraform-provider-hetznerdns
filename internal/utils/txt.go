@@ -68,6 +68,7 @@ func chunkSlice(slice string, chunkSize int) []string {
 	return chunks
 }
 
+//nolint:gochecknoglobals
 var unescapeReplacer = strings.NewReplacer(`"`, ``, `\"`, `"`)
 
 func unescapeString(value string) string {

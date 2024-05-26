@@ -24,8 +24,11 @@ func (r idnaFunction) Metadata(_ context.Context, _ function.MetadataRequest, re
 
 func (r idnaFunction) Definition(_ context.Context, _ function.DefinitionRequest, resp *function.DefinitionResponse) {
 	resp.Definition = function.Definition{
-		Summary:             "idna function",
-		MarkdownDescription: "idna converts a domain or domain label to its ASCII form. For example, `provider::hetznerdns::idna(\"bücher.example.com\")` is \"xn--bcher-kva.example.com\", and idna(\"golang\") is \"golang\". If an error is encountered it will return an error and a (partially) processed result.",
+		Summary:     "idna function",
+		Description: "idna converts a domain or domain label to its ASCII form.",
+		MarkdownDescription: "idna converts a domain or domain label to its ASCII form. For example, `provider::hetznerdns::idna(\"bücher.example.com\")` is " +
+			"\"xn--bcher-kva.example.com\", and `provider::hetznerdns::idna(\"golang\")` is \"golang\". " +
+			"If an error is encountered it will return an error and a (partially) processed result.",
 		Parameters: []function.Parameter{
 			function.StringParameter{
 				Name:                "domain",

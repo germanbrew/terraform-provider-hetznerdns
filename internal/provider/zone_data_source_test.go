@@ -1,8 +1,8 @@
 package provider
 
 import (
-	"fmt"
 	"strconv"
+	"strings"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-testing/helper/acctest"
@@ -19,7 +19,12 @@ func TestAccZoneDataSource(t *testing.T) {
 		Steps: []resource.TestStep{
 			// Read testing
 			{
-				Config: testAccZoneDataSourceConfig(aZoneName, aZoneTTL),
+				Config: strings.Join(
+					[]string{
+						testAccZoneResourceConfig(aZoneName, aZoneTTL),
+						testAccZoneDataSourceConfig(),
+					}, "\n",
+				),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					resource.TestCheckResourceAttrSet("data.hetznerdns_zone.zone1", "id"),
 					resource.TestCheckResourceAttr("data.hetznerdns_zone.zone1", "name", aZoneName),
@@ -31,15 +36,8 @@ func TestAccZoneDataSource(t *testing.T) {
 	})
 }
 
-func testAccZoneDataSourceConfig(name string, ttl int) string {
-	return fmt.Sprintf(`
-resource "hetznerdns_zone" "zone1" {
-    name = %[1]q
-    ttl  = %[2]d
-}
-
-data "hetznerdns_zone" "zone1" {
-	name = hetznerdns_zone.zone1.name
-}
-`, name, ttl)
+func testAccZoneDataSourceConfig() string {
+	return `data "hetznerdns_zone" "zone1" {
+	name = hetznerdns_zone.test.name
+}`
 }

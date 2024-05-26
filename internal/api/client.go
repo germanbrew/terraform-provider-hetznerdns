@@ -102,7 +102,7 @@ func (c *Client) request(ctx context.Context, method string, path string, bodyJS
 
 	resp, err := c.httpClient.Do(req)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("error sending request: %w", err)
 	}
 
 	if resp.StatusCode == http.StatusUnauthorized {
@@ -111,7 +111,8 @@ func (c *Client) request(ctx context.Context, method string, path string, bodyJS
 			return nil, err
 		}
 
-		return nil, fmt.Errorf("API returned HTTP 401 Unauthorized error with message: '%s'. Double check your API key is still valid", unauthorizedError.Message)
+		return nil, fmt.Errorf("API returned HTTP 401 Unauthorized error with message: '%s'. "+
+			"Double check your API key is still valid", unauthorizedError.Message)
 	} else if resp.StatusCode == http.StatusUnprocessableEntity {
 		unprocessableEntityError, err := parseUnprocessableEntityError(resp)
 		if err != nil {

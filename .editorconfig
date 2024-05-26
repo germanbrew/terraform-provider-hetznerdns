@@ -1,0 +1,29 @@
+root = true
+
+[*]
+indent_style = space
+indent_size = 4
+end_of_line = lf
+charset = utf-8
+trim_trailing_whitespace = true
+insert_final_newline = true
+max_line_length = 160
+
+[*.tf]
+max_line_length = off
+
+[Makefile]
+indent_style = tab
+
+[*.go]
+indent_size = tab
+indent_style = tab
+ij_go_group_stdlib_imports = true
+ij_go_import_sorting = goimports
+ij_go_move_all_imports_in_one_declaration = true
+ij_go_move_all_stdlib_imports_in_one_group = true
+ij_go_remove_redundant_import_aliases = true
+ij_go_run_go_fmt_on_reformat = true
+
+[*.{yaml,yml}]
+indent_size = 2

@@ -8,6 +8,7 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 func TestClientCreateZoneSuccess(t *testing.T) {
@@ -22,7 +23,7 @@ func TestClientCreateZoneSuccess(t *testing.T) {
 	opts := CreateZoneOpts{Name: "mydomain.com", TTL: 3600}
 	zone, err := client.CreateZone(context.Background(), opts)
 
-	assert.NoError(t, err)
+	require.NoError(t, err)
 	assert.Equal(t, Zone{ID: "12345", Name: "mydomain.com", TTL: 3600}, *zone)
 	assert.NotNil(t, requestBodyReader, "The request body should not be nil")
 	jsonRequestBody, _ := io.ReadAll(requestBodyReader)
@@ -32,15 +33,15 @@ func TestClientCreateZoneSuccess(t *testing.T) {
 func TestClientCreateZoneInvalidDomain(t *testing.T) {
 	t.Parallel()
 
-	responseBody := []byte(`{"zone":{"id":"","name":"","ttl":0,"registrar":"","legacy_dns_host":"","legacy_ns":null,"ns":null,"created":"","verified":"","modified":"","project":"","owner":"","permission":"","zone_type":{"id":"","name":"","description":"","prices":null},"status":"","paused":false,"is_secondary_dns":false,"txt_verification":{"name":"","token":""},"records_count":0},"error":{"message":"422 : invalid TLD","code":422}}`)
+	//nolint:lll
+	responseBody := []byte(`{"zone": {"id":"","name":"","ttl":0,"registrar":"","legacy_dns_host":"","legacy_ns":null,"ns":null,"created":"","verified":"","modified":"","project":"","owner":"","permission":"","zone_type":{"id":"","name":"","description":"","prices":null},"status":"","paused":false,"is_secondary_dns":false,"txt_verification":{"name":"","token":""},"records_count":0},"error":{"message":"422 : invalid TLD","code":422}}`)
 	config := RequestConfig{responseHTTPStatus: http.StatusUnprocessableEntity, responseBodyJSON: responseBody}
 
 	client := createTestClient(config)
 	opts := CreateZoneOpts{Name: "this.is.invalid", TTL: 3600}
 	_, err := client.CreateZone(context.Background(), opts)
 
-	assert.Error(t, err)
-	assert.Contains(t, err.Error(), "API returned HTTP 422 Unprocessable Entity error with message: '422 : invalid TLD'")
+	require.ErrorContains(t, err, "API returned HTTP 422 Unprocessable Entity error with message: '422 : invalid TLD'")
 }
 
 func TestClientCreateZoneInvalidTLD(t *testing.T) {
@@ -51,8 +52,7 @@ func TestClientCreateZoneInvalidTLD(t *testing.T) {
 	opts := CreateZoneOpts{Name: "thisisinvalid", TTL: 3600}
 	_, err := client.CreateZone(context.Background(), opts)
 
-	assert.Error(t, err)
-	assert.Contains(t, err.Error(), "'thisisinvalid' is not a valid domain")
+	require.ErrorContains(t, err, "'thisisinvalid' is not a valid domain")
 }
 
 func TestClientUpdateZoneSuccess(t *testing.T) {
@@ -69,7 +69,7 @@ func TestClientUpdateZoneSuccess(t *testing.T) {
 
 	updatedZone, err := client.UpdateZone(context.Background(), zoneWithUpdates)
 
-	assert.NoError(t, err)
+	require.NoError(t, err)
 	assert.Equal(t, zoneWithUpdates, *updatedZone)
 	assert.NotNil(t, requestBodyReader, "The request body should not be nil")
 	jsonRequestBody, _ := io.ReadAll(requestBodyReader)
@@ -85,7 +85,7 @@ func TestClientGetZone(t *testing.T) {
 
 	zone, err := client.GetZone(context.Background(), "12345678")
 
-	assert.NoError(t, err)
+	require.NoError(t, err)
 	assert.Equal(t, Zone{ID: "12345678", Name: "zone1.online", TTL: 3600}, *zone)
 }
 
@@ -97,7 +97,7 @@ func TestClientGetZoneReturnNilIfNotFound(t *testing.T) {
 
 	zone, err := client.GetZone(context.Background(), "12345678")
 
-	assert.NoError(t, err)
+	require.NoError(t, err)
 	assert.Nil(t, zone)
 }
 
@@ -110,7 +110,7 @@ func TestClientGetZoneByName(t *testing.T) {
 
 	zone, err := client.GetZoneByName(context.Background(), "zone1.online")
 
-	assert.NoError(t, err)
+	require.NoError(t, err)
 	assert.Equal(t, Zone{ID: "12345678", Name: "zone1.online", TTL: 3600}, *zone)
 }
 
@@ -122,7 +122,7 @@ func TestClientGetZoneByNameReturnNilIfnotFound(t *testing.T) {
 
 	zone, err := client.GetZoneByName(context.Background(), "zone1.online")
 
-	assert.NoError(t, err)
+	require.NoError(t, err)
 	assert.Nil(t, zone)
 }
 
@@ -134,7 +134,7 @@ func TestClientDeleteZone(t *testing.T) {
 
 	err := client.DeleteZone(context.Background(), "irrelevant")
 
-	assert.NoError(t, err)
+	require.NoError(t, err)
 }
 
 func TestClientGetRecord(t *testing.T) {
@@ -147,7 +147,7 @@ func TestClientGetRecord(t *testing.T) {
 
 	record, err := client.GetRecord(context.Background(), "12345678")
 
-	assert.NoError(t, err)
+	require.NoError(t, err)
 	assert.Equal(t, Record{ZoneID: "wwwlsksjjenm", ID: "12345678", Name: "zone1.online", TTL: &aTTL, Type: "A", Value: "192.168.1.1"}, *record)
 }
 
@@ -160,7 +160,7 @@ func TestClientGetRecordWithUndefinedTTL(t *testing.T) {
 
 	record, err := client.GetRecord(context.Background(), "12345678")
 
-	assert.NoError(t, err)
+	require.NoError(t, err)
 	assert.Equal(t, Record{ZoneID: "wwwlsksjjenm", ID: "12345678", Name: "zone1.online", TTL: nil, Type: "A", Value: "192.168.1.1"}, *record)
 }
 
@@ -172,7 +172,7 @@ func TestClientGetRecordReturnNilIfNotFound(t *testing.T) {
 
 	record, err := client.GetRecord(context.Background(), "irrelevant")
 
-	assert.NoError(t, err)
+	require.NoError(t, err)
 	assert.Nil(t, record)
 }
 
@@ -189,7 +189,7 @@ func TestClientCreateRecordSuccess(t *testing.T) {
 	opts := CreateRecordOpts{ZoneID: "wwwlsksjjenm", Name: "zone1.online", TTL: &aTTL, Type: "A", Value: "192.168.1.1"}
 	record, err := client.CreateRecord(context.Background(), opts)
 
-	assert.NoError(t, err)
+	require.NoError(t, err)
 	assert.Equal(t, Record{ZoneID: "wwwlsksjjenm", ID: "12345678", Name: "zone1.online", TTL: &aTTL, Type: "A", Value: "192.168.1.1"}, *record)
 	assert.NotNil(t, requestBodyReader, "The request body should not be nil")
 	jsonRequestBody, _ := io.ReadAll(requestBodyReader)
@@ -204,7 +204,7 @@ func TestClientRecordZone(t *testing.T) {
 
 	err := client.DeleteRecord(context.Background(), "irrelevant")
 
-	assert.NoError(t, err)
+	require.NoError(t, err)
 }
 
 func TestClientUpdateRecordSuccess(t *testing.T) {
@@ -222,7 +222,7 @@ func TestClientUpdateRecordSuccess(t *testing.T) {
 
 	updatedRecord, err := client.UpdateRecord(context.Background(), recordWithUpdates)
 
-	assert.NoError(t, err)
+	require.NoError(t, err)
 	assert.Equal(t, recordWithUpdates, *updatedRecord)
 	assert.NotNil(t, requestBodyReader, "The request body should not be nil")
 	jsonRequestBody, _ := io.ReadAll(requestBodyReader)
@@ -239,8 +239,7 @@ func TestClientHandleUnauthorizedRequest(t *testing.T) {
 	opts := CreateZoneOpts{Name: "mydomain.com", TTL: 3600}
 	_, err := client.CreateZone(context.Background(), opts)
 
-	assert.Error(t, err)
-	assert.Contains(t, err.Error(), "'Invalid API key'", "Error message didn't contain error message from API.")
+	require.ErrorContains(t, err, "'Invalid API key'", "Error message didn't contain error message from API.")
 }
 
 type RequestConfig struct {

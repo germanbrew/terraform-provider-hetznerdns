@@ -1,12 +1,12 @@
+//nolint:lll
 package utils_test
 
 import (
 	"strings"
 	"testing"
 
-	"github.com/stretchr/testify/require"
-
 	"github.com/germanbrew/terraform-provider-hetznerdns/internal/utils"
+	"github.com/stretchr/testify/require"
 )
 
 func TestPlainToTXTRecordValue(t *testing.T) {
