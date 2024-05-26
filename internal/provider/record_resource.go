@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/hashicorp/terraform-plugin-framework-validators/int64validator"
 	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
@@ -90,6 +91,9 @@ func (r *recordResource) Schema(_ context.Context, _ resource.SchemaRequest, res
 			"ttl": schema.Int64Attribute{
 				MarkdownDescription: "Time to live of this record",
 				Optional:            true,
+				Validators: []validator.Int64{
+					int64validator.AtLeast(0),
+				},
 			},
 			"id": schema.StringAttribute{
 				Computed:            true,
