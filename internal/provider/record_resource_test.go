@@ -178,12 +178,14 @@ resource "hetznerdns_record" "record2" {
 
 func TestAccRecordResourcesDKIM(t *testing.T) {
 	// aZoneName must be a valid DNS domain name with an existing TLD
-	aZoneName := fmt.Sprintf("%s.online", acctest.RandString(10))
+	aZoneName := acctest.RandString(10) + ".online"
 	aTTL := 60
 
 	aValue := "v=DKIM1;t=s;p=MIICIjANBgkqhkiG9w0BAQEFAAOCAg8AMIICCgKCAgEArBysLW4Gqogt/VBPNpHwzuX23R54CXI0wXXjiPfeg3XHBPOtDMLlOQ3IqHu4v7PlRXwXwOfvKuovFjBXQtoC4KrzXacRC7fdTYOfbBz4/GEWGNL49/GVkSBCJA4hqXPKTK11pztoFkFQa7O4mpi3x11/cKDFy+FXBZvsE8QnBjyLbmSvG31/LLTmp2lzuLyN7IXEZ31g7pHm88IG0wwP84x1PicdoTZTv1tigrDRgCMiiCC2nWQ8VMdnJu7oPuYBgvS0aE5xYckfIQWPuTZM8iDDl94sGO4ni75Ycx8vbFvy/GA9ylFF/TVwLwDhiibx6H3itywKpdaX700eYVtwjVyeqFSoUUwqfEFkfsuKozw6vAdobAZmZjbqjjf0x04rFImytVbQCAcn1k54XJEoc6ctIt5JrNBco8O0SXg6d5QHyfpbYX/U8HLTFxFvef8Chd7+IK6N7qekj7spGnpa7HFSLpji6zMNv5PM47tMIfOdfTNlzBetjSe/S7tO7FCL/2BuQWIQ7mHiP1AvG4XA05IAL9D81xvEMr70qmqIHS7ifRQ+DT2f/g7+u8piSzVr0JA2jy6sD0Zb9g4KyOgtXKDg1pzb78hcHjp144yHmNxIaKhtMtz00wKGobg5e2AKsvF+iBmWgufQYqIaKvXa4+X4H1YZjfqTgzwwBjckIN0CAwEAAQ=="
 	aName := "dkim._domainkey"
 	aType := "TXT"
+
+	aRandomValue := acctest.RandString(522)
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { testAccPreCheck(t) },
@@ -205,6 +207,27 @@ func TestAccRecordResourcesDKIM(t *testing.T) {
 						"hetznerdns_record.record1", "ttl", strconv.Itoa(aTTL)),
 				),
 			},
+			// ImportState testing
+			{
+				ResourceName:      "hetznerdns_record.record1",
+				ImportState:       true,
+				ImportStateVerify: true,
+			},
+			// Update and Read testing
+			{
+				Config: testAccRecordResourceConfigCreateDKIM(aZoneName, aTTL, aName, aRandomValue),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					resource.TestCheckResourceAttr(
+						"hetznerdns_record.record1", "value", aRandomValue),
+				),
+			},
+			// ImportState testing
+			{
+				ResourceName:      "hetznerdns_record.record1",
+				ImportState:       true,
+				ImportStateVerify: true,
+			},
+			// Delete testing automatically occurs in TestCase
 		},
 	})
 }

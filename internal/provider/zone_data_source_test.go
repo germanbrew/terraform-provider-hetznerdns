@@ -24,6 +24,7 @@ func TestAccZoneDataSource(t *testing.T) {
 					resource.TestCheckResourceAttrSet("data.hetznerdns_zone.zone1", "id"),
 					resource.TestCheckResourceAttr("data.hetznerdns_zone.zone1", "name", aZoneName),
 					resource.TestCheckResourceAttr("data.hetznerdns_zone.zone1", "ttl", strconv.Itoa(aZoneTTL)),
+					resource.TestCheckResourceAttrSet("data.hetznerdns_zone.zone1", "ns.#"),
 				),
 			},
 		},

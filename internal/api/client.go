@@ -29,6 +29,7 @@ type ErrorMessage struct {
 type Client struct {
 	requestLock          sync.Mutex
 	apiToken             string
+  userAgent            string
 	httpClient           *http.Client
 	endPoint             *url.URL
 	HasTxtValueFormatter bool
@@ -58,6 +59,10 @@ func New(apiEndpoint string, apiToken string, maxRetires uint, hasTxtValueFormat
 	}
 
 	return client, nil
+}
+
+func (c *Client) SetUserAgent(userAgent string) {
+	c.userAgent = userAgent
 }
 
 func (c *Client) request(ctx context.Context, method string, path string, bodyJSON any) (*http.Response, error) {
@@ -92,6 +97,10 @@ func (c *Client) request(ctx context.Context, method string, path string, bodyJS
 	req.Header.Set("Auth-API-Token", c.apiToken)
 	req.Header.Set("Accept", "application/json; charset=utf-8")
 	req.Header.Set("Content-Type", "application/json; charset=utf-8")
+
+	if c.userAgent != "" {
+		req.Header.Set("User-Agent", c.userAgent)
+	}
 
 	resp, err := c.httpClient.Do(req)
 	if err != nil {

@@ -55,7 +55,7 @@ func (t *retryableTransport) RoundTrip(req *http.Request) (*http.Response, error
 
 			tflog.Debug(req.Context(), fmt.Sprintf("HTTP response from API %s %s", resp.Status, req.URL))
 			tflog.Trace(req.Context(), fmt.Sprintf("Headers: %+v", resp.Header))
-			tflog.Trace(req.Context(), fmt.Sprintf("Body: %s", b.String()))
+			tflog.Trace(req.Context(), "Body: "+b.String())
 		}
 
 		retries++

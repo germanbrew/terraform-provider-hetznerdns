@@ -72,8 +72,8 @@ func (p *hetznerDNSProvider) Configure(ctx context.Context, req provider.Configu
 	maxRetries := int64(1)
 	if v, ok := os.LookupEnv("HETZNER_DNS_MAX_RETRIES"); ok {
 		var err error
-		maxRetries, err = strconv.ParseInt(v, 10, 64)
 
+		maxRetries, err = strconv.ParseInt(v, 10, 64)
 		if err != nil {
 			resp.Diagnostics.AddError(
 				"max_retries must be an positive integer",
@@ -133,6 +133,8 @@ func (p *hetznerDNSProvider) Configure(ctx context.Context, req provider.Configu
 			fmt.Sprintf("Error while creating API client: %s", err),
 		)
 	}
+
+	client.SetUserAgent(fmt.Sprintf("terraform-provider-hetznerdns/%s (+https://github.com/germanbrew/terraform-provider-hetznerdns) ", p.version))
 
 	_, err = client.GetZones(ctx)
 	if err != nil {

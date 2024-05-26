@@ -33,6 +33,7 @@ resource "hetznerdns_zone" "zone1" {
 ### Read-Only
 
 - `id` (String) Zone identifier
+- `ns` (List of String) Name Servers of the zone
 
 ## Import
 

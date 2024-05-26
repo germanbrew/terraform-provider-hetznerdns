@@ -50,12 +50,12 @@ func TestClientCreateZoneInvalidTLD(t *testing.T) {
 }
 
 func TestClientUpdateZoneSuccess(t *testing.T) {
-	zoneWithUpdates := Zone{ID: "12345678", Name: "zone1.online", TTL: 3600}
-	zoneWithUpdatesJSON := `{"id":"12345678","name":"zone1.online","ttl":3600}`
+	zoneWithUpdates := Zone{ID: "12345678", Name: "zone1.online", TTL: 3600, NS: []string{"ns1.zone1.online", "ns2.zone1.online"}}
+	zoneWithUpdatesJSON := `{"id":"12345678","name":"zone1.online","ns":["ns1.zone1.online","ns2.zone1.online"],"ttl":3600}`
 
 	var requestBodyReader io.Reader
 
-	responseBody := []byte(`{"zone":{"id":"12345678","name":"zone1.online","ttl":3600}}`)
+	responseBody := []byte(`{"zone":{"id":"12345678","name":"zone1.online","ns":["ns1.zone1.online","ns2.zone1.online"],"ttl":3600}}`)
 	config := RequestConfig{responseHTTPStatus: http.StatusOK, requestBodyReader: &requestBodyReader, responseBodyJSON: responseBody}
 	client := createTestClient(config)
 

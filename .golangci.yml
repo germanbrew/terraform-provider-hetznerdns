@@ -1,12 +1,13 @@
 # Visit https://golangci-lint.run/ for usage documentation
 # and information on other useful linters
 issues:
-  max-per-linter: 0
+  max-issues-per-linter: 0
   max-same-issues: 0
 
 linters:
   disable-all: true
   enable:
+    - contextcheck
     - durationcheck
     - errcheck
     - exportloopref
@@ -14,6 +15,7 @@ linters:
     - godot
     - gofmt
     - gosimple
+    - govet
     - ineffassign
     - makezero
     - misspell
@@ -25,5 +27,4 @@ linters:
     - unconvert
     - unparam
     - unused
-    - vet
     - wsl
