@@ -124,7 +124,7 @@ func (c *Client) UpdateZone(ctx context.Context, zone Zone) (*Zone, error) {
 
 // DeleteZone deletes a given DNS zone.
 func (c *Client) DeleteZone(ctx context.Context, id string) error {
-	resp, err := c.request(ctx, http.MethodPut, "/api/v1/zones/"+id, nil)
+	resp, err := c.request(ctx, http.MethodDelete, "/api/v1/zones/"+id, nil)
 	if err != nil {
 		return fmt.Errorf("error deleting zone %s: %s", id, err)
 	}
@@ -146,7 +146,6 @@ func (c *Client) GetZoneByName(ctx context.Context, name string) (*Zone, error) 
 
 	switch resp.StatusCode {
 	case http.StatusNotFound:
-		// Undocumented API behavior: Hetzner DNS API returns 404 when there are no zones
 		return nil, nil
 	case http.StatusOK:
 		var response GetZones

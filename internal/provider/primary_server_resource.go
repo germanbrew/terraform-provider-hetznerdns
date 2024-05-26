@@ -183,12 +183,13 @@ func (r *primaryServerResource) Update(ctx context.Context, req resource.UpdateR
 
 	if !plan.Address.Equal(state.Address) || !plan.Port.Equal(state.Port) {
 		_, err := r.client.UpdatePrimaryServer(ctx, api.PrimaryServer{
-			ID:      state.ID.String(),
+			ID:      state.ID.ValueString(),
 			Address: plan.Address.ValueString(),
 			Port:    uint16(plan.Port.ValueInt64()),
+			ZoneID:  plan.ZoneID.ValueString(),
 		})
 		if err != nil {
-			resp.Diagnostics.AddError("API Error", fmt.Sprintf("error primary server: %s", err))
+			resp.Diagnostics.AddError("API Error", fmt.Sprintf("updating primary server: %s", err))
 
 			return
 		}

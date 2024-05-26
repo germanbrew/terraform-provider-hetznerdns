@@ -59,7 +59,7 @@ func New(apiEndpoint string, apiToken string, maxRetires uint, httpClient *http.
 }
 
 func (c *Client) request(ctx context.Context, method string, path string, bodyJSON any) (*http.Response, error) {
-	uri := c.endPoint.JoinPath(path).String()
+	uri := c.endPoint.String() + path
 
 	tflog.Debug(ctx, fmt.Sprintf("HTTP request to API %s %s", method, uri))
 

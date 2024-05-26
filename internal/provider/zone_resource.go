@@ -114,7 +114,20 @@ func (r *zoneResource) Create(ctx context.Context, req resource.CreateRequest, r
 		return
 	}
 
-	httpResp, err := r.client.CreateZone(ctx, api.CreateZoneOpts{
+	httpResp, err := r.client.GetZoneByName(ctx, plan.Name.ValueString())
+	if err != nil {
+		resp.Diagnostics.AddError("API Error", fmt.Sprintf("error creating zone: %s", err))
+
+		return
+	}
+
+	if httpResp != nil {
+		resp.Diagnostics.AddError("Error", fmt.Sprintf("zone %q already exists", plan.Name.ValueString()))
+
+		return
+	}
+
+	httpResp, err = r.client.CreateZone(ctx, api.CreateZoneOpts{
 		Name: plan.Name.ValueString(),
 		TTL:  plan.TTL.ValueInt64(),
 	})

@@ -216,7 +216,7 @@ func (r *recordResource) Update(ctx context.Context, req resource.UpdateRequest,
 
 	if !plan.Name.Equal(state.Name) || !plan.TTL.Equal(state.TTL) || !plan.Type.Equal(state.Type) || !plan.Value.Equal(state.Value) {
 		_, err := r.client.UpdateRecord(ctx, api.Record{
-			ID:     state.ID.String(),
+			ID:     state.ID.ValueString(),
 			Name:   plan.Name.ValueString(),
 			Type:   plan.Type.ValueString(),
 			Value:  plan.Value.ValueString(),

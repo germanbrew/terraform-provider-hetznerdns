@@ -40,7 +40,7 @@ func TestAccRecordResources(t *testing.T) {
 			},
 			// ImportState testing
 			{
-				ResourceName:      "hetznerdns_zone.test",
+				ResourceName:      "hetznerdns_record.record1",
 				ImportState:       true,
 				ImportStateVerify: true,
 			},
