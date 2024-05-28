@@ -1,0 +1,24 @@
+changelog:
+  categories:
+    - title: Breaking Changes 🚨
+      labels:
+        - Kind/Breaking
+    - title: Features ✨
+      labels:
+        - Kind/Feature
+    - title: Bug Fixes and Security 🐛
+      labels:
+        - Kind/Bug
+        - Kind/Security
+    - title: Improvements 🌟
+      labels:
+        - Kind/Enhancement
+    - title: Miscellaneous 📚
+      labels:
+        - "*"
+      exclude_labels:
+        - Kind/Breaking
+        - Kind/Feature
+        - Kind/Bug
+        - Kind/Security
+        - Kind/Enhancement
