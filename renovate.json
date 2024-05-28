@@ -8,15 +8,15 @@
   "packageRules": [
     {
         "matchUpdateTypes": ["major"],
-        "minimumReleaseAge": 2
+        "minimumReleaseAge": "2 days"
     },
     {
         "matchUpdateTypes": ["minor"],
-        "minimumReleaseAge": 1
+        "minimumReleaseAge": "1 days"
     },
     {
         "matchUpdateTypes": ["patch", "pin"],
-        "minimumReleaseAge": 1,
+        "minimumReleaseAge": "1 days",
         "automerge": true
     }
   ]
