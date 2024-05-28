@@ -4,5 +4,20 @@
     "config:best-practices"
   ],
   "dependencyDashboardLabels": ["Kind/Dependency"],
-  "labels": ["Kind/Dependency"]
+  "labels": ["Kind/Dependency"],
+  "packageRules": [
+    {
+        "matchUpdateTypes": ["major"],
+        "minimumReleaseAge": 2
+    },
+    {
+        "matchUpdateTypes": ["minor"],
+        "minimumReleaseAge": 1
+    },
+    {
+        "matchUpdateTypes": ["patch"],
+        "minimumReleaseAge": 1,
+        "automerge": true
+    }
+  ]
 }
