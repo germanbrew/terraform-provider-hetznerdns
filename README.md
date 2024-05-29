@@ -1,10 +1,9 @@
 # Terraform Provider for Hetzner DNS
 
-[![Tests](https://github.com/germanbrew/terraform-provider-hetznerdns/actions/workflows/test.yaml/badge.svg)](https://github.com/germanbrew/terraform-provider-hetznerdns/actions/workflows/test.yaml)
-![GitHub release (latest by date)](https://img.shields.io/github/v/release/germanbrew/terraform-provider-hetznerdns)
-![GitHub](https://img.shields.io/github/license/germanbrew/terraform-provider-hetznerdns)
-
-**This provider is published on the [Terraform](https://registry.terraform.io/providers/germanbrew/hetznerdns/latest) and [OpenTofu Registry](https://github.com/opentofu/registry/tree/main/providers/g/germanbrew)**.
+[![Terraform](https://img.shields.io/badge/Terraform-844FBA.svg?style=for-the-badge&logo=Terraform&logoColor=white)](https://registry.terraform.io/providers/germanbrew/hetznerdns/latest)
+[![OpenTofu](https://img.shields.io/badge/OpenTofu-FFDA18.svg?style=for-the-badge&logo=OpenTofu&logoColor=black)](https://github.com/opentofu/registry/blob/main/providers/g/germanbrew/hetznerdns.json)
+![GitHub Release](https://img.shields.io/github/v/release/germanbrew/terraform-provider-hetznerdns?sort=date&display_name=release&style=for-the-badge&logo=github&link=https%3A%2F%2Fgithub.com%2Fgermanbrew%2Fterraform-provider-hetznerdns%2Freleases%2Flatest)
+![GitHub Actions Workflow Status](https://img.shields.io/github/actions/workflow/status/germanbrew/terraform-provider-hetznerdns/test.yaml?branch=main&style=for-the-badge&logo=github&label=Tests&link=https%3A%2F%2Fgithub.com%2Fgermanbrew%2Fterraform-provider-hetznerdns%2Factions%2Fworkflows%2Ftest.yaml)
 
 You can find resources and data sources [documentation](https://registry.terraform.io/providers/germanbrew/hetznerdns/latest/docs) there or [here](docs).
 
@@ -12,8 +11,7 @@ You can find resources and data sources [documentation](https://registry.terrafo
 
 ## Requirements
 
-- [Terraform](https://www.terraform.io/downloads.html) > v1.0
-- [Go](https://golang.org/) 1.21 (to build the provider plugin)
+-   [Terraform](https://www.terraform.io/downloads.html) > v1.0
 
 ## Installing and Using this Plugin
 
@@ -85,13 +83,23 @@ The provider uses this token, and you don't have to enter it anymore.
 
 ## Development
 
+### Requirements
+
+- [Go](https://golang.org/) 1.21 (to build the provider plugin)
+- [golangci-lint](https://github.com/golangci/golangci-lint) (to lint code)
+- [terraform-plugin-docs](https://github.com/hashicorp/terraform-plugin-docs) (to generate registry documentation)
+
+### Makefile Commands
+
+Check the subcommands in our [Makefile](Makefile) for useful dev tools and scripts.
+
 ### Testing the provider locally
 
 To test the provider locally:
 
 1. Build the provider binary with `make build`
 2. Create a new file `~/.terraform.rc` and point the provider to the absolute **directory** path of the binary file:
-    ```json
+    ```hcl
     provider_installation {
         dev_overrides {
             "germanbrew/hetznerdns" = "/path/to/your/terraform-provider-hetznerdns/bin/"
@@ -99,22 +107,24 @@ To test the provider locally:
         direct {}
     }
     ```
-3.
-   - Set the variable before running terraform commands:
+3.  - Set the variable before running terraform commands:
+
     ```sh
     TF_CLI_CONFIG_FILE=~/.terraform.rc terraform plan
     ```
-   - Or set the env variable `TF_CLI_CONFIG_FILE` and point it to `~/.terraform.rc`: e.g.
+
+    - Or set the env variable `TF_CLI_CONFIG_FILE` and point it to `~/.terraform.rc`: e.g.
+
     ```sh
     export TF_CLI_CONFIG_FILE=~/.terraform.rc`
     ```
 
-1. Now you can just use terraform normally. A warning will appear, that notifies you that you are using an provider override
+4. Now you can just use terraform normally. A warning will appear, that notifies you that you are using an provider override
     ```
     Warning: Provider development overrides are in effect
     ...
     ```
-2. Unset the env variable if you don't want to use the local provider anymore:
+5. Unset the env variable if you don't want to use the local provider anymore:
     ```sh
     unset TF_CLI_CONFIG_FILE
     ```
