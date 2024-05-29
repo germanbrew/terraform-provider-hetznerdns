@@ -12,7 +12,6 @@ You can find resources and data sources [documentation](https://registry.terrafo
 ## Requirements
 
 -   [Terraform](https://www.terraform.io/downloads.html) > v1.0
--   [Go](https://golang.org/) 1.21 (to build the provider plugin)
 
 ## Installing and Using this Plugin
 
@@ -84,13 +83,23 @@ The provider uses this token, and you don't have to enter it anymore.
 
 ## Development
 
+### Requirements
+
+- [Go](https://golang.org/) 1.21 (to build the provider plugin)
+- [golangci-lint](https://github.com/golangci/golangci-lint) (to lint code)
+- [terraform-plugin-docs](https://github.com/hashicorp/terraform-plugin-docs) (to generate registry documentation)
+
+### Makefile Commands
+
+Check the subcommands in our [Makefile](Makefile) for useful dev tools and scripts.
+
 ### Testing the provider locally
 
 To test the provider locally:
 
 1. Build the provider binary with `make build`
 2. Create a new file `~/.terraform.rc` and point the provider to the absolute **directory** path of the binary file:
-    ```json
+    ```
     provider_installation {
         dev_overrides {
             "germanbrew/hetznerdns" = "/path/to/your/terraform-provider-hetznerdns/bin/"
