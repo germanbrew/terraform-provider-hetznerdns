@@ -1,7 +1,7 @@
 BINARY_DIR=bin
 BINARY_NAME=terraform-provider-hetznerdns
 
-.PHONY: build testacc test docs fmt
+.PHONY: build testacc test lint docs fmt
 
 build:
 	mkdir -p $(BINARY_DIR)
