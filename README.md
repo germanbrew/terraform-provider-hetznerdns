@@ -99,7 +99,7 @@ To test the provider locally:
 
 1. Build the provider binary with `make build`
 2. Create a new file `~/.terraform.rc` and point the provider to the absolute **directory** path of the binary file:
-    ```
+    ```hcl
     provider_installation {
         dev_overrides {
             "germanbrew/hetznerdns" = "/path/to/your/terraform-provider-hetznerdns/bin/"
