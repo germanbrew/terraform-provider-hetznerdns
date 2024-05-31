@@ -5,8 +5,10 @@ import (
 	"fmt"
 
 	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
+	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
 	"github.com/hashicorp/terraform-plugin-framework/datasource/schema"
+	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 )
@@ -147,7 +149,7 @@ func (d *recordsDataSource) Read(ctx context.Context, req datasource.ReadRequest
 		return
 	}
 
-	var elements []recordDataSourceModel
+	elements := make([]recordDataSourceModel, 0, len(*records))
 	for _, record := range *records {
 		elements = append(elements,
 			recordDataSourceModel{
@@ -161,7 +163,18 @@ func (d *recordsDataSource) Read(ctx context.Context, req datasource.ReadRequest
 		)
 	}
 
-	values, diags := types.ListValueFrom(ctx, types.ListType, elements)  // FIXME element type in this line
+	var diags diag.Diagnostics
+
+	data.Records, diags = types.ListValueFrom(ctx, types.ObjectType{
+		AttrTypes: map[string]attr.Type{
+			"zone_id": types.StringType,
+			"id":      types.StringType,
+			"type":    types.StringType,
+			"name":    types.StringType,
+			"value":   types.StringType,
+			"ttl":     types.Int64Type,
+		},
+	}, elements)
 
 	resp.Diagnostics.Append(diags...)
 
@@ -170,7 +183,7 @@ func (d *recordsDataSource) Read(ctx context.Context, req datasource.ReadRequest
 	}
 
 	// Save data into Terraform state
-	resp.Diagnostics.Append(resp.State.Set(ctx, &values)...)
+	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
 }
 
 // TODO Write tests

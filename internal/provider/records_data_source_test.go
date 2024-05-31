@@ -1,8 +1,7 @@
 package provider
 
 import (
-	"fmt"
-	"strconv"
+	"regexp"
 	"strings"
 	"testing"
 
@@ -32,22 +31,42 @@ func TestAccRecordsDataSource(t *testing.T) {
 						testAccZoneResourceConfig(aZoneName, aZoneTTL),
 						testAccRecordResourceConfig("record1", aName, aType, aValue),
 						testAccRecordResourceConfig("record2", annotherName, annotherType, annotherValue),
-						testAccRecordsDataSourceConfig(aZoneName),
+						testAccRecordsDataSourceConfig(),
 					}, "\n",
 				),
 				Check: resource.ComposeAggregateTestCheckFunc(
-					resource.TestCheckResourceAttrSet("data.hetznerdns_records.records1.0", "id"),
-					resource.TestCheckResourceAttr("data.hetznerdns_records.records1.0", "name", aZoneName),
-					resource.TestCheckResourceAttrSet("data.hetznerdns_records.records1.0", "value"),
-					resource.TestCheckResourceAttr("data.hetznerdns_records.records1.0", "ttl", strconv.Itoa(aZoneTTL)),
+					resource.TestCheckResourceAttr("data.hetznerdns_records.test", "records.#", "3"),
+					resource.TestMatchTypeSetElemNestedAttrs("data.hetznerdns_records.test", "records.*", map[string]*regexp.Regexp{
+						"zone_id": regexp.MustCompile(`^\S+$`),
+						"id":      regexp.MustCompile(`^\S+$`),
+						"name":    regexp.MustCompile("@"),
+						"value":   regexp.MustCompile(`[a-z.]+ [a-z.]+ [\d ]+`),
+						"type":    regexp.MustCompile("SOA"),
+					}),
+					resource.TestMatchTypeSetElemNestedAttrs("data.hetznerdns_records.test", "records.*", map[string]*regexp.Regexp{
+						"zone_id": regexp.MustCompile(`^\S+$`),
+						"id":      regexp.MustCompile(`^\S+$`),
+						"name":    regexp.MustCompile(aName),
+						"value":   regexp.MustCompile(aValue),
+						"type":    regexp.MustCompile(aType),
+					}),
+					resource.TestMatchTypeSetElemNestedAttrs("data.hetznerdns_records.test", "records.*", map[string]*regexp.Regexp{
+						"zone_id": regexp.MustCompile(`^\S+$`),
+						"id":      regexp.MustCompile(`^\S+$`),
+						"name":    regexp.MustCompile(annotherName),
+						"value":   regexp.MustCompile(annotherValue),
+						"type":    regexp.MustCompile(annotherType),
+					}),
 				),
 			},
 		},
 	})
 }
 
-func testAccRecordsDataSourceConfig(zoneName string) string {
-	return fmt.Sprintf(`data "hetznerdns_records" "records1" {
-	zone_id = hetznerdns_zone.%s.id
-}`, zoneName)
+func testAccRecordsDataSourceConfig() string {
+	return `data "hetznerdns_records" "test" {
+	zone_id = hetznerdns_zone.test.id
+
+	depends_on = [hetznerdns_record.record1, hetznerdns_record.record2]
+}`
 }
