@@ -49,8 +49,8 @@ func TestPlainToTXTRecordValue(t *testing.T) {
 		},
 		{
 			name:   "large string with quotes",
-			input:  strings.Repeat(`te st`, 100),
-			output: `"te stte stte stte stte stte stte stte stte stte stte stte stte stte stte stte stte stte stte stte stte stte stte stte stte stte stte stte stte stte stte stte stte stte stte stte stte stte stte stte stte stte stte stte stte stte stte stte stte stte stte st" "te stte stte stte stte stte stte stte stte stte stte stte stte stte stte stte stte stte stte stte stte stte stte stte stte stte stte stte stte stte stte stte stte stte stte stte stte stte stte stte stte stte stte stte stte stte stte stte stte st" `,
+			input:  strings.Repeat(`t e s t`, 100),
+			output: `"t e s tt e s tt e s tt e s tt e s tt e s tt e s tt e s tt e s tt e s tt e s tt e s tt e s tt e s tt e s tt e s tt e s tt e s tt e s tt e s tt e s tt e s tt e s tt e s tt e s tt e s tt e s tt e s tt e s tt e s tt e s tt e s tt e s tt e s tt e s tt e s tt e" " s tt e s tt e s tt e s tt e s tt e s tt e s tt e s tt e s tt e s tt e s tt e s tt e s tt e s tt e s tt e s tt e s tt e s tt e s tt e s tt e s tt e s tt e s tt e s tt e s tt e s tt e s tt e s tt e s tt e s tt e s tt e s tt e s tt e s tt e s tt e s tt e s " "tt e s tt e s tt e s tt e s tt e s tt e s tt e s tt e s tt e s tt e s tt e s tt e s tt e s tt e s tt e s tt e s tt e s tt e s tt e s tt e s tt e s tt e s tt e s tt e s tt e s tt e s tt e s t" `,
 		},
 	} {
 		tc := tc
@@ -103,8 +103,8 @@ func TestTXTRecordToPlainValue(t *testing.T) {
 		},
 		{
 			name:   "large string with spaces",
-			input:  `"te stte stte stte stte stte stte stte stte stte stte stte stte stte stte stte stte stte stte stte stte stte stte stte stte stte stte stte stte stte stte stte stte stte stte stte stte stte stte stte stte stte stte stte stte stte stte stte stte stte stte st" "te stte stte stte stte stte stte stte stte stte stte stte stte stte stte stte stte stte stte stte stte stte stte stte stte stte stte stte stte stte stte stte stte stte stte stte stte stte stte stte stte stte stte stte stte stte stte stte stte st" `,
-			output: strings.Repeat(`te st`, 100),
+			input:  `"t e s tt e s tt e s tt e s tt e s tt e s tt e s tt e s tt e s tt e s tt e s tt e s tt e s tt e s tt e s tt e s tt e s tt e s tt e s tt e s tt e s tt e s tt e s tt e s tt e s tt e s tt e s tt e s tt e s tt e s tt e s tt e s tt e s tt e s tt e s tt e s tt e s tt e s tt e s tt e s tt e s tt e s tt e s tt e s tt e s tt e s tt e s tt e s tt e s tt e s tt e s t" "t e s tt e s tt e s tt e s tt e s tt e s tt e s tt e s tt e s tt e s tt e s tt e s tt e s tt e s tt e s tt e s tt e s tt e s tt e s tt e s tt e s tt e s tt e s tt e s tt e s tt e s tt e s tt e s tt e s tt e s tt e s tt e s tt e s tt e s tt e s tt e s tt e s tt e s tt e s tt e s tt e s tt e s tt e s tt e s tt e s tt e s tt e s tt e s tt e s t" `,
+			output: strings.Repeat(`t e s t`, 100),
 		},
 	} {
 		tc := tc
@@ -150,7 +150,7 @@ func TestPlainToTXTRecordToPlainValue(t *testing.T) {
 		},
 		{
 			name:  "large string with spaces",
-			value: strings.Repeat("te st", 100),
+			value: strings.Repeat("t e s t", 100),
 		},
 	} {
 		tc := tc
