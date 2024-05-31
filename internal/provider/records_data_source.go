@@ -156,7 +156,7 @@ func (d *recordsDataSource) Read(ctx context.Context, req datasource.ReadRequest
 				Type:   types.StringValue(record.Type),
 				Name:   types.StringValue(record.Name),
 				Value:  types.StringValue(record.Value),
-				TTL:    types.Int64Value(ttl),  // FIXME memory error in this line
+				TTL:    types.Int64Value(*record.TTL),  // FIXME memory error in this line
 			},
 		)
 	}
