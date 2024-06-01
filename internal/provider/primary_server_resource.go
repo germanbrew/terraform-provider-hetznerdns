@@ -89,7 +89,23 @@ func (r *primaryServerResource) Schema(ctx context.Context, _ resource.SchemaReq
 		},
 
 		Blocks: map[string]schema.Block{
-			"timeouts": timeouts.BlockAll(ctx),
+			"timeouts": timeouts.Block(ctx, timeouts.Opts{
+				Create: true,
+				Read:   true,
+				Update: true,
+				Delete: true,
+
+				CreateDescription: `A string that can be [parsed as a duration](https://pkg.go.dev/time#ParseDuration) consisting of numbers and unit suffixes,
+ such as "30s" or "2h45m". Valid time units are "s" (seconds), "m" (minutes), "h" (hours). Default: 5m`,
+				DeleteDescription: `A string that can be [parsed as a duration](https://pkg.go.dev/time#ParseDuration) consisting of numbers and unit suffixes,
+ such as "30s" or "2h45m". Valid time units are "s" (seconds), "m" (minutes), "h" (hours). Setting a timeout for a Delete operation is only applicable if
+ changes are saved into state before the destroy operation occurs. Default: 5m`,
+				ReadDescription: `A string that can be [parsed as a duration](https://pkg.go.dev/time#ParseDuration) consisting of numbers and unit suffixes,
+ such as "30s" or "2h45m". Valid time units are "s" (seconds), "m" (minutes), "h" (hours). Read operations occur during any refresh or planning operation when
+ refresh is enabled. Default: 5m`,
+				UpdateDescription: `A string that can be [parsed as a duration](https://pkg.go.dev/time#ParseDuration) consisting of numbers and unit suffixes,
+ such as "30s" or "2h45m". Valid time units are "s" (seconds), "m" (minutes), "h" (hours). Default: 5m`,
+			}),
 		},
 	}
 }
@@ -211,7 +227,7 @@ func (r *primaryServerResource) Read(ctx context.Context, req resource.ReadReque
 		return nil
 	})
 	if err != nil {
-		resp.Diagnostics.AddError("Client Error", fmt.Sprintf("Unable to primary server, got error: %s", err))
+		resp.Diagnostics.AddError("API Error", fmt.Sprintf("read primary server: %s", err))
 
 		return
 	}
@@ -278,7 +294,7 @@ func (r *primaryServerResource) Update(ctx context.Context, req resource.UpdateR
 			return nil
 		})
 		if err != nil {
-			resp.Diagnostics.AddError("API Error", fmt.Sprintf("update primary server: %s", err))
+			resp.Diagnostics.AddError("API Error", fmt.Sprintf("update primary server %s: %s", state.ID, err))
 
 			return
 		}
@@ -327,7 +343,7 @@ func (r *primaryServerResource) Delete(ctx context.Context, req resource.DeleteR
 		return nil
 	})
 	if err != nil {
-		resp.Diagnostics.AddError("API Error", fmt.Sprintf("Error deleting primary server %s: %s", state.ID, err))
+		resp.Diagnostics.AddError("API Error", fmt.Sprintf("deleting primary server %s: %s", state.ID, err))
 
 		return
 	}

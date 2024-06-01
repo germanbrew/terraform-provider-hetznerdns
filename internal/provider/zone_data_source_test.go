@@ -21,7 +21,7 @@ func TestAccZone_DataSource(t *testing.T) {
 			{
 				Config: strings.Join(
 					[]string{
-						testAccZoneResourceConfig(aZoneName, aZoneTTL),
+						testAccZoneResourceConfig("test", aZoneName, aZoneTTL),
 						testAccZoneDataSourceConfig(),
 					}, "\n",
 				),

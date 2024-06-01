@@ -3,9 +3,11 @@ package provider
 import (
 	"context"
 	"fmt"
+	"time"
 
 	"github.com/germanbrew/terraform-provider-hetznerdns/internal/api"
 	"github.com/germanbrew/terraform-provider-hetznerdns/internal/utils"
+	"github.com/hashicorp/terraform-plugin-framework-timeouts/resource/timeouts"
 	"github.com/hashicorp/terraform-plugin-framework-validators/int64validator"
 	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
 	"github.com/hashicorp/terraform-plugin-framework/path"
@@ -16,6 +18,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
 )
 
 // Ensure provider defined types fully satisfy framework interfaces.
@@ -41,13 +44,15 @@ type recordResourceModel struct {
 	Type   types.String `tfsdk:"type"`
 	Value  types.String `tfsdk:"value"`
 	TTL    types.Int64  `tfsdk:"ttl"`
+
+	Timeouts timeouts.Value `tfsdk:"timeouts"`
 }
 
 func (r *recordResource) Metadata(_ context.Context, req resource.MetadataRequest, resp *resource.MetadataResponse) {
 	resp.TypeName = req.ProviderTypeName + "_record"
 }
 
-func (r *recordResource) Schema(_ context.Context, _ resource.SchemaRequest, resp *resource.SchemaResponse) {
+func (r *recordResource) Schema(ctx context.Context, _ resource.SchemaRequest, resp *resource.SchemaResponse) {
 	resp.Schema = schema.Schema{
 		// This description is used by the documentation generator and the language server.
 		MarkdownDescription: "Provides a Hetzner DNS Zone resource to create, update and delete DNS Zones.",
@@ -102,6 +107,26 @@ func (r *recordResource) Schema(_ context.Context, _ resource.SchemaRequest, res
 				},
 			},
 		},
+
+		Blocks: map[string]schema.Block{
+			"timeouts": timeouts.Block(ctx, timeouts.Opts{
+				Create: true,
+				Read:   true,
+				Update: true,
+				Delete: true,
+
+				CreateDescription: `A string that can be [parsed as a duration](https://pkg.go.dev/time#ParseDuration) consisting of numbers and unit suffixes,
+ such as "30s" or "2h45m". Valid time units are "s" (seconds), "m" (minutes), "h" (hours). Default: 5m`,
+				DeleteDescription: `A string that can be [parsed as a duration](https://pkg.go.dev/time#ParseDuration) consisting of numbers and unit suffixes,
+ such as "30s" or "2h45m". Valid time units are "s" (seconds), "m" (minutes), "h" (hours). Setting a timeout for a Delete operation is only applicable if
+ changes are saved into state before the destroy operation occurs. Default: 5m`,
+				ReadDescription: `A string that can be [parsed as a duration](https://pkg.go.dev/time#ParseDuration) consisting of numbers and unit suffixes,
+ such as "30s" or "2h45m". Valid time units are "s" (seconds), "m" (minutes), "h" (hours). Read operations occur during any refresh or planning operation when
+ refresh is enabled. Default: 5m`,
+				UpdateDescription: `A string that can be [parsed as a duration](https://pkg.go.dev/time#ParseDuration) consisting of numbers and unit suffixes,
+ such as "30s" or "2h45m". Valid time units are "s" (seconds), "m" (minutes), "h" (hours). Default: 5m`,
+			}),
+		},
 	}
 }
 
@@ -137,6 +162,13 @@ func (r *recordResource) Create(ctx context.Context, req resource.CreateRequest,
 		return
 	}
 
+	createTimeout, diags := plan.Timeouts.Create(ctx, 5*time.Minute)
+	resp.Diagnostics.Append(diags...)
+
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
 	value := plan.Value.ValueString()
 	if plan.Type.ValueString() == "TXT" && r.provider.txtFormatter {
 		value = utils.PlainToTXTRecordValue(value)
@@ -145,20 +177,41 @@ func (r *recordResource) Create(ctx context.Context, req resource.CreateRequest,
 		}
 	}
 
-	httpResp, err := r.provider.apiClient.CreateRecord(ctx, api.CreateRecordOpts{
+	var (
+		err     error
+		record  *api.Record
+		retries int64
+	)
+
+	recordRequest := api.CreateRecordOpts{
 		ZoneID: plan.ZoneID.ValueString(),
 		Name:   plan.Name.ValueString(),
 		Type:   plan.Type.ValueString(),
 		Value:  value,
 		TTL:    plan.TTL.ValueInt64Pointer(),
+	}
+
+	err = retry.RetryContext(ctx, createTimeout, func() *retry.RetryError {
+		retries++
+
+		record, err = r.provider.apiClient.CreateRecord(ctx, recordRequest)
+		if err != nil {
+			if retries == r.provider.maxRetries {
+				return retry.NonRetryableError(err)
+			}
+
+			return retry.RetryableError(err)
+		}
+
+		return nil
 	})
 	if err != nil {
-		resp.Diagnostics.AddError("API Error", fmt.Sprintf("error creating zone: %s", err))
+		resp.Diagnostics.AddError("API Error", fmt.Sprintf("creating record: %s", err))
 
 		return
 	}
 
-	plan.ID = types.StringValue(httpResp.ID)
+	plan.ID = types.StringValue(record.ID)
 
 	// Save plan into Terraform state
 	resp.Diagnostics.Append(resp.State.Set(ctx, &plan)...)
@@ -176,29 +229,55 @@ func (r *recordResource) Read(ctx context.Context, req resource.ReadRequest, res
 		return
 	}
 
-	zone, err := r.provider.apiClient.GetRecord(ctx, state.ID.ValueString())
+	readTimeout, diags := state.Timeouts.Read(ctx, 5*time.Minute)
+	resp.Diagnostics.Append(diags...)
+
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
+	var (
+		err     error
+		record  *api.Record
+		retries int64
+	)
+
+	err = retry.RetryContext(ctx, readTimeout, func() *retry.RetryError {
+		retries++
+
+		record, err = r.provider.apiClient.GetRecord(ctx, state.ID.ValueString())
+		if err != nil {
+			if retries == r.provider.maxRetries {
+				return retry.NonRetryableError(err)
+			}
+
+			return retry.RetryableError(err)
+		}
+
+		return nil
+	})
 	if err != nil {
-		resp.Diagnostics.AddError("Client Error", fmt.Sprintf("Unable to read zene, got error: %s", err))
+		resp.Diagnostics.AddError("API Error", fmt.Sprintf("read record: %s", err))
 
 		return
 	}
 
-	if zone == nil {
-		resp.Diagnostics.AddWarning("Resource Not Found", fmt.Sprintf("DNS zone with id %s doesn't exist, removing it from state", state.ID))
+	if record == nil {
+		resp.Diagnostics.AddWarning("Resource Not Found", fmt.Sprintf("DNS record with id %s doesn't exist, removing it from state", state.ID))
 
 		return
 	}
 
-	if zone.Type == "TXT" && r.provider.txtFormatter {
-		zone.Value = utils.TXTRecordToPlainValue(zone.Value)
+	if record.Type == "TXT" && r.provider.txtFormatter {
+		record.Value = utils.TXTRecordToPlainValue(record.Value)
 	}
 
-	state.Name = types.StringValue(zone.Name)
-	state.TTL = types.Int64PointerValue(zone.TTL)
-	state.ZoneID = types.StringValue(zone.ZoneID)
-	state.Type = types.StringValue(zone.Type)
-	state.Value = types.StringValue(zone.Value)
-	state.ID = types.StringValue(zone.ID)
+	state.Name = types.StringValue(record.Name)
+	state.TTL = types.Int64PointerValue(record.TTL)
+	state.ZoneID = types.StringValue(record.ZoneID)
+	state.Type = types.StringValue(record.Type)
+	state.Value = types.StringValue(record.Value)
+	state.ID = types.StringValue(record.ID)
 
 	// Save updated state into Terraform state
 	resp.Diagnostics.Append(resp.State.Set(ctx, &state)...)
@@ -222,16 +301,43 @@ func (r *recordResource) Update(ctx context.Context, req resource.UpdateRequest,
 	}
 
 	if !plan.Name.Equal(state.Name) || !plan.TTL.Equal(state.TTL) || !plan.Type.Equal(state.Type) || !plan.Value.Equal(state.Value) {
-		_, err := r.provider.apiClient.UpdateRecord(ctx, api.Record{
+		updateTimeout, diags := plan.Timeouts.Update(ctx, 5*time.Minute)
+		resp.Diagnostics.Append(diags...)
+
+		if resp.Diagnostics.HasError() {
+			return
+		}
+
+		var (
+			err     error
+			retries int64
+		)
+
+		record := api.Record{
 			ID:     state.ID.ValueString(),
 			Name:   plan.Name.ValueString(),
 			Type:   plan.Type.ValueString(),
 			Value:  value,
 			TTL:    plan.TTL.ValueInt64Pointer(),
 			ZoneID: plan.ZoneID.ValueString(),
+		}
+
+		err = retry.RetryContext(ctx, updateTimeout, func() *retry.RetryError {
+			retries++
+
+			_, err = r.provider.apiClient.UpdateRecord(ctx, record)
+			if err != nil {
+				if retries == r.provider.maxRetries {
+					return retry.NonRetryableError(err)
+				}
+
+				return retry.RetryableError(err)
+			}
+
+			return nil
 		})
 		if err != nil {
-			resp.Diagnostics.AddError("API Error", fmt.Sprintf("error updating zone: %s", err))
+			resp.Diagnostics.AddError("API Error", fmt.Sprintf("update record: %s", err))
 
 			return
 		}
@@ -253,8 +359,34 @@ func (r *recordResource) Delete(ctx context.Context, req resource.DeleteRequest,
 		return
 	}
 
-	if err := r.provider.apiClient.DeleteRecord(ctx, state.ID.ValueString()); err != nil {
-		resp.Diagnostics.AddError("API Error", fmt.Sprintf("error deleting zone: %s", err))
+	deleteTimeout, diags := state.Timeouts.Delete(ctx, 5*time.Minute)
+	resp.Diagnostics.Append(diags...)
+
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
+	var (
+		err     error
+		retries int64
+	)
+
+	err = retry.RetryContext(ctx, deleteTimeout, func() *retry.RetryError {
+		retries++
+
+		err = r.provider.apiClient.DeleteRecord(ctx, state.ID.ValueString())
+		if err != nil {
+			if retries == r.provider.maxRetries {
+				return retry.NonRetryableError(err)
+			}
+
+			return retry.RetryableError(err)
+		}
+
+		return nil
+	})
+	if err != nil {
+		resp.Diagnostics.AddError("API Error", fmt.Sprintf("deleting record %s: %s", state.ID, err))
 
 		return
 	}

@@ -10,6 +10,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework-validators/int64validator"
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
 	"github.com/hashicorp/terraform-plugin-framework/function"
+	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/provider"
 	"github.com/hashicorp/terraform-plugin-framework/provider/schema"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
@@ -91,7 +92,7 @@ func (p *hetznerDNSProvider) Configure(ctx context.Context, req provider.Configu
 
 	apiToken = utils.ConfigureStringAttribute(data.ApiToken, "HETZNER_DNS_API_TOKEN", "")
 	if apiToken == "" {
-		resp.Diagnostics.AddError("Missing API Token Configuration",
+		resp.Diagnostics.AddAttributeError(path.Root("api_token"), "Missing API Token Configuration",
 			"While configuring the client, the API token was not found in the HETZNER_DNS_API_TOKEN environment variable or client configuration block"+
 				"api_token attribute.",
 		)
@@ -99,12 +100,12 @@ func (p *hetznerDNSProvider) Configure(ctx context.Context, req provider.Configu
 
 	client.maxRetries, err = utils.ConfigureInt64Attribute(data.MaxRetries, "HETZNER_DNS_MAX_RETRIES", 1)
 	if err != nil {
-		resp.Diagnostics.AddError("max_retries must be an integer", err.Error())
+		resp.Diagnostics.AddAttributeError(path.Root("max_retries"), "must be an integer", err.Error())
 	}
 
 	client.txtFormatter, err = utils.ConfigureBoolAttribute(data.EnableTxtFormatter, "HETZNER_DNS_MAX_RETRIES", true)
 	if err != nil {
-		resp.Diagnostics.AddError("enable_txt_formatter must be a boolean", err.Error())
+		resp.Diagnostics.AddAttributeError(path.Root("enable_txt_formatter"), "must be a boolean", err.Error())
 	}
 
 	if resp.Diagnostics.HasError() {
@@ -123,7 +124,7 @@ func (p *hetznerDNSProvider) Configure(ctx context.Context, req provider.Configu
 	client.apiClient.SetUserAgent(fmt.Sprintf("terraform-client-hetznerdns/%s (+https://github.com/germanbrew/terraform-client-hetznerdns) ", p.version))
 
 	if _, err = client.apiClient.GetZones(ctx); err != nil {
-		resp.Diagnostics.AddError("API error while configuring client", fmt.Sprintf("Error while fetching zones: %s", err))
+		resp.Diagnostics.AddError("API error", fmt.Sprintf("Error while fetching zones: %s", err))
 
 		return
 	}
