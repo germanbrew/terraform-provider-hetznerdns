@@ -31,7 +31,7 @@ func TestAccRecords_DataSource(t *testing.T) {
 						testAccZoneResourceConfig(aZoneName, aZoneTTL),
 						testAccRecordResourceConfig("record1", aName, aType, aValue),
 						testAccRecordResourceConfig("record2", annotherName, annotherType, annotherValue),
-						testAccRecordsDataSourceConfig(),
+						testAccRecords_DataSourceConfig(),
 					}, "\n",
 				),
 				Check: resource.ComposeAggregateTestCheckFunc(
@@ -63,7 +63,7 @@ func TestAccRecords_DataSource(t *testing.T) {
 	})
 }
 
-func testAccRecordsDataSourceConfig() string {
+func testAccRecords_DataSourceConfig() string {
 	return `data "hetznerdns_records" "test" {
 	zone_id = hetznerdns_zone.test.id
 
