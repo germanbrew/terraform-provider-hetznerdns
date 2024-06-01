@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 
+	"github.com/germanbrew/terraform-provider-hetznerdns/internal/utils"
 	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
 	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
@@ -11,6 +12,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/types"
+	"github.com/hashicorp/terraform-plugin-log/tflog"
 )
 
 // Ensure provider defined types fully satisfy framework interfaces.
@@ -135,22 +137,22 @@ func (d *recordsDataSource) Read(ctx context.Context, req datasource.ReadRequest
 		return
 	}
 
-	// if zone == nil {
-	// 	resp.Diagnostics.AddError("API Error", fmt.Sprintf("DNS zone '%s' doesn't exist", data.Name.ValueString()))
-
-	// 	return
-	// }
-
-	// ns, diags := types.ListValueFrom(ctx, types.StringType, zone.NS)
-
-	// resp.Diagnostics.Append(diags...)
-
 	if resp.Diagnostics.HasError() {
 		return
 	}
 
 	elements := make([]recordDataSourceModel, 0, len(*records))
+
 	for _, record := range *records {
+		if record.Type == "TXT" && d.provider.txtFormatter {
+			value := utils.TXTRecordToPlainValue(record.Value)
+			if record.Value != value {
+				tflog.Warn(ctx, fmt.Sprintf("split TXT record value %d chunks: %q", len(value), value))
+			}
+
+			record.Value = value
+		}
+
 		elements = append(elements,
 			recordDataSourceModel{
 				ZoneID: types.StringValue(record.ZoneID),
@@ -185,5 +187,3 @@ func (d *recordsDataSource) Read(ctx context.Context, req datasource.ReadRequest
 	// Save data into Terraform state
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
 }
-
-// TODO Write tests
