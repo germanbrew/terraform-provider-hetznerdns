@@ -33,7 +33,9 @@ func (t *retryableTransport) RoundTrip(req *http.Request) (*http.Response, error
 	retries := 0
 	for shouldRetry(err, resp) && retries < t.maxRetries {
 		// Wait for the specified backoff period
+		// lintignore:R018
 		time.Sleep(backoff(retries))
+
 		// We're going to retry, consume any response to reuse the connection.
 		drainBody(resp)
 		// Clone the request body again
@@ -70,6 +72,7 @@ func shouldRetry(err error, resp *http.Response) bool {
 	}
 
 	if rateLimit := resp.Header.Get("X-Ratelimit-Remaining-Minute"); rateLimit == "0" {
+		// lintignore:R018
 		time.Sleep(time.Minute)
 	}
 
