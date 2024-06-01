@@ -1,19 +1,22 @@
 changelog:
   categories:
-    - title: Breaking Changes 🚨
+    - title: 🚨 Breaking Changes
       labels:
         - Kind/Breaking
-    - title: Features ✨
+    - title: ✨ Features
       labels:
         - Kind/Feature
-    - title: Bug Fixes and Security 🐛
+    - title: 🐛 Bug Fixes and Security
       labels:
         - Kind/Bug
         - Kind/Security
-    - title: Improvements 🌟
+    - title: 🌟 Improvements
       labels:
         - Kind/Enhancement
-    - title: Miscellaneous 📚
+    - title: 📦 Dependencies
+      labels:
+        - Kind/Dependency
+    - title: 📚 Miscellaneous
       labels:
         - "*"
       exclude_labels:
@@ -22,3 +25,4 @@ changelog:
         - Kind/Bug
         - Kind/Security
         - Kind/Enhancement
+        - Kind/Dependency
