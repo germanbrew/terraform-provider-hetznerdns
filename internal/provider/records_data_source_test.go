@@ -9,7 +9,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 )
 
-func TestAccRecordsDataSource(t *testing.T) {
+func TestAccRecords_DataSource(t *testing.T) {
 	aZoneName := acctest.RandString(10) + ".online"
 	aZoneTTL := 60
 
