@@ -3,16 +3,19 @@ package provider
 import (
 	"context"
 	"fmt"
+	"time"
 
+	"github.com/germanbrew/terraform-provider-hetznerdns/internal/api"
 	"github.com/germanbrew/terraform-provider-hetznerdns/internal/utils"
+	"github.com/hashicorp/terraform-plugin-framework-timeouts/datasource/timeouts"
 	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
 	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
 	"github.com/hashicorp/terraform-plugin-framework/datasource/schema"
-	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
 )
 
 // Ensure provider defined types fully satisfy framework interfaces.
@@ -41,13 +44,15 @@ type recordDataSourceModel struct {
 type recordsDataSourceModel struct {
 	ZoneID  types.String `tfsdk:"zone_id"`
 	Records types.List   `tfsdk:"records"`
+
+	Timeouts timeouts.Value `tfsdk:"timeouts"`
 }
 
 func (d *recordsDataSource) Metadata(_ context.Context, req datasource.MetadataRequest, resp *datasource.MetadataResponse) {
 	resp.TypeName = req.ProviderTypeName + "_records"
 }
 
-func (d *recordsDataSource) Schema(_ context.Context, _ datasource.SchemaRequest, resp *datasource.SchemaResponse) {
+func (d *recordsDataSource) Schema(ctx context.Context, _ datasource.SchemaRequest, resp *datasource.SchemaResponse) {
 	resp.Schema = schema.Schema{
 		// This description is used by the documentation generator and the language server.
 		MarkdownDescription: "Provides details about all Records of a Hetzner DNS Zone",
@@ -93,6 +98,10 @@ func (d *recordsDataSource) Schema(_ context.Context, _ datasource.SchemaRequest
 				},
 			},
 		},
+
+		Blocks: map[string]schema.Block{
+			"timeouts": timeouts.Block(ctx),
+		},
 	}
 }
 
@@ -122,7 +131,37 @@ func (d *recordsDataSource) Read(ctx context.Context, req datasource.ReadRequest
 	// Read Terraform configuration data into the model
 	resp.Diagnostics.Append(req.Config.Get(ctx, &data)...)
 
-	records, err := d.provider.apiClient.GetRecordsByZoneID(ctx, data.ZoneID.ValueString())
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
+	readTimeout, diags := data.Timeouts.Read(ctx, 5*time.Minute)
+	resp.Diagnostics.Append(diags...)
+
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
+	var (
+		err     error
+		records *[]api.Record
+		retries int64
+	)
+
+	err = retry.RetryContext(ctx, readTimeout, func() *retry.RetryError {
+		retries++
+
+		records, err = d.provider.apiClient.GetRecordsByZoneID(ctx, data.ZoneID.ValueString())
+		if err != nil {
+			if retries == d.provider.maxRetries {
+				return retry.NonRetryableError(err)
+			}
+
+			return retry.RetryableError(err)
+		}
+
+		return nil
+	})
 	if err != nil {
 		resp.Diagnostics.AddError("API Error", fmt.Sprintf("Unable to get records from zone, got error: %s", err))
 
@@ -135,7 +174,7 @@ func (d *recordsDataSource) Read(ctx context.Context, req datasource.ReadRequest
 		if record.Type == "TXT" && d.provider.txtFormatter {
 			value := utils.TXTRecordToPlainValue(record.Value)
 			if record.Value != value {
-				tflog.Warn(ctx, fmt.Sprintf("split TXT record value %d chunks: %q", len(value), value))
+				tflog.Info(ctx, fmt.Sprintf("split TXT record value %d chunks: %q", len(value), value))
 			}
 
 			record.Value = value
@@ -152,8 +191,6 @@ func (d *recordsDataSource) Read(ctx context.Context, req datasource.ReadRequest
 			},
 		)
 	}
-
-	var diags diag.Diagnostics
 
 	data.Records, diags = types.ListValueFrom(ctx, types.ObjectType{
 		AttrTypes: map[string]attr.Type{

@@ -3,12 +3,16 @@ package provider
 import (
 	"context"
 	"fmt"
+	"time"
 
+	"github.com/germanbrew/terraform-provider-hetznerdns/internal/api"
+	"github.com/hashicorp/terraform-plugin-framework-timeouts/datasource/timeouts"
 	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
 	"github.com/hashicorp/terraform-plugin-framework/datasource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/types"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
 )
 
 // Ensure provider defined types fully satisfy framework interfaces.
@@ -29,13 +33,15 @@ type zoneDataSourceModel struct {
 	Name types.String `tfsdk:"name"`
 	TTL  types.Int64  `tfsdk:"ttl"`
 	NS   types.List   `tfsdk:"ns"`
+
+	Timeouts timeouts.Value `tfsdk:"timeouts"`
 }
 
 func (d *zoneDataSource) Metadata(_ context.Context, req datasource.MetadataRequest, resp *datasource.MetadataResponse) {
 	resp.TypeName = req.ProviderTypeName + "_zone"
 }
 
-func (d *zoneDataSource) Schema(_ context.Context, _ datasource.SchemaRequest, resp *datasource.SchemaResponse) {
+func (d *zoneDataSource) Schema(ctx context.Context, _ datasource.SchemaRequest, resp *datasource.SchemaResponse) {
 	resp.Schema = schema.Schema{
 		// This description is used by the documentation generator and the language server.
 		MarkdownDescription: "Provides details about a Hetzner DNS Zone",
@@ -61,6 +67,10 @@ func (d *zoneDataSource) Schema(_ context.Context, _ datasource.SchemaRequest, r
 				Computed:            true,
 				ElementType:         types.StringType,
 			},
+		},
+
+		Blocks: map[string]schema.Block{
+			"timeouts": timeouts.Block(ctx),
 		},
 	}
 }
@@ -91,15 +101,37 @@ func (d *zoneDataSource) Read(ctx context.Context, req datasource.ReadRequest, r
 	// Read Terraform configuration data into the model
 	resp.Diagnostics.Append(req.Config.Get(ctx, &data)...)
 
-	if data.Name.ValueString() == "" {
-		resp.Diagnostics.AddError("Attribute Error", "no 'name' set")
+	if resp.Diagnostics.HasError() {
+		return
 	}
+
+	readTimeout, diags := data.Timeouts.Read(ctx, 5*time.Minute)
+	resp.Diagnostics.Append(diags...)
 
 	if resp.Diagnostics.HasError() {
 		return
 	}
 
-	zone, err := d.provider.apiClient.GetZoneByName(ctx, data.Name.ValueString())
+	var (
+		err     error
+		zone    *api.Zone
+		retries int64
+	)
+
+	err = retry.RetryContext(ctx, readTimeout, func() *retry.RetryError {
+		retries++
+
+		zone, err = d.provider.apiClient.GetZoneByName(ctx, data.Name.ValueString())
+		if err != nil {
+			if retries == d.provider.maxRetries {
+				return retry.NonRetryableError(err)
+			}
+
+			return retry.RetryableError(err)
+		}
+
+		return nil
+	})
 	if err != nil {
 		resp.Diagnostics.AddError("API Error", fmt.Sprintf("Unable to get zone, got error: %s", err))
 
