@@ -10,7 +10,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 )
 
-func TestAccRecordResources(t *testing.T) {
+func TestAccRecord_Resources(t *testing.T) {
 	zoneName := acctest.RandString(10) + ".online"
 	aZoneTTL := 60
 
@@ -68,7 +68,7 @@ func TestAccRecordResources(t *testing.T) {
 	})
 }
 
-func TestAccRecordWithDefaultTTLResources(t *testing.T) {
+func TestAccRecord_WithDefaultTTLResources(t *testing.T) {
 	// zoneName must be a valid DNS domain name with an existing TLD
 	zoneName := acctest.RandString(10) + ".online"
 	aZoneTTL := 3600
@@ -101,7 +101,7 @@ func TestAccRecordWithDefaultTTLResources(t *testing.T) {
 	})
 }
 
-func TestAccTwoRecordResources(t *testing.T) {
+func TestAccRecord_TwoRecordResources(t *testing.T) {
 	// zoneName must be a valid DNS domain name with an existing TLD
 	zoneName := acctest.RandString(10) + ".online"
 
@@ -140,7 +140,7 @@ func TestAccTwoRecordResources(t *testing.T) {
 	})
 }
 
-func TestAccRecordResourcesDKIM(t *testing.T) {
+func TestAccRecord_ResourcesDKIM(t *testing.T) {
 	// zoneName must be a valid DNS domain name with an existing TLD
 	zoneName := acctest.RandString(10) + ".online"
 	ttl := 60

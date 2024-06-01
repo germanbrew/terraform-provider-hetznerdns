@@ -16,6 +16,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/types"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/logging"
 )
 
 // Ensure ScaffoldingProvider satisfies various provider interfaces.
@@ -139,7 +140,8 @@ func (p *hetznerDNSProvider) Configure(ctx context.Context, req provider.Configu
 		return
 	}
 
-	apiClient, err := api.New("https://dns.hetzner.com", apiToken, uint(maxRetries), http.DefaultClient)
+	httpClient := logging.NewLoggingHTTPTransport(http.DefaultTransport)
+	apiClient, err := api.New("https://dns.hetzner.com", apiToken, uint(maxRetries), httpClient)
 	if err != nil {
 		resp.Diagnostics.AddError(
 			"API error while configuring client",
