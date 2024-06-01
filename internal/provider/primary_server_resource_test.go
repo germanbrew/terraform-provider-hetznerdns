@@ -10,7 +10,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 )
 
-func TestAccOnePrimaryServersResources(t *testing.T) {
+func TestAccPrimaryServer_OnePrimaryServersResources(t *testing.T) {
 	aZoneName := acctest.RandString(10) + ".online"
 	aZoneTTL := 3600
 
@@ -58,7 +58,7 @@ func TestAccOnePrimaryServersResources(t *testing.T) {
 	})
 }
 
-func TestAccTwoPrimaryServersResources(t *testing.T) {
+func TestAccPrimaryServer_TwoPrimaryServersResources(t *testing.T) {
 	aZoneName := acctest.RandString(10) + ".online"
 	aZoneTTL := 3600
 
