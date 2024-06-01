@@ -41,6 +41,10 @@ jobs:
         with:
           version: latest
 
+      - uses: bflad/tfproviderlint-github-action@master
+        with:
+          args: ./...
+
   generate:
     runs-on: ubuntu-latest
     steps:
