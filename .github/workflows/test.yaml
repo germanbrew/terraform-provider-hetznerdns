@@ -41,9 +41,7 @@ jobs:
         with:
           version: latest
 
-      - uses: bflad/tfproviderlint-github-action@master
-        with:
-          args: ./...
+      - run: go run github.com/bflad/tfproviderlint/cmd/tfproviderlintx@latest ./...
 
   generate:
     runs-on: ubuntu-latest
