@@ -141,6 +141,7 @@ func (p *hetznerDNSProvider) Configure(ctx context.Context, req provider.Configu
 	}
 
 	httpClient := logging.NewLoggingHTTPTransport(http.DefaultTransport)
+
 	apiClient, err := api.New("https://dns.hetzner.com", apiToken, uint(maxRetries), httpClient)
 	if err != nil {
 		resp.Diagnostics.AddError(
