@@ -122,22 +122,10 @@ func (d *recordsDataSource) Read(ctx context.Context, req datasource.ReadRequest
 	// Read Terraform configuration data into the model
 	resp.Diagnostics.Append(req.Config.Get(ctx, &data)...)
 
-	if data.ZoneID.ValueString() == "" {
-		resp.Diagnostics.AddError("Attribute Error", "no 'zone_id' set")
-	}
-
-	if resp.Diagnostics.HasError() {
-		return
-	}
-
 	records, err := d.provider.apiClient.GetRecordsByZoneID(ctx, data.ZoneID.ValueString())
 	if err != nil {
 		resp.Diagnostics.AddError("API Error", fmt.Sprintf("Unable to get records from zone, got error: %s", err))
 
-		return
-	}
-
-	if resp.Diagnostics.HasError() {
 		return
 	}
 
