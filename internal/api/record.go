@@ -81,6 +81,28 @@ func (c *Client) GetRecordByName(ctx context.Context, zoneID string, name string
 	}
 }
 
+// GetRecords reads all records in a given zone.
+func (c *Client) GetRecordsByZoneID(ctx context.Context, zoneID string) (*[]Record, error) {
+	resp, err := c.request(ctx, http.MethodGet, "/api/v1/records?zone_id="+zoneID, nil)
+	if err != nil {
+		return nil, fmt.Errorf("error getting records in zone %s: %w", zoneID, err)
+	}
+
+	switch resp.StatusCode {
+	case http.StatusOK:
+		var response *RecordsResponse
+
+		err = readAndParseJSONBody(resp, &response)
+		if err != nil {
+			return nil, err
+		}
+
+		return &response.Records, nil
+	default:
+		return nil, fmt.Errorf("http status %d unhandled", resp.StatusCode)
+	}
+}
+
 // GetRecord reads the current state of a DNS Record.
 func (c *Client) GetRecord(ctx context.Context, recordID string) (*Record, error) {
 	resp, err := c.request(ctx, http.MethodGet, "/api/v1/records/"+recordID, nil)
