@@ -251,7 +251,7 @@ type RequestConfig struct {
 func createTestClient(t testing.TB, config RequestConfig) *Client {
 	t.Helper()
 
-	client, err := New("http://localhost/", "irrelevant", 1, TestClient{config: config})
+	client, err := New("http://localhost/", "irrelevant", TestClient{config: config})
 	require.NoError(t, err)
 
 	return client

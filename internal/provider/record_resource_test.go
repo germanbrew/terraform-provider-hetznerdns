@@ -2,6 +2,7 @@ package provider
 
 import (
 	"fmt"
+	"regexp"
 	"strconv"
 	"strings"
 	"testing"
@@ -27,7 +28,7 @@ func TestAccRecord_Resources(t *testing.T) {
 			{
 				Config: strings.Join(
 					[]string{
-						testAccZoneResourceConfig(zoneName, aZoneTTL),
+						testAccZoneResourceConfig("test", zoneName, aZoneTTL),
 						testAccRecordResourceConfigWithTTL("record1", aName, aType, value, ttl),
 					}, "\n",
 				),
@@ -54,7 +55,7 @@ func TestAccRecord_Resources(t *testing.T) {
 			{
 				Config: strings.Join(
 					[]string{
-						testAccZoneResourceConfig(zoneName, aZoneTTL),
+						testAccZoneResourceConfig("test", zoneName, aZoneTTL),
 						testAccRecordResourceConfigWithTTL("record1", aName, aType, value, ttl*2),
 					}, "\n",
 				),
@@ -62,6 +63,34 @@ func TestAccRecord_Resources(t *testing.T) {
 					resource.TestCheckResourceAttr(
 						"hetznerdns_record.record1", "ttl", strconv.Itoa(ttl*2)),
 				),
+			},
+			// Delete testing automatically occurs in TestCase
+		},
+	})
+}
+
+func TestAccRecord_Invalid(t *testing.T) {
+	zoneName := acctest.RandString(10) + ".online"
+	aZoneTTL := 60
+
+	value := "-"
+	aName := acctest.RandString(10)
+	aType := "A"
+	ttl := aZoneTTL * 2
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:                 func() { testAccPreCheck(t) },
+		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
+		Steps: []resource.TestStep{
+			// Create and Read testing
+			{
+				Config: strings.Join(
+					[]string{
+						testAccZoneResourceConfig("test", zoneName, aZoneTTL),
+						testAccRecordResourceConfigWithTTL("record1", aName, aType, value, ttl),
+					}, "\n",
+				),
+				ExpectError: regexp.MustCompile("invalid A record"),
 			},
 			// Delete testing automatically occurs in TestCase
 		},
@@ -84,7 +113,7 @@ func TestAccRecord_WithDefaultTTLResources(t *testing.T) {
 			{
 				Config: strings.Join(
 					[]string{
-						testAccZoneResourceConfig(zoneName, aZoneTTL),
+						testAccZoneResourceConfig("test", zoneName, aZoneTTL),
 						testAccRecordResourceConfig("record1", aName, aType, value),
 					}, "\n",
 				),
@@ -119,7 +148,7 @@ func TestAccRecord_TwoRecordResources(t *testing.T) {
 			{
 				Config: strings.Join(
 					[]string{
-						testAccZoneResourceConfig(zoneName, ttl),
+						testAccZoneResourceConfig("test", zoneName, ttl),
 						testAccRecordResourceConfigWithTTL("record1", aName, aType, value, ttl),
 						testAccRecordResourceConfigWithTTL("record2", anotherName, aType, anotherValue, ttl),
 					}, "\n",
@@ -163,7 +192,7 @@ func TestAccRecord_ResourcesDKIM(t *testing.T) {
 			{
 				Config: strings.Join(
 					[]string{
-						testAccZoneResourceConfig(zoneName, ttl),
+						testAccZoneResourceConfig("test", zoneName, ttl),
 						testAccRecordResourceConfigWithTTL("record1", aName, aType, value, ttl),
 					}, "\n",
 				),
@@ -186,7 +215,7 @@ func TestAccRecord_ResourcesDKIM(t *testing.T) {
 			{
 				Config: strings.Join(
 					[]string{
-						testAccZoneResourceConfig(zoneName, ttl),
+						testAccZoneResourceConfig("test", zoneName, ttl),
 						testAccRecordResourceConfigWithTTL("record1", aName, aType, aRandomValue, ttl),
 					}, "\n",
 				),
@@ -213,8 +242,14 @@ resource "hetznerdns_record" "%s" {
 	type    = %q
 	value   = %q
 	ttl     = %d
-}
-`, resourceName, name, recordType, value, ttl)
+
+    timeouts {
+    	create = "5s"
+    	delete = "5s"
+    	read   = "5s"
+    	update = "5s"
+    }
+}`, resourceName, name, recordType, value, ttl)
 }
 
 func testAccRecordResourceConfig(resourceName, name, recordType, value string) string {
@@ -224,6 +259,12 @@ resource "hetznerdns_record" "%s" {
 	name    = %q
 	type    = %q
 	value   = %q
-}
-`, resourceName, name, recordType, value)
+
+    timeouts {
+    	create = "5s"
+    	delete = "5s"
+    	read   = "5s"
+    	update = "5s"
+    }
+}`, resourceName, name, recordType, value)
 }

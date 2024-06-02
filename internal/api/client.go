@@ -35,17 +35,14 @@ type Client struct {
 }
 
 // New creates a new API Client using a given api token.
-func New(apiEndpoint string, apiToken string, maxRetires uint, roundTripper http.RoundTripper) (*Client, error) {
+func New(apiEndpoint string, apiToken string, roundTripper http.RoundTripper) (*Client, error) {
 	endPoint, err := url.Parse(apiEndpoint)
 	if err != nil {
 		return nil, fmt.Errorf("error parsing API endpoint URL: %w", err)
 	}
 
 	httpClient := &http.Client{
-		Transport: &retryableTransport{
-			transport:  roundTripper,
-			maxRetries: int(maxRetires),
-		},
+		Transport: roundTripper,
 	}
 
 	client := &Client{

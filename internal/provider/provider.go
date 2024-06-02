@@ -4,13 +4,13 @@ import (
 	"context"
 	"fmt"
 	"net/http"
-	"os"
-	"strconv"
 
 	"github.com/germanbrew/terraform-provider-hetznerdns/internal/api"
+	"github.com/germanbrew/terraform-provider-hetznerdns/internal/utils"
 	"github.com/hashicorp/terraform-plugin-framework-validators/int64validator"
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
 	"github.com/hashicorp/terraform-plugin-framework/function"
+	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/provider"
 	"github.com/hashicorp/terraform-plugin-framework/provider/schema"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
@@ -37,6 +37,7 @@ type hetznerDNSProviderModel struct {
 
 type providerClient struct {
 	apiClient    *api.Client
+	maxRetries   int64
 	txtFormatter bool
 }
 
@@ -74,18 +75,14 @@ func (p *hetznerDNSProvider) Schema(_ context.Context, _ provider.SchemaRequest,
 }
 
 // Configure configures the provider.
-//
-//nolint:funlen // TODO: The attributes logic should be moved to a separate function
 func (p *hetznerDNSProvider) Configure(ctx context.Context, req provider.ConfigureRequest, resp *provider.ConfigureResponse) {
 	var (
-		data hetznerDNSProviderModel
-
-		err error
-
-		apiToken     string
-		maxRetries   int64
-		txtFormatter bool
+		data     hetznerDNSProviderModel
+		apiToken string
+		err      error
 	)
+
+	client := &providerClient{}
 
 	resp.Diagnostics.Append(req.Config.Get(ctx, &data)...)
 
@@ -93,47 +90,22 @@ func (p *hetznerDNSProvider) Configure(ctx context.Context, req provider.Configu
 		return
 	}
 
-	if !data.ApiToken.IsNull() {
-		apiToken = data.ApiToken.ValueString()
-	} else {
-		apiToken = os.Getenv("HETZNER_DNS_API_TOKEN")
-	}
-
-	if !data.MaxRetries.IsNull() {
-		maxRetries = data.MaxRetries.ValueInt64()
-	} else if v, ok := os.LookupEnv("HETZNER_DNS_MAX_RETRIES"); ok {
-		maxRetries, err = strconv.ParseInt(v, 10, 64)
-		if err != nil {
-			resp.Diagnostics.AddError(
-				"max_retries must be an positive integer",
-				"While configuring the client, the max_retry option was not a positive integer",
-			)
-		}
-	} else {
-		maxRetries = 1
-	}
-
-	if !data.EnableTxtFormatter.IsNull() {
-		txtFormatter = data.EnableTxtFormatter.ValueBool()
-	} else if v, ok := os.LookupEnv("HETZNER_DNS_ENABLE_TXT_FORMATTER"); ok {
-		txtFormatter, err = strconv.ParseBool(v)
-		if err != nil {
-			resp.Diagnostics.AddError(
-				"enable_txt_formatter must be a boolean",
-				"While configuring the client, the enable_txt_formatter option was not a boolean value",
-			)
-		}
-	} else {
-		txtFormatter = true
-	}
-
+	apiToken = utils.ConfigureStringAttribute(data.ApiToken, "HETZNER_DNS_API_TOKEN", "")
 	if apiToken == "" {
-		resp.Diagnostics.AddError(
-			"Missing API Token Configuration",
-			"While configuring the client, the API token was not found in "+
-				"the HETZNER_DNS_API_TOKEN environment variable or client "+
-				"configuration block apitoken attribute.",
+		resp.Diagnostics.AddAttributeError(path.Root("api_token"), "Missing API Token Configuration",
+			"While configuring the client, the API token was not found in the HETZNER_DNS_API_TOKEN environment variable or client configuration block"+
+				"api_token attribute.",
 		)
+	}
+
+	client.maxRetries, err = utils.ConfigureInt64Attribute(data.MaxRetries, "HETZNER_DNS_MAX_RETRIES", 1)
+	if err != nil {
+		resp.Diagnostics.AddAttributeError(path.Root("max_retries"), "must be an integer", err.Error())
+	}
+
+	client.txtFormatter, err = utils.ConfigureBoolAttribute(data.EnableTxtFormatter, "HETZNER_DNS_MAX_RETRIES", true)
+	if err != nil {
+		resp.Diagnostics.AddAttributeError(path.Root("enable_txt_formatter"), "must be a boolean", err.Error())
 	}
 
 	if resp.Diagnostics.HasError() {
@@ -142,27 +114,18 @@ func (p *hetznerDNSProvider) Configure(ctx context.Context, req provider.Configu
 
 	httpClient := logging.NewLoggingHTTPTransport(http.DefaultTransport)
 
-	apiClient, err := api.New("https://dns.hetzner.com", apiToken, uint(maxRetries), httpClient)
+	client.apiClient, err = api.New("https://dns.hetzner.com", apiToken, httpClient)
 	if err != nil {
-		resp.Diagnostics.AddError(
-			"API error while configuring client",
-			fmt.Sprintf("Error while creating API apiClient: %s", err),
-		)
+		resp.Diagnostics.AddError("API error while configuring client", fmt.Sprintf("Error while creating API apiClient: %s", err))
+
+		return
 	}
 
-	apiClient.SetUserAgent(fmt.Sprintf("terraform-client-hetznerdns/%s (+https://github.com/germanbrew/terraform-client-hetznerdns) ", p.version))
+	client.apiClient.SetUserAgent(fmt.Sprintf("terraform-client-hetznerdns/%s (+https://github.com/germanbrew/terraform-client-hetznerdns) ", p.version))
 
-	client := &providerClient{apiClient, txtFormatter}
+	if _, err = client.apiClient.GetZones(ctx); err != nil {
+		resp.Diagnostics.AddError("API error", fmt.Sprintf("Error while fetching zones: %s", err))
 
-	_, err = client.apiClient.GetZones(ctx)
-	if err != nil {
-		resp.Diagnostics.AddError(
-			"API error while configuring client",
-			fmt.Sprintf("Error while fetching zones: %s", err),
-		)
-	}
-
-	if resp.Diagnostics.HasError() {
 		return
 	}
 

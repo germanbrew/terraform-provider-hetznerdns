@@ -16,7 +16,7 @@ func TestAccRecords_DataSource(t *testing.T) {
 	aValue := "192.168.1.1"
 	aName := acctest.RandString(10)
 	aType := "A"
-	annotherValue := "Hello World"
+	annotherValue := acctest.RandString(200)
 	annotherName := acctest.RandString(10)
 	annotherType := "TXT"
 
@@ -28,7 +28,7 @@ func TestAccRecords_DataSource(t *testing.T) {
 			{
 				Config: strings.Join(
 					[]string{
-						testAccZoneResourceConfig(aZoneName, aZoneTTL),
+						testAccZoneResourceConfig("test", aZoneName, aZoneTTL),
 						testAccRecordResourceConfig("record1", aName, aType, aValue),
 						testAccRecordResourceConfig("record2", annotherName, annotherType, annotherValue),
 						testAccRecords_DataSourceConfig(),

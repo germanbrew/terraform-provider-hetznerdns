@@ -25,8 +25,21 @@ data "hetznerdns_zone" "zone1" {
 
 - `name` (String) Name of the DNS zone to get data from
 
+### Optional
+
+- `timeouts` (Block, Optional) (see [below for nested schema](#nestedblock--timeouts))
+
 ### Read-Only
 
 - `id` (String) The ID of the DNS zone
 - `ns` (List of String) Name Servers of the zone
 - `ttl` (Number) Time to live of this zone
+
+<a id="nestedblock--timeouts"></a>
+### Nested Schema for `timeouts`
+
+Optional:
+
+- `read` (String) A string that can be [parsed as a duration](https://pkg.go.dev/time#ParseDuration) consisting of numbers and unit suffixes,
+ such as "30s" or "2h45m". Valid time units are "s" (seconds), "m" (minutes), "h" (hours). Read operations occur during any refresh or planning operation when
+ refresh is enabled. Default: 5m

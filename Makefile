@@ -1,7 +1,7 @@
 BINARY_DIR=bin
 BINARY_NAME=terraform-provider-hetznerdns
 
-.PHONY: build testacc test lint docs fmt
+.PHONY: build testacc test lint generate fmt
 
 build:
 	mkdir -p $(BINARY_DIR)
@@ -14,10 +14,10 @@ test:
 	go test -v ./... -timeout 30m
 
 lint:
-	golangci-lint run ./... --fix
+	golangci-lint run ./...
 	go run github.com/bflad/tfproviderlint/cmd/tfproviderlintx@latest ./...
 
-docs:
+generate:
 	go generate ./...
 
 fmt:
@@ -27,3 +27,4 @@ fmt:
 	-go run github.com/bombsimon/wsl/v4/cmd...@latest -strict-append -test=true -fix ./...
 	-go run github.com/catenacyber/perfsprint@latest -fix ./...
 	-go run github.com/bflad/tfproviderlint/cmd/tfproviderlintx@latest -fix ./...
+

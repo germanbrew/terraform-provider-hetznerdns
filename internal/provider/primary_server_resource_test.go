@@ -2,6 +2,7 @@ package provider
 
 import (
 	"fmt"
+	"regexp"
 	"strconv"
 	"strings"
 	"testing"
@@ -25,7 +26,7 @@ func TestAccPrimaryServer_OnePrimaryServersResources(t *testing.T) {
 			{
 				Config: strings.Join(
 					[]string{
-						testAccZoneResourceConfig(aZoneName, aZoneTTL),
+						testAccZoneResourceConfig("test", aZoneName, aZoneTTL),
 						testAccPrimaryServerResourceConfigCreate("test", psAddress, psPort),
 					}, "\n",
 				),
@@ -45,13 +46,39 @@ func TestAccPrimaryServer_OnePrimaryServersResources(t *testing.T) {
 			{
 				Config: strings.Join(
 					[]string{
-						testAccZoneResourceConfig(aZoneName, aZoneTTL),
+						testAccZoneResourceConfig("test", aZoneName, aZoneTTL),
 						testAccPrimaryServerResourceConfigCreate("test", psAddress, psPort*2),
 					}, "\n",
 				),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					resource.TestCheckResourceAttr("hetznerdns_primary_server.test", "port", strconv.Itoa(psPort*2)),
 				),
+			},
+			// Delete testing automatically occurs in TestCase
+		},
+	})
+}
+
+func TestAccPrimaryServer_Invalid(t *testing.T) {
+	aZoneName := acctest.RandString(10) + ".online"
+	aZoneTTL := 3600
+
+	psAddress := "-"
+	psPort := 53
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:                 func() { testAccPreCheck(t) },
+		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
+		Steps: []resource.TestStep{
+			// Create and Read testing
+			{
+				Config: strings.Join(
+					[]string{
+						testAccZoneResourceConfig("test", aZoneName, aZoneTTL),
+						testAccPrimaryServerResourceConfigCreate("test", psAddress, psPort),
+					}, "\n",
+				),
+				ExpectError: regexp.MustCompile("422 Unprocessable Entity"),
 			},
 			// Delete testing automatically occurs in TestCase
 		},
@@ -76,7 +103,7 @@ func TestAccPrimaryServer_TwoPrimaryServersResources(t *testing.T) {
 			{
 				Config: strings.Join(
 					[]string{
-						testAccZoneResourceConfig(aZoneName, aZoneTTL),
+						testAccZoneResourceConfig("test", aZoneName, aZoneTTL),
 						testAccPrimaryServerResourceConfigCreate("ps1", ps1Address, ps1Port),
 						testAccPrimaryServerResourceConfigCreate("ps2", ps2Address, ps2Port),
 					}, "\n",
