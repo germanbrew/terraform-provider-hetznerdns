@@ -27,4 +27,4 @@
 #   ]
 # }
 
-terraform import hetznerdns_record.dkim_1 ed2416cb6bc8a8055b22222
+terraform import hetznerdns_record.dkim_google 3d60921a49eb384b6335766a
