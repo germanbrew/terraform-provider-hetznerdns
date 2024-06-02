@@ -68,6 +68,7 @@ func TestAccRecord_Resources(t *testing.T) {
 		},
 	})
 }
+
 func TestAccRecord_Invalid(t *testing.T) {
 	zoneName := acctest.RandString(10) + ".online"
 	aZoneTTL := 60

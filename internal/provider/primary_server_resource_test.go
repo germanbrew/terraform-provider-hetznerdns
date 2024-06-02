@@ -58,6 +58,7 @@ func TestAccPrimaryServer_OnePrimaryServersResources(t *testing.T) {
 		},
 	})
 }
+
 func TestAccPrimaryServer_Invalid(t *testing.T) {
 	aZoneName := acctest.RandString(10) + ".online"
 	aZoneTTL := 3600
