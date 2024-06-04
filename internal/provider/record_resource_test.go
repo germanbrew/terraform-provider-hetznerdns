@@ -124,6 +124,7 @@ func TestAccRecord_WithDefaultTTLResources(t *testing.T) {
 					resource.TestCheckResourceAttr("hetznerdns_record.record1", "name", aName),
 					resource.TestCheckResourceAttr("hetznerdns_record.record1", "value", value),
 					resource.TestCheckResourceAttr("hetznerdns_record.record1", "ttl.#", "0"),
+					resource.TestCheckResourceAttr("hetznerdns_record.record1", "fqdn", fmt.Sprintf("%s.%s", aName, zoneName)),
 				),
 			},
 		},
