@@ -1,6 +1,7 @@
 package provider
 
 import (
+	"fmt"
 	"regexp"
 	"strings"
 	"testing"
@@ -16,9 +17,9 @@ func TestAccRecords_DataSource(t *testing.T) {
 	aValue := "192.168.1.1"
 	aName := acctest.RandString(10)
 	aType := "A"
-	annotherValue := acctest.RandString(200)
-	annotherName := acctest.RandString(10)
-	annotherType := "TXT"
+	anotherValue := acctest.RandString(200)
+	anotherName := acctest.RandString(10)
+	anotherType := "TXT"
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { testAccPreCheck(t) },
@@ -30,7 +31,7 @@ func TestAccRecords_DataSource(t *testing.T) {
 					[]string{
 						testAccZoneResourceConfig("test", aZoneName, aZoneTTL),
 						testAccRecordResourceConfig("record1", aName, aType, aValue),
-						testAccRecordResourceConfig("record2", annotherName, annotherType, annotherValue),
+						testAccRecordResourceConfig("record2", anotherName, anotherType, anotherValue),
 						testAccRecords_DataSourceConfig(),
 					}, "\n",
 				),
@@ -49,13 +50,15 @@ func TestAccRecords_DataSource(t *testing.T) {
 						"name":    regexp.MustCompile(aName),
 						"value":   regexp.MustCompile(aValue),
 						"type":    regexp.MustCompile(aType),
+						"fqdn":    regexp.MustCompile(fmt.Sprintf("^%s.%s$", aName, aZoneName)),
 					}),
 					resource.TestMatchTypeSetElemNestedAttrs("data.hetznerdns_records.test", "records.*", map[string]*regexp.Regexp{
 						"zone_id": regexp.MustCompile(`^\S+$`),
 						"id":      regexp.MustCompile(`^\S+$`),
-						"name":    regexp.MustCompile(annotherName),
-						"value":   regexp.MustCompile(annotherValue),
-						"type":    regexp.MustCompile(annotherType),
+						"name":    regexp.MustCompile(anotherName),
+						"value":   regexp.MustCompile(anotherValue),
+						"type":    regexp.MustCompile(anotherType),
+						"fqdn":    regexp.MustCompile(fmt.Sprintf("^%s.%s$", anotherName, aZoneName)),
 					}),
 				),
 			},
