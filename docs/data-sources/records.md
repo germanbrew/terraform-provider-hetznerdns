@@ -42,6 +42,7 @@ Optional:
 
 Read-Only:
 
+- `fqdn` (String) Fully qualified domain name of the DNS record
 - `id` (String) ID of this DNS record
 - `name` (String) Name of this DNS record
 - `ttl` (Number) Time to live of this record

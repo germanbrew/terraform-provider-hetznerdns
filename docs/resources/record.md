@@ -88,6 +88,7 @@ resource "hetznerdns_record" "example_com_srv" {
 
 ### Read-Only
 
+- `fqdn` (String) Fully qualified domain name of the DNS record
 - `id` (String) Zone identifier
 
 <a id="nestedblock--timeouts"></a>
