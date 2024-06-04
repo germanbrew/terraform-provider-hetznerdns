@@ -38,6 +38,7 @@ type recordDataSourceModel struct {
 	Name   types.String `tfsdk:"name"`
 	Value  types.String `tfsdk:"value"`
 	TTL    types.Int64  `tfsdk:"ttl"`
+	FQDN   types.String `tfsdk:"fqdn"`
 }
 
 // recordsDataSourceModel describes the data source data model.
@@ -85,6 +86,10 @@ func (d *recordsDataSource) Schema(ctx context.Context, _ datasource.SchemaReque
 						},
 						"value": schema.StringAttribute{
 							MarkdownDescription: "Value of this DNS record",
+							Computed:            true,
+						},
+						"fqdn": schema.StringAttribute{
+							MarkdownDescription: "Fully qualified domain name of the DNS record",
 							Computed:            true,
 						},
 					},
@@ -172,6 +177,13 @@ func (d *recordsDataSource) Read(ctx context.Context, req datasource.ReadRequest
 		return
 	}
 
+	zone, err := d.provider.apiClient.GetZone(ctx, data.ZoneID.ValueString())
+	if err != nil {
+		resp.Diagnostics.AddError("API Error", fmt.Sprintf("Unable to get zone, got error: %s", err))
+
+		return
+	}
+
 	elements := make([]recordDataSourceModel, 0, len(*records))
 
 	for _, record := range *records {
@@ -184,6 +196,12 @@ func (d *recordsDataSource) Read(ctx context.Context, req datasource.ReadRequest
 			record.Value = value
 		}
 
+		if record.Name == "@" {
+			record.FQDN = zone.Name
+		} else {
+			record.FQDN = fmt.Sprintf("%s.%s", record.Name, zone.Name)
+		}
+
 		elements = append(elements,
 			recordDataSourceModel{
 				ZoneID: types.StringValue(record.ZoneID),
@@ -192,6 +210,7 @@ func (d *recordsDataSource) Read(ctx context.Context, req datasource.ReadRequest
 				Name:   types.StringValue(record.Name),
 				Value:  types.StringValue(record.Value),
 				TTL:    types.Int64PointerValue(record.TTL),
+				FQDN:   types.StringValue(record.FQDN),
 			},
 		)
 	}
@@ -204,6 +223,7 @@ func (d *recordsDataSource) Read(ctx context.Context, req datasource.ReadRequest
 			"name":    types.StringType,
 			"value":   types.StringType,
 			"ttl":     types.Int64Type,
+			"fqdn":    types.StringType,
 		},
 	}, elements)
 

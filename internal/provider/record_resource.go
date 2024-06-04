@@ -44,6 +44,7 @@ type recordResourceModel struct {
 	Type   types.String `tfsdk:"type"`
 	Value  types.String `tfsdk:"value"`
 	TTL    types.Int64  `tfsdk:"ttl"`
+	FQDN   types.String `tfsdk:"fqdn"`
 
 	Timeouts timeouts.Value `tfsdk:"timeouts"`
 }
@@ -105,6 +106,10 @@ func (r *recordResource) Schema(ctx context.Context, _ resource.SchemaRequest, r
 				PlanModifiers: []planmodifier.String{
 					stringplanmodifier.UseStateForUnknown(),
 				},
+			},
+			"fqdn": schema.StringAttribute{
+				Computed:            true,
+				MarkdownDescription: "Fully qualified domain name of the DNS record",
 			},
 		},
 
@@ -268,6 +273,13 @@ func (r *recordResource) Read(ctx context.Context, req resource.ReadRequest, res
 		return
 	}
 
+	zone, err := r.provider.apiClient.GetZone(ctx, state.ZoneID.ValueString())
+	if err != nil {
+		resp.Diagnostics.AddError("API Error", fmt.Sprintf("Unable to get zone, got error: %s", err))
+
+		return
+	}
+
 	if record.Type == "TXT" && r.provider.txtFormatter {
 		record.Value = utils.TXTRecordToPlainValue(record.Value)
 	}
@@ -278,6 +290,12 @@ func (r *recordResource) Read(ctx context.Context, req resource.ReadRequest, res
 	state.Type = types.StringValue(record.Type)
 	state.Value = types.StringValue(record.Value)
 	state.ID = types.StringValue(record.ID)
+
+	if record.Name == "@" {
+		state.FQDN = types.StringValue(zone.Name)
+	} else {
+		state.FQDN = types.StringValue(fmt.Sprintf("%s.%s", record.Name, zone.Name))
+	}
 
 	// Save updated state into Terraform state
 	resp.Diagnostics.Append(resp.State.Set(ctx, &state)...)

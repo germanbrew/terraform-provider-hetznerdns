@@ -14,6 +14,7 @@ type Record struct {
 	Name   string `json:"name"`
 	Value  string `json:"value"`
 	TTL    *int64 `json:"ttl,omitempty"`
+	FQDN   string `json:"fqdn,omitempty"`
 }
 
 // HasTTL returns true if a Record has a TTL set and false if TTL is undefined.
