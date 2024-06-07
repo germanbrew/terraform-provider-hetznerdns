@@ -3,12 +3,13 @@
 page_title: "hetznerdns Provider"
 subcategory: ""
 description: |-
-  This providers helps you automate management of DNS zones and records at Hetzner DNS.
+  This providers helps you automate management of DNS zones and records at Hetzner DNS.~> NOTE: The Hetzner API has a rate limit of 3600 requests per hour https://docs.hetzner.cloud/#rate-limiting. Whilst the default operation timeouts will work for most cases, you may need to set larger timeouts https://developer.hashicorp.com/terraform/language/resources/syntax#operation-timeouts then the default 5 minutes. Although, we'd generally recommend that you split the resources out into smaller Terraform configurations to avoid the problem entirely.
 ---
 
 # hetznerdns Provider
 
-This providers helps you automate management of DNS zones and records at Hetzner DNS.
+This providers helps you automate management of DNS zones and records at Hetzner DNS.\
+~> **NOTE:** [The Hetzner API has a rate limit of 3600 requests per hour](https://docs.hetzner.cloud/#rate-limiting). Whilst the default operation timeouts will work for most cases, you may need to set [larger timeouts](https://developer.hashicorp.com/terraform/language/resources/syntax#operation-timeouts) then the default 5 minutes. Although, we'd generally recommend that you split the resources out into smaller Terraform configurations to avoid the problem entirely.
 
 ## Example Usage
 
