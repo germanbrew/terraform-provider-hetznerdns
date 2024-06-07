@@ -48,7 +48,7 @@ func (p *hetznerDNSProvider) Metadata(_ context.Context, _ provider.MetadataRequ
 
 func (p *hetznerDNSProvider) Schema(_ context.Context, _ provider.SchemaRequest, resp *provider.SchemaResponse) {
 	resp.Schema = schema.Schema{
-		MarkdownDescription: "This providers helps you automate management of DNS zones and records at Hetzner DNS.\\\n" +
+		MarkdownDescription: "This providers helps you automate management of DNS zones and records at Hetzner DNS.\\\n\n" +
 			"~> **NOTE:** [The Hetzner API has a rate limit of 3600 requests per hour](https://docs.hetzner.cloud/#rate-limiting). " +
 			"Whilst the default operation timeouts will work for most cases, you may need to set " +
 			"[larger timeouts](https://developer.hashicorp.com/terraform/language/resources/syntax#operation-timeouts) then the default 5 minutes. " +
