@@ -140,6 +140,38 @@ func (r *zoneResource) Configure(_ context.Context, req resource.ConfigureReques
 	r.provider = provider
 }
 
+func (r *zoneResource) ModifyPlan(ctx context.Context, req resource.ModifyPlanRequest, resp *resource.ModifyPlanResponse) {
+	var config, state, plan *zoneResourceModel
+	resp.Diagnostics.Append(req.Config.Get(ctx, &config)...)
+	resp.Diagnostics.Append(req.State.Get(ctx, &state)...)
+	resp.Diagnostics.Append(req.Plan.Get(ctx, &plan)...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
+	// destroy doesn't need to modify plan
+	if config == nil {
+		return
+	}
+
+	// We only need a check for new resources
+	isNewResource := state == nil || req.State.Raw.IsNull()
+	if !isNewResource {
+		return
+	}
+
+	zone, err := r.provider.apiClient.GetZoneByName(ctx, config.Name.ValueString())
+	if err != nil {
+		resp.Diagnostics.AddError("API Error", fmt.Sprintf("error read zone: %s", err))
+
+		return
+	} else if zone != nil {
+		resp.Diagnostics.AddError("Error", fmt.Sprintf("zone %q already exists", plan.Name.ValueString()))
+
+		return
+	}
+}
+
 func (r *zoneResource) Create(ctx context.Context, req resource.CreateRequest, resp *resource.CreateResponse) {
 	tflog.Trace(ctx, "create resource zone")
 
@@ -159,18 +191,11 @@ func (r *zoneResource) Create(ctx context.Context, req resource.CreateRequest, r
 		return
 	}
 
-	zone, err := r.provider.apiClient.GetZoneByName(ctx, plan.Name.ValueString())
-	if err != nil {
-		resp.Diagnostics.AddError("API Error", fmt.Sprintf("error read zone: %s", err))
-
-		return
-	} else if zone != nil {
-		resp.Diagnostics.AddError("Error", fmt.Sprintf("zone %q already exists", plan.Name.ValueString()))
-
-		return
-	}
-
-	var retries int64
+	var (
+		err     error
+		retries int64
+		zone    *api.Zone
+	)
 
 	zoneRequest := api.CreateZoneOpts{
 		Name: plan.Name.ValueString(),
