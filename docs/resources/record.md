@@ -96,16 +96,16 @@ resource "hetznerdns_record" "example_com_srv" {
 Optional:
 
 - `create` (String) [Operation Timeouts](https://developer.hashicorp.com/terraform/language/resources/syntax#operation-timeouts) consisting of
-numbers and unit suffixes, such as "30s" or "2h45m".
+numbers and unit suffixes, such as "30s" or "2h45m".\
 Valid time units are "s" (seconds), "m" (minutes), "h" (hours). Default: 5m
 - `delete` (String) [Operation Timeouts](https://developer.hashicorp.com/terraform/language/resources/syntax#operation-timeouts) consisting of
-numbers and unit suffixes, such as "30s" or "2h45m".
+numbers and unit suffixes, such as "30s" or "2h45m".\
 Valid time units are "s" (seconds), "m" (minutes), "h" (hours). Default: 5m
 - `read` (String) [Operation Timeouts](https://developer.hashicorp.com/terraform/language/resources/syntax#operation-timeouts) consisting of
-numbers and unit suffixes, such as "30s" or "2h45m".
+numbers and unit suffixes, such as "30s" or "2h45m".\
 Valid time units are "s" (seconds), "m" (minutes), "h" (hours). Default: 5m
 - `update` (String) [Operation Timeouts](https://developer.hashicorp.com/terraform/language/resources/syntax#operation-timeouts) consisting of
-numbers and unit suffixes, such as "30s" or "2h45m".
+numbers and unit suffixes, such as "30s" or "2h45m".\
 Valid time units are "s" (seconds), "m" (minutes), "h" (hours). Default: 5m
 
 ## Import
