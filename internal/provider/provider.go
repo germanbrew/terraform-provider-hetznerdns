@@ -52,7 +52,7 @@ func (p *hetznerDNSProvider) Schema(_ context.Context, _ provider.SchemaRequest,
 			"~> **NOTE:** [The Hetzner API has a rate limit of 3600 requests per hour](https://docs.hetzner.cloud/#rate-limiting). " +
 			"Whilst the default operation timeouts will work for most cases, you may need to set " +
 			"[larger timeouts](https://developer.hashicorp.com/terraform/language/resources/syntax#operation-timeouts) then the default 5 minutes. " +
-			"Although, we'd generally recommend that you split the resources out into smaller Terraform configurations to avoid the problem entirely.",
+			"Although at this scale, we generally recommend splitting the resources into smaller Terraform configurations to avoid the problem entirely.",
 
 		Attributes: map[string]schema.Attribute{
 			"api_token": schema.StringAttribute{
