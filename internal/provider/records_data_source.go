@@ -101,9 +101,9 @@ func (d *recordsDataSource) Schema(ctx context.Context, _ datasource.SchemaReque
 
 		Blocks: map[string]schema.Block{
 			"timeouts": timeouts.BlockWithOpts(ctx, timeouts.Opts{
-				ReadDescription: `A string that can be [parsed as a duration](https://pkg.go.dev/time#ParseDuration) consisting of numbers and unit suffixes,
- such as "30s" or "2h45m". Valid time units are "s" (seconds), "m" (minutes), "h" (hours). Read operations occur during any refresh or planning operation when
- refresh is enabled. Default: 5m`,
+				ReadDescription: `[Operation Timeouts](https://developer.hashicorp.com/terraform/language/resources/syntax#operation-timeouts) consisting of
+numbers and unit suffixes, such as "30s" or "2h45m".\
+Valid time units are "s" (seconds), "m" (minutes), "h" (hours). Default: 5m`,
 			}),
 		},
 	}
