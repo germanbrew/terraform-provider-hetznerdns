@@ -265,7 +265,6 @@ func (r *recordResource) Read(ctx context.Context, req resource.ReadRequest, res
 	}
 
 	if record == nil {
-		resp.Diagnostics.AddWarning("Resource Not Found", fmt.Sprintf("DNS record with id %s doesn't exist, removing it from state", state.ID))
 		resp.State.RemoveResource(ctx)
 
 		return

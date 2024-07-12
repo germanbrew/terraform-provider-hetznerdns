@@ -260,7 +260,6 @@ func (r *zoneResource) Read(ctx context.Context, req resource.ReadRequest, resp 
 	}
 
 	if zone == nil {
-		resp.Diagnostics.AddWarning("Resource Not Found", fmt.Sprintf("DNS zone with id %s doesn't exist, removing it from state", state.ID))
 		resp.State.RemoveResource(ctx)
 
 		return

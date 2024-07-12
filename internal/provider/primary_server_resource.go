@@ -235,7 +235,6 @@ func (r *primaryServerResource) Read(ctx context.Context, req resource.ReadReque
 	}
 
 	if server == nil {
-		resp.Diagnostics.AddWarning("Resource Not Found", fmt.Sprintf("Primary server with id %s doesn't exist, removing it from state", state.ID))
 		resp.State.RemoveResource(ctx)
 
 		return
