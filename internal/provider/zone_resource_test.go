@@ -149,6 +149,9 @@ func TestAccZone_StaleZone(t *testing.T) {
 			// Remove zone from Hetzner DNS and check if it will be recreated by Terraform
 			{
 				PreConfig: func() {
+					ctx, cancel := context.WithCancel(context.Background())
+					defer cancel()
+
 					var (
 						data      hetznerDNSProviderModel
 						apiToken  string
@@ -162,11 +165,11 @@ func TestAccZone_StaleZone(t *testing.T) {
 					if err != nil {
 						t.Fatalf("Error while creating API apiClient: %s", err)
 					}
-					zone, err := apiClient.GetZoneByName(context.Background(), aZoneName)
+					zone, err := apiClient.GetZoneByName(ctx, aZoneName)
 					if err != nil {
 						t.Fatalf("Error while fetching zone: %s", err)
 					}
-					err = apiClient.DeleteZone(context.Background(), zone.ID)
+					err = apiClient.DeleteZone(ctx, zone.ID)
 					if err != nil {
 						t.Fatalf("Error while deleting zone: %s", err)
 					}

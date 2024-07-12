@@ -295,6 +295,9 @@ func TestAccRecord_StaleResources(t *testing.T) {
 			// Remove record from Hetzner DNS and check if it will be recreated by Terraform
 			{
 				PreConfig: func() {
+					ctx, cancel := context.WithCancel(context.Background())
+					defer cancel()
+
 					var (
 						data      hetznerDNSProviderModel
 						apiToken  string
@@ -308,15 +311,15 @@ func TestAccRecord_StaleResources(t *testing.T) {
 					if err != nil {
 						t.Fatalf("Error while creating API apiClient: %s", err)
 					}
-					zone, err := apiClient.GetZoneByName(context.Background(), zoneName)
+					zone, err := apiClient.GetZoneByName(ctx, zoneName)
 					if err != nil {
 						t.Fatalf("Error while fetching zone: %s", err)
 					}
-					record, err := apiClient.GetRecordByName(context.Background(), zone.ID, aName)
+					record, err := apiClient.GetRecordByName(ctx, zone.ID, aName)
 					if err != nil {
 						t.Fatalf("Error while fetching record: %s", err)
 					}
-					err = apiClient.DeleteRecord(context.Background(), record.ID)
+					err = apiClient.DeleteRecord(ctx, record.ID)
 					if err != nil {
 						t.Fatalf("Error while deleting record: %s", err)
 					}
