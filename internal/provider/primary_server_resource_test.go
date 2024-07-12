@@ -192,14 +192,14 @@ func TestAccPrimaryServer_StalePrimaryServersResources(t *testing.T) {
 						t.Fatalf("Zone %s not found", aZoneName)
 					}
 
-					primaryServer, err := apiClient.GetPrimaryServer(ctx, zone.ID)
+					primaryServer, err := apiClient.GetPrimaryServers(ctx, zone.ID)
 					if err != nil {
 						t.Fatalf("Error while fetching primary server: %s", err)
 					} else if primaryServer == nil {
 						t.Fatalf("Primary server %s not found", zone.ID)
 					}
 
-					err = apiClient.DeletePrimaryServer(ctx, primaryServer.ID)
+					err = apiClient.DeletePrimaryServer(ctx, primaryServer[0].ID)
 					if err != nil {
 						t.Fatalf("Error while deleting primary server: %s", err)
 					}
