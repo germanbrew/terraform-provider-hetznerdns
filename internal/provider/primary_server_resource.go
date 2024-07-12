@@ -228,14 +228,14 @@ func (r *primaryServerResource) Read(ctx context.Context, req resource.ReadReque
 
 		return nil
 	})
-	if err != nil {
+	if err != nil && fmt.Sprint(err) != fmt.Sprintf("primary server %s not found", state.ID.ValueString()) {
 		resp.Diagnostics.AddError("API Error", fmt.Sprintf("read primary server: %s", err))
 
 		return
 	}
 
 	if server == nil {
-		resp.Diagnostics.AddWarning("Resource Not Found", fmt.Sprintf("Primary server with id %s doesn't exist, removing it from state", state.ID))
+		resp.State.RemoveResource(ctx)
 
 		return
 	}

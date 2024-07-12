@@ -35,7 +35,7 @@ func (c *Client) GetPrimaryServer(ctx context.Context, id string) (*PrimaryServe
 
 	switch resp.StatusCode {
 	case http.StatusNotFound:
-		return nil, nil
+		return nil, fmt.Errorf("primary server %s not found", id)
 	case http.StatusOK:
 		var response *PrimaryServerResponse
 
@@ -45,6 +45,27 @@ func (c *Client) GetPrimaryServer(ctx context.Context, id string) (*PrimaryServe
 		}
 
 		return &response.PrimaryServer, nil
+	default:
+		return nil, fmt.Errorf("http status %d unhandled", resp.StatusCode)
+	}
+}
+
+func (c *Client) GetPrimaryServers(ctx context.Context, zoneID string) ([]PrimaryServer, error) {
+	resp, err := c.request(ctx, http.MethodGet, "/api/v1/primary_servers?zone_id="+zoneID, nil)
+	if err != nil {
+		return nil, fmt.Errorf("error getting primary servers for zone %s: %w", zoneID, err)
+	}
+
+	switch resp.StatusCode {
+	case http.StatusOK:
+		var response PrimaryServersResponse
+
+		err = readAndParseJSONBody(resp, &response)
+		if err != nil {
+			return nil, err
+		}
+
+		return response.PrimaryServers, nil
 	default:
 		return nil, fmt.Errorf("http status %d unhandled", resp.StatusCode)
 	}
