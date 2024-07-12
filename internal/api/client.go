@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"net/http"
 	"net/url"
@@ -24,6 +25,8 @@ type UnprocessableEntityError struct {
 type ErrorMessage struct {
 	Message string `json:"message"`
 }
+
+var ErrNotFound = errors.New("not found")
 
 // Client for the Hetzner DNS API.
 type Client struct {

@@ -2,6 +2,7 @@ package provider
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"regexp"
 	"time"
@@ -253,7 +254,7 @@ func (r *zoneResource) Read(ctx context.Context, req resource.ReadRequest, resp 
 
 		return nil
 	})
-	if err != nil {
+	if err != nil && !errors.Is(err, api.ErrNotFound) {
 		resp.Diagnostics.AddError("API Error", fmt.Sprintf("read zone: %s", err))
 
 		return

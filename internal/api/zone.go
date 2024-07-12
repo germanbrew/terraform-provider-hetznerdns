@@ -86,7 +86,7 @@ func (c *Client) GetZone(ctx context.Context, id string) (*Zone, error) {
 
 	switch resp.StatusCode {
 	case http.StatusNotFound:
-		return nil, nil
+		return nil, fmt.Errorf("zone %s: %w", id, ErrNotFound)
 	case http.StatusOK:
 		var response GetZoneResponse
 

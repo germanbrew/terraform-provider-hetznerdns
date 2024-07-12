@@ -2,6 +2,7 @@ package provider
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"time"
 
@@ -258,7 +259,7 @@ func (r *recordResource) Read(ctx context.Context, req resource.ReadRequest, res
 
 		return nil
 	})
-	if err != nil {
+	if err != nil && !errors.Is(err, api.ErrNotFound) {
 		resp.Diagnostics.AddError("API Error", fmt.Sprintf("read record: %s", err))
 
 		return

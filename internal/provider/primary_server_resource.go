@@ -2,6 +2,7 @@ package provider
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"time"
 
@@ -228,7 +229,7 @@ func (r *primaryServerResource) Read(ctx context.Context, req resource.ReadReque
 
 		return nil
 	})
-	if err != nil && fmt.Sprint(err) != fmt.Sprintf("primary server %s not found", state.ID.ValueString()) {
+	if err != nil && !errors.Is(err, api.ErrNotFound) {
 		resp.Diagnostics.AddError("API Error", fmt.Sprintf("read primary server: %s", err))
 
 		return
