@@ -169,6 +169,9 @@ func TestAccPrimaryServer_StalePrimaryServersResources(t *testing.T) {
 			// Remove primary server from Hetzner DNS and check if it will be recreated by Terraform
 			{
 				PreConfig: func() {
+					ctx, cancel := context.WithCancel(context.Background())
+					defer cancel()
+
 					var (
 						data      hetznerDNSProviderModel
 						apiToken  string
@@ -182,15 +185,21 @@ func TestAccPrimaryServer_StalePrimaryServersResources(t *testing.T) {
 					if err != nil {
 						t.Fatalf("Error while creating API apiClient: %s", err)
 					}
-					zone, err := apiClient.GetZoneByName(context.Background(), aZoneName)
+					zone, err := apiClient.GetZoneByName(ctx, aZoneName)
 					if err != nil {
 						t.Fatalf("Error while fetching zone: %s", err)
+					} else if zone == nil {
+						t.Fatalf("Zone %s not found", aZoneName)
 					}
-					primaryServer, err := apiClient.GetPrimaryServer(context.Background(), zone.ID)
+
+					primaryServer, err := apiClient.GetPrimaryServer(ctx, zone.ID)
 					if err != nil {
 						t.Fatalf("Error while fetching primary server: %s", err)
+					} else if primaryServer == nil {
+						t.Fatalf("Primary server %s not found", zone.ID)
 					}
-					err = apiClient.DeletePrimaryServer(context.Background(), primaryServer.ID)
+
+					err = apiClient.DeletePrimaryServer(ctx, primaryServer.ID)
 					if err != nil {
 						t.Fatalf("Error while deleting primary server: %s", err)
 					}
