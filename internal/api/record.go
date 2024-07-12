@@ -112,7 +112,7 @@ func (c *Client) GetRecord(ctx context.Context, recordID string) (*Record, error
 
 	switch resp.StatusCode {
 	case http.StatusNotFound:
-		return nil, nil
+		return nil, fmt.Errorf("record %s: %w", recordID, ErrNotFound)
 	case http.StatusOK:
 		var response *RecordResponse
 
