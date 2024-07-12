@@ -322,7 +322,7 @@ func TestAccRecord_StaleResources(t *testing.T) {
 					}
 				},
 				// Check if the record is recreated
-				//ExpectNonEmptyPlan: true,
+				// ExpectNonEmptyPlan: true,
 				RefreshState: true,
 				ExpectError:  regexp.MustCompile("hetznerdns_record.record1 will be created"),
 			},

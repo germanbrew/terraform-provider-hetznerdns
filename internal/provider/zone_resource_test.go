@@ -172,7 +172,7 @@ func TestAccZone_StaleZone(t *testing.T) {
 					}
 				},
 				// Check if the zone is recreated
-				//ExpectNonEmptyPlan: true,
+				// ExpectNonEmptyPlan: true,
 				RefreshState: true,
 				ExpectError:  regexp.MustCompile("hetznerdns_zone.test will be created"),
 			},

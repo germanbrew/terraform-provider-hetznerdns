@@ -196,7 +196,7 @@ func TestAccPrimaryServer_StalePrimaryServersResources(t *testing.T) {
 					}
 				},
 				// Check if the record is recreated
-				//ExpectNonEmptyPlan: true,
+				// ExpectNonEmptyPlan: true,
 				RefreshState: true,
 				ExpectError:  regexp.MustCompile("hetznerdns_primary_server.test will be created"),
 			},
