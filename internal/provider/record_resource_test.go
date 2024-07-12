@@ -1,12 +1,17 @@
 package provider
 
 import (
+	"context"
 	"fmt"
+	"net/http"
 	"regexp"
 	"strconv"
 	"strings"
 	"testing"
 
+	"github.com/germanbrew/terraform-provider-hetznerdns/internal/api"
+	"github.com/germanbrew/terraform-provider-hetznerdns/internal/utils"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/logging"
 	"github.com/hashicorp/terraform-plugin-testing/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 )
@@ -228,6 +233,98 @@ func TestAccRecord_ResourcesDKIM(t *testing.T) {
 				ResourceName:      "hetznerdns_record.record1",
 				ImportState:       true,
 				ImportStateVerify: true,
+			},
+			// Delete testing automatically occurs in TestCase
+		},
+	})
+}
+
+func TestAccRecord_StaleResources(t *testing.T) {
+	zoneName := acctest.RandString(10) + ".online"
+	aZoneTTL := 60
+
+	value := "192.168.1.1"
+	aName := acctest.RandString(10)
+	aType := "A"
+	ttl := aZoneTTL * 2
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:                 func() { testAccPreCheck(t) },
+		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
+		Steps: []resource.TestStep{
+			// Create and Read testing
+			{
+				Config: strings.Join(
+					[]string{
+						testAccZoneResourceConfig("test", zoneName, aZoneTTL),
+						testAccRecordResourceConfigWithTTL("record1", aName, aType, value, ttl),
+					}, "\n",
+				),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttrSet(
+						"hetznerdns_record.record1", "id"),
+					resource.TestCheckResourceAttr(
+						"hetznerdns_record.record1", "type", aType),
+					resource.TestCheckResourceAttr(
+						"hetznerdns_record.record1", "name", aName),
+					resource.TestCheckResourceAttr(
+						"hetznerdns_record.record1", "value", value),
+					resource.TestCheckResourceAttr(
+						"hetznerdns_record.record1", "ttl", strconv.Itoa(ttl)),
+				),
+			},
+			// ImportState testing
+			{
+				ResourceName:      "hetznerdns_record.record1",
+				ImportState:       true,
+				ImportStateVerify: true,
+			},
+			// Update and Read testing
+			{
+				Config: strings.Join(
+					[]string{
+						testAccZoneResourceConfig("test", zoneName, aZoneTTL),
+						testAccRecordResourceConfigWithTTL("record1", aName, aType, value, ttl*2),
+					}, "\n",
+				),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					resource.TestCheckResourceAttr(
+						"hetznerdns_record.record1", "ttl", strconv.Itoa(ttl*2)),
+				),
+			},
+			// Remove record from Hetzner DNS and check if it will be recreated by Terraform
+			{
+				PreConfig: func() {
+					var (
+						data      hetznerDNSProviderModel
+						apiToken  string
+						apiClient *api.Client
+						err       error
+					)
+
+					apiToken = utils.ConfigureStringAttribute(data.ApiToken, "HETZNER_DNS_API_TOKEN", "")
+					httpClient := logging.NewLoggingHTTPTransport(http.DefaultTransport)
+					apiClient, err = api.New("https://dns.hetzner.com", apiToken, httpClient)
+					if err != nil {
+						t.Fatalf("Error while creating API apiClient: %s", err)
+					}
+					zone, err := apiClient.GetZoneByName(context.Background(), zoneName)
+					if err != nil {
+						t.Fatalf("Error while fetching zone: %s", err)
+					}
+					record, err := apiClient.GetRecordByName(context.Background(), zone.ID, aName)
+					if err != nil {
+						t.Fatalf("Error while fetching record: %s", err)
+					}
+					err = apiClient.DeleteRecord(context.Background(), record.ID)
+					if err != nil {
+						t.Fatalf("Error while deleting record: %s", err)
+					}
+				},
+				// Check if the record is recreated
+				//ExpectNonEmptyPlan: true,
+				RefreshState: true,
+				ExpectError:  regexp.MustCompile("hetznerdns_record.record1 will be created"),
 			},
 			// Delete testing automatically occurs in TestCase
 		},
