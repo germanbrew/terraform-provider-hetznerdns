@@ -2,6 +2,7 @@ package api
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"net/http"
 )
@@ -35,7 +36,7 @@ func (c *Client) GetPrimaryServer(ctx context.Context, id string) (*PrimaryServe
 
 	switch resp.StatusCode {
 	case http.StatusNotFound:
-		return nil, nil
+		return nil, errors.New("primary server not found")
 	case http.StatusOK:
 		var response *PrimaryServerResponse
 
