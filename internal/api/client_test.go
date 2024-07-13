@@ -3,7 +3,6 @@ package api
 import (
 	"bytes"
 	"context"
-	"fmt"
 	"io"
 	"net/http"
 	"testing"
@@ -123,7 +122,7 @@ func TestClientGetZoneByNameReturnNilIfnotFound(t *testing.T) {
 
 	zone, err := client.GetZoneByName(context.Background(), "zone1.online")
 
-	require.ErrorContains(t, err, fmt.Sprint(ErrNotFound))
+	require.ErrorIs(t, err, ErrNotFound)
 	assert.Nil(t, zone)
 }
 
