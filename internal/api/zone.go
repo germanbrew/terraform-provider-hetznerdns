@@ -62,7 +62,7 @@ func (c *Client) GetZones(ctx context.Context) ([]Zone, error) {
 	switch resp.StatusCode {
 	case http.StatusNotFound:
 		// Undocumented API behavior: Hetzner DNS API returns 404 when there are no zones
-		return nil, nil
+		return nil, fmt.Errorf("zones: %w", ErrNotFound)
 	case http.StatusOK:
 		var response GetZones
 
@@ -147,7 +147,7 @@ func (c *Client) GetZoneByName(ctx context.Context, name string) (*Zone, error) 
 
 	switch resp.StatusCode {
 	case http.StatusNotFound:
-		return nil, nil
+		return nil, fmt.Errorf("zone %s: %w", name, ErrNotFound)
 	case http.StatusOK:
 		var response GetZones
 

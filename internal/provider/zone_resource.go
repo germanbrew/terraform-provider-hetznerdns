@@ -163,7 +163,7 @@ func (r *zoneResource) Create(ctx context.Context, req resource.CreateRequest, r
 	}
 
 	zone, err := r.provider.apiClient.GetZoneByName(ctx, plan.Name.ValueString())
-	if err != nil {
+	if err != nil && !errors.Is(err, api.ErrNotFound) {
 		resp.Diagnostics.AddError("API Error", fmt.Sprintf("error read zone: %s", err))
 
 		return

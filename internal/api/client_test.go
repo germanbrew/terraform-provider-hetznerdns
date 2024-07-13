@@ -97,7 +97,7 @@ func TestClientGetZoneReturnNilIfNotFound(t *testing.T) {
 
 	zone, err := client.GetZone(context.Background(), "12345678")
 
-	require.Error(t, err)
+	require.ErrorIs(t, err, ErrNotFound)
 	assert.Nil(t, zone)
 }
 
@@ -122,7 +122,7 @@ func TestClientGetZoneByNameReturnNilIfnotFound(t *testing.T) {
 
 	zone, err := client.GetZoneByName(context.Background(), "zone1.online")
 
-	require.NoError(t, err)
+	require.ErrorIs(t, err, ErrNotFound)
 	assert.Nil(t, zone)
 }
 

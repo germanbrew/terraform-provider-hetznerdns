@@ -2,6 +2,7 @@ package provider
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"net/http"
 
@@ -123,7 +124,7 @@ func (p *hetznerDNSProvider) Configure(ctx context.Context, req provider.Configu
 
 	client.apiClient.SetUserAgent(fmt.Sprintf("terraform-client-hetznerdns/%s (+https://github.com/germanbrew/terraform-client-hetznerdns) ", p.version))
 
-	if _, err = client.apiClient.GetZones(ctx); err != nil {
+	if _, err = client.apiClient.GetZones(ctx); err != nil && !errors.Is(err, api.ErrNotFound) {
 		resp.Diagnostics.AddError("API error", fmt.Sprintf("Error while fetching zones: %s", err))
 
 		return
