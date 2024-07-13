@@ -89,6 +89,13 @@ The provider uses this token, and you don't have to enter it anymore.
 - [golangci-lint](https://github.com/golangci/golangci-lint) (to lint code)
 - [terraform-plugin-docs](https://github.com/hashicorp/terraform-plugin-docs) (to generate registry documentation)
 
+### Install and update development tools
+
+Run the following command
+```sh
+make install-dev-tools
+```
+
 ### Makefile Commands
 
 Check the subcommands in our [Makefile](Makefile) for useful dev tools and scripts.
