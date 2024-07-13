@@ -72,3 +72,6 @@ linters-settings:
       rules:
         json: snake
         tfsdk: snake
+
+  errcheck:
+    ignore: ''  # Workaround for https://github.com/golangci/golangci-lint/issues/4743
