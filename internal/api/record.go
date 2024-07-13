@@ -138,7 +138,7 @@ func (c *Client) CreateRecord(ctx context.Context, opts CreateRecordOpts) (*Reco
 
 	switch resp.StatusCode {
 	case http.StatusNotFound:
-		return nil, nil
+		return nil, fmt.Errorf("zone %s: %w", opts.ZoneID, ErrNotFound)
 	case http.StatusOK:
 		var response RecordResponse
 
