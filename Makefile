@@ -28,3 +28,6 @@ fmt:
 	-go run github.com/catenacyber/perfsprint@latest -fix ./...
 	-go run github.com/bflad/tfproviderlint/cmd/tfproviderlintx@latest -fix ./...
 
+install-devtools:
+	go install github.com/golangci/golangci-lint/cmd/golangci-lint@latest
+	go install github.com/hashicorp/terraform-plugin-docs/cmd/tfplugindocs@latest
