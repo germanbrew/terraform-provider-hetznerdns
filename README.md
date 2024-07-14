@@ -93,7 +93,7 @@ The provider uses this token, and you don't have to enter it anymore.
 
 Run the following command
 ```sh
-make install-dev-tools
+make install-devtools
 ```
 
 ### Makefile Commands
