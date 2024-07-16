@@ -1,0 +1,16 @@
+---
+version: 2
+updates: 
+  - package-ecosystem: "gomod"
+    groups:
+      golang-security-update:
+        applies-to: security-updates
+    labels:
+      - "Kind/Dependency"
+      - "Kind/Security"
+  - package-ecosystem: "gomod"
+    groups:
+      golang-dependencies:
+        applies-to: version-updates
+    labels:
+      - "Kind/Dependency"
