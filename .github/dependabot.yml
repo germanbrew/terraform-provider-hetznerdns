@@ -8,9 +8,6 @@ updates:
     labels:
       - "Kind/Dependency"
       - "Kind/Security"
-  - package-ecosystem: "gomod"
-    groups:
-      golang-dependencies:
-        applies-to: version-updates
-    labels:
-      - "Kind/Dependency"
+    schedule:
+      interval: "daily"
+    open-pull-requests-limit: 0
