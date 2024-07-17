@@ -97,16 +97,16 @@ func (r *primaryServerResource) Schema(ctx context.Context, _ resource.SchemaReq
 				Delete: true,
 
 				CreateDescription: `[Operation Timeouts](https://developer.hashicorp.com/terraform/language/resources/syntax#operation-timeouts) consisting of
-numbers and unit suffixes, such as "30s" or "2h45m".\
+numbers and unit suffixes, such as "30s" or "2h45m".
 Valid time units are "s" (seconds), "m" (minutes), "h" (hours). Default: 5m`,
 				DeleteDescription: `[Operation Timeouts](https://developer.hashicorp.com/terraform/language/resources/syntax#operation-timeouts) consisting of
-numbers and unit suffixes, such as "30s" or "2h45m".\
+numbers and unit suffixes, such as "30s" or "2h45m".
 Valid time units are "s" (seconds), "m" (minutes), "h" (hours). Default: 5m`,
 				ReadDescription: `[Operation Timeouts](https://developer.hashicorp.com/terraform/language/resources/syntax#operation-timeouts) consisting of
-numbers and unit suffixes, such as "30s" or "2h45m".\
+numbers and unit suffixes, such as "30s" or "2h45m".
 Valid time units are "s" (seconds), "m" (minutes), "h" (hours). Default: 5m`,
 				UpdateDescription: `[Operation Timeouts](https://developer.hashicorp.com/terraform/language/resources/syntax#operation-timeouts) consisting of
-numbers and unit suffixes, such as "30s" or "2h45m".\
+numbers and unit suffixes, such as "30s" or "2h45m".
 Valid time units are "s" (seconds), "m" (minutes), "h" (hours). Default: 5m`,
 			}),
 		},
