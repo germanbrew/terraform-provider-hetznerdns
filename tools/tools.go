@@ -7,7 +7,7 @@ package tools
 
 import (
 	// Documentation generation
-	_ "github.com/hashicorp/terraform-plugin-docs/cmd/tfplugindocs@v0.19.4"
+	_ "github.com/hashicorp/terraform-plugin-docs/cmd/tfplugindocs"
 	// Linting
-	_ "github.com/golangci/golangci-lint/cmd/golangci-lint@v1.59.1"
+	_ "github.com/golangci/golangci-lint/cmd/golangci-lint"
 )
