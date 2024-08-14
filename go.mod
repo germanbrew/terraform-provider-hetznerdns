@@ -3,7 +3,7 @@ module github.com/germanbrew/terraform-provider-hetznerdns
 go 1.22.4
 
 require (
-	github.com/golangci/golangci-lint v1.60.0
+	github.com/golangci/golangci-lint v1.60.1
 	github.com/hashicorp/terraform-plugin-docs v0.19.4
 	github.com/hashicorp/terraform-plugin-framework v1.11.0
 	github.com/hashicorp/terraform-plugin-framework-timeouts v0.4.1
