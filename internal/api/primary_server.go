@@ -8,13 +8,13 @@ import (
 
 type PrimaryServer struct {
 	ID      string `json:"id"`
-	Port    uint16 `json:"port"`
+	Port    int64  `json:"port"`
 	ZoneID  string `json:"zone_id"`
 	Address string `json:"address"`
 }
 
 type CreatePrimaryServerRequest struct {
-	Port    uint16 `json:"port"`
+	Port    int64  `json:"port"`
 	ZoneID  string `json:"zone_id"`
 	Address string `json:"address"`
 }
