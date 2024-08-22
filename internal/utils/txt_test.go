@@ -53,8 +53,6 @@ func TestPlainToTXTRecordValue(t *testing.T) {
 			output: `"t e s tt e s tt e s tt e s tt e s tt e s tt e s tt e s tt e s tt e s tt e s tt e s tt e s tt e s tt e s tt e s tt e s tt e s tt e s tt e s tt e s tt e s tt e s tt e s tt e s tt e s tt e s tt e s tt e s tt e s tt e s tt e s tt e s tt e s tt e s tt e s tt e" " s tt e s tt e s tt e s tt e s tt e s tt e s tt e s tt e s tt e s tt e s tt e s tt e s tt e s tt e s tt e s tt e s tt e s tt e s tt e s tt e s tt e s tt e s tt e s tt e s tt e s tt e s tt e s tt e s tt e s tt e s tt e s tt e s tt e s tt e s tt e s tt e s " "tt e s tt e s tt e s tt e s tt e s tt e s tt e s tt e s tt e s tt e s tt e s tt e s tt e s tt e s tt e s tt e s tt e s tt e s tt e s tt e s tt e s tt e s tt e s tt e s tt e s tt e s tt e s t" `,
 		},
 	} {
-		tc := tc
-
 		t.Run(tc.name, func(t *testing.T) {
 			t.Parallel()
 
@@ -107,8 +105,6 @@ func TestTXTRecordToPlainValue(t *testing.T) {
 			output: strings.Repeat(`t e s t`, 100),
 		},
 	} {
-		tc := tc
-
 		t.Run(tc.name, func(t *testing.T) {
 			t.Parallel()
 
@@ -153,8 +149,6 @@ func TestPlainToTXTRecordToPlainValue(t *testing.T) {
 			value: strings.Repeat("t e s t", 100),
 		},
 	} {
-		tc := tc
-
 		t.Run(tc.name, func(t *testing.T) {
 			t.Parallel()
 

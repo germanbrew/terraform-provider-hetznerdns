@@ -161,7 +161,7 @@ func (r *primaryServerResource) Create(ctx context.Context, req resource.CreateR
 	serverRequest := api.CreatePrimaryServerRequest{
 		ZoneID:  plan.ZoneID.ValueString(),
 		Address: plan.Address.ValueString(),
-		Port:    uint16(plan.Port.ValueInt64()),
+		Port:    plan.Port.ValueInt64(),
 	}
 
 	err = retry.RetryContext(ctx, createTimeout, func() *retry.RetryError {
@@ -244,7 +244,7 @@ func (r *primaryServerResource) Read(ctx context.Context, req resource.ReadReque
 	state.ID = types.StringValue(server.ID)
 	state.Address = types.StringValue(server.Address)
 	state.ZoneID = types.StringValue(server.ZoneID)
-	state.Port = types.Int64Value(int64(server.Port))
+	state.Port = types.Int64Value(server.Port)
 
 	// Save updated state into Terraform state
 	resp.Diagnostics.Append(resp.State.Set(ctx, &state)...)
@@ -278,7 +278,7 @@ func (r *primaryServerResource) Update(ctx context.Context, req resource.UpdateR
 		server := api.PrimaryServer{
 			ID:      state.ID.ValueString(),
 			Address: plan.Address.ValueString(),
-			Port:    uint16(plan.Port.ValueInt64()),
+			Port:    plan.Port.ValueInt64(),
 			ZoneID:  plan.ZoneID.ValueString(),
 		}
 

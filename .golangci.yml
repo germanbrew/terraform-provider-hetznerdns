@@ -19,7 +19,7 @@ linters:
     - durationcheck
     - dupword
     - errcheck
-    - exportloopref
+    - copyloopvar
     - forcetypeassert
     - forbidigo
     - gci

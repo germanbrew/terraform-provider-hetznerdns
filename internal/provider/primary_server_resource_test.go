@@ -90,6 +90,32 @@ func TestAccPrimaryServer_Invalid(t *testing.T) {
 	})
 }
 
+func TestAccPrimaryServer_InvalidPort(t *testing.T) {
+	aZoneName := acctest.RandString(10) + ".online"
+	aZoneTTL := 3600
+
+	psAddress := "-"
+	psPort := 666666
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:                 func() { testAccPreCheck(t) },
+		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
+		Steps: []resource.TestStep{
+			// Create and Read testing
+			{
+				Config: strings.Join(
+					[]string{
+						testAccZoneResourceConfig("test", aZoneName, aZoneTTL),
+						testAccPrimaryServerResourceConfigCreate("test", psAddress, psPort),
+					}, "\n",
+				),
+				ExpectError: regexp.MustCompile("Attribute port value must be at most 65535, got: " + strconv.Itoa(psPort)),
+			},
+			// Delete testing automatically occurs in TestCase
+		},
+	})
+}
+
 func TestAccPrimaryServer_TwoPrimaryServersResources(t *testing.T) {
 	aZoneName := acctest.RandString(10) + ".online"
 	aZoneTTL := 3600
