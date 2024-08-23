@@ -19,7 +19,7 @@ var testAccProtoV6ProviderFactories = map[string]func() (tfprotov6.ProviderServe
 }
 
 func testAccPreCheck(t *testing.T) {
-	if v := os.Getenv("HETZNER_DNS_API_TOKEN"); v == "" {
-		t.Fatal("HETZNER_DNS_API_TOKEN must be set for acceptance tests")
+	if v := os.Getenv("HETZNER_DNS_TOKEN"); v == "" {
+		t.Fatal("HETZNER_DNS_TOKEN must be set for acceptance tests")
 	}
 }
