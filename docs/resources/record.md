@@ -117,7 +117,7 @@ Import is supported using the following syntax:
 # a zone and then copy the id.
 #
 # curl "https://dns.hetzner.com/api/v1/records" \
-#      -H "Auth-API-Token: $HETZNER_DNS_API_TOKEN" | jq .
+#      -H "Auth-API-Token: $HETZNER_DNS_TOKEN" | jq .
 #
 # {
 #   "records": [
