@@ -91,6 +91,6 @@ jobs:
       - run: go mod download
       - env:
           TF_ACC: "1"
-          HETZNER_DNS_API_TOKEN: ${{ secrets.HETZNER_DNS_API_TOKEN }}
+          HETZNER_DNS_TOKEN: ${{ secrets.HETZNER_DNS_API_TOKEN }}
         run: go test -v -cover ./internal/provider/
         timeout-minutes: 10

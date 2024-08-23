@@ -25,7 +25,7 @@ If you previously used the `timohirt/hetznerdns` provider, you can easily replac
     }
     ```
 
-2. If you have `apitoken` defined inside you provider config, replace it with `api_token`. The environment variable `HETZNER_DNS_API_TOKEN` has not changed.
+2. If you have `apitoken` defined inside you provider config, replace it with `api_token`. The environment variable is now called `HETZNER_DNS_TOKEN` instead of `HETZNER_DNS_API_TOKEN`.
    Also see our [Docs Overview](https://registry.terraform.io/providers/germanbrew/hetznerdns/latest/docs#schema), as we have more configuration options for you to choose.
 
     ```diff

@@ -73,10 +73,10 @@ You don't have to enter the API token anymore.
 
 ### Inject the API Token via the Environment
 
-Assign the API token to `HETZNER_DNS_API_TOKEN` env variable.
+Assign the API token to `HETZNER_DNS_TOKEN` env variable.
 
 ```sh
-export HETZNER_DNS_API_TOKEN=<your api token>
+export HETZNER_DNS_TOKEN=<your api token>
 ```
 
 The provider uses this token, and you don't have to enter it anymore.

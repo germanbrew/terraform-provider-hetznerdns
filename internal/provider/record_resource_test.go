@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"net/http"
+	"os"
 	"regexp"
 	"strconv"
 	"strings"
@@ -68,6 +69,93 @@ func TestAccRecord_Resources(t *testing.T) {
 					resource.TestCheckResourceAttr(
 						"hetznerdns_record.record1", "ttl", strconv.Itoa(ttl*2)),
 				),
+			},
+			// Delete testing automatically occurs in TestCase
+		},
+	})
+}
+
+func TestAccRecord_ResourcesWithDeprecatedApiToken(t *testing.T) {
+	zoneName := acctest.RandString(10) + ".online"
+	aZoneTTL := 60
+
+	value := "192.168.1.1"
+	aName := acctest.RandString(10)
+	aType := "A"
+	ttl := aZoneTTL * 2
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:                 func() { testAccPreCheck(t) },
+		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
+		Steps: []resource.TestStep{
+			// Create and Read testing
+			{
+				// Unset new API token and set deprecated API token instead
+				PreConfig: func() {
+					apiToken := os.Getenv("HETZNER_DNS_TOKEN")
+					err := os.Setenv("HETZNER_DNS_API_TOKEN", apiToken)
+					if err != nil {
+						t.Errorf("Error while setting HETZNER_DNS_API_TOKEN: %s", err)
+					}
+
+					err = os.Unsetenv("HETZNER_DNS_TOKEN")
+					if err != nil {
+						t.Errorf("Error while unsetting HETZNER_DNS_TOKEN: %s", err)
+					}
+				},
+				Config: strings.Join(
+					[]string{
+						testAccZoneResourceConfig("test", zoneName, aZoneTTL),
+						testAccRecordResourceConfigWithTTL("record1", aName, aType, value, ttl),
+					}, "\n",
+				),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttrSet(
+						"hetznerdns_record.record1", "id"),
+					resource.TestCheckResourceAttr(
+						"hetznerdns_record.record1", "type", aType),
+					resource.TestCheckResourceAttr(
+						"hetznerdns_record.record1", "name", aName),
+					resource.TestCheckResourceAttr(
+						"hetznerdns_record.record1", "value", value),
+					resource.TestCheckResourceAttr(
+						"hetznerdns_record.record1", "ttl", strconv.Itoa(ttl)),
+				),
+			},
+			// ImportState testing
+			{
+				ResourceName:      "hetznerdns_record.record1",
+				ImportState:       true,
+				ImportStateVerify: true,
+			},
+			// Update and Read testing
+			{
+				Config: strings.Join(
+					[]string{
+						testAccZoneResourceConfig("test", zoneName, aZoneTTL),
+						testAccRecordResourceConfigWithTTL("record1", aName, aType, value, ttl*2),
+					}, "\n",
+				),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					resource.TestCheckResourceAttr(
+						"hetznerdns_record.record1", "ttl", strconv.Itoa(ttl*2)),
+				),
+			},
+			{
+				// Undo the changes to the API token
+				PreConfig: func() {
+					apiToken := os.Getenv("HETZNER_DNS_API_TOKEN")
+					err := os.Setenv("HETZNER_DNS_TOKEN", apiToken)
+					if err != nil {
+						t.Errorf("Error while setting HETZNER_DNS_TOKEN: %s", err)
+					}
+
+					err = os.Unsetenv("HETZNER_DNS_API_TOKEN")
+					if err != nil {
+						t.Errorf("Error while unsetting HETZNER_DNS_API_TOKEN: %s", err)
+					}
+				},
+				RefreshState: true,
 			},
 			// Delete testing automatically occurs in TestCase
 		},
@@ -305,7 +393,7 @@ func TestAccRecord_StaleResources(t *testing.T) {
 						err       error
 					)
 
-					apiToken = utils.ConfigureStringAttribute(data.ApiToken, "HETZNER_DNS_API_TOKEN", "")
+					apiToken = utils.ConfigureStringAttribute(data.ApiToken, "HETZNER_DNS_TOKEN", "")
 					httpClient := logging.NewLoggingHTTPTransport(http.DefaultTransport)
 					apiClient, err = api.New("https://dns.hetzner.com", apiToken, httpClient)
 					if err != nil {

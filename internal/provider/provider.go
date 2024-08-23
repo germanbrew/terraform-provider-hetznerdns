@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"net/http"
+	"os"
 
 	"github.com/germanbrew/terraform-provider-hetznerdns/internal/api"
 	"github.com/germanbrew/terraform-provider-hetznerdns/internal/utils"
@@ -52,9 +53,10 @@ func (p *hetznerDNSProvider) Schema(_ context.Context, _ provider.SchemaRequest,
 		Description: "This providers helps you automate management of DNS zones and records at Hetzner DNS.",
 		Attributes: map[string]schema.Attribute{
 			"api_token": schema.StringAttribute{
-				Description: "The Hetzner DNS API token. You can pass it using the env variable `HETZNER_DNS_API_TOKEN` as well.",
-				Optional:    true,
-				Sensitive:   true,
+				Description: "The Hetzner DNS API token. You can pass it using the env variable `HETZNER_DNS_TOKEN` as well. " +
+					"The old env variable `HETZNER_DNS_API_TOKEN` is deprecated and will be removed in a future release.",
+				Optional:  true,
+				Sensitive: true,
 			},
 			"max_retries": schema.Int64Attribute{
 				Description: "`Default: 1` The maximum number of retries to perform when an API request fails. " +
@@ -91,10 +93,21 @@ func (p *hetznerDNSProvider) Configure(ctx context.Context, req provider.Configu
 		return
 	}
 
-	apiToken = utils.ConfigureStringAttribute(data.ApiToken, "HETZNER_DNS_API_TOKEN", "")
+	apiToken = utils.ConfigureStringAttribute(data.ApiToken, "HETZNER_DNS_TOKEN", "")
+	// Still support the deprecated env var for now but show a warning if it's used.
+	if apiToken == "" {
+		apiToken = os.Getenv("HETZNER_DNS_API_TOKEN")
+		if apiToken != "" {
+			resp.Diagnostics.AddWarning("Deprecated API Token Environment Variable",
+				"The environment variable `HETZNER_DNS_API_TOKEN` is deprecated and will be removed in a future release. "+
+					"Please use `HETZNER_DNS_TOKEN` instead.",
+			)
+		}
+	}
+
 	if apiToken == "" {
 		resp.Diagnostics.AddAttributeError(path.Root("api_token"), "Missing API Token Configuration",
-			"While configuring the client, the API token was not found in the HETZNER_DNS_API_TOKEN environment variable or client configuration block"+
+			"While configuring the client, the API token was not found in the HETZNER_DNS_TOKEN environment variable or client configuration block "+
 				"api_token attribute.",
 		)
 	}

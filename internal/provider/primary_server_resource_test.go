@@ -205,7 +205,7 @@ func TestAccPrimaryServer_StalePrimaryServersResources(t *testing.T) {
 						err       error
 					)
 
-					apiToken = utils.ConfigureStringAttribute(data.ApiToken, "HETZNER_DNS_API_TOKEN", "")
+					apiToken = utils.ConfigureStringAttribute(data.ApiToken, "HETZNER_DNS_TOKEN", "")
 					httpClient := logging.NewLoggingHTTPTransport(http.DefaultTransport)
 					apiClient, err = api.New("https://dns.hetzner.com", apiToken, httpClient)
 					if err != nil {
