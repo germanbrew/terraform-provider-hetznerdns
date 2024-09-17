@@ -70,7 +70,7 @@ func (r *zoneResource) Schema(ctx context.Context, _ resource.SchemaRequest, res
 				},
 				Validators: []validator.String{
 					stringvalidator.RegexMatches(
-						regexp.MustCompile(`^[a-z0-9-]+\.[a-z0-9-]+$`),
+						regexp.MustCompile(`^[a-z0-9-]+(\.[a-z0-9-]+){1,2}$`),
 						"Name must be a valid domain with top level domain",
 					),
 				},
