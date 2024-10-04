@@ -100,7 +100,7 @@ func TestAccZone_Invalid(t *testing.T) {
 			// Create and Read testing
 			{
 				Config:      testAccZoneResourceConfig("test", aZoneName, aZoneTTL),
-				ExpectError: regexp.MustCompile("422 Unprocessable Entity: invalid label"),
+				ExpectError: regexp.MustCompile("422 Unprocessable Content: invalid label"),
 			},
 			// Delete testing automatically occurs in TestCase
 		},
