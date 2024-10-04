@@ -100,7 +100,7 @@ func TestAccZone_Invalid(t *testing.T) {
 			// Create and Read testing
 			{
 				Config:      testAccZoneResourceConfig("test", aZoneName, aZoneTTL),
-				ExpectError: regexp.MustCompile("422 Unprocessable Content: invalid label must not\n {8}end with a dash"),
+				ExpectError: regexp.MustCompile("invalid label must not end with a dash"),
 			},
 			// Delete testing automatically occurs in TestCase
 		},
