@@ -13,7 +13,7 @@ func assertSerializeAndAssertEqual(t *testing.T, o interface{}, expectedJSON str
 		t.Fatal(err)
 	}
 
-	assert.Equal(t, expectedJSON, string(computedJSON))
+	assert.JSONEq(t, expectedJSON, string(computedJSON))
 }
 
 func TestCreateZoneRequestJson(t *testing.T) {
