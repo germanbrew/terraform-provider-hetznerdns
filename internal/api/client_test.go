@@ -27,7 +27,7 @@ func TestClientCreateZoneSuccess(t *testing.T) {
 	assert.Equal(t, Zone{ID: "12345", Name: "mydomain.com", TTL: 3600}, *zone)
 	assert.NotNil(t, requestBodyReader, "The request body should not be nil")
 	jsonRequestBody, _ := io.ReadAll(requestBodyReader)
-	assert.Equal(t, `{"name":"mydomain.com","ttl":3600}`, string(jsonRequestBody))
+	assert.JSONEq(t, `{"name":"mydomain.com","ttl":3600}`, string(jsonRequestBody))
 }
 
 func TestClientCreateZoneInvalidDomain(t *testing.T) {
@@ -73,7 +73,7 @@ func TestClientUpdateZoneSuccess(t *testing.T) {
 	assert.Equal(t, zoneWithUpdates, *updatedZone)
 	assert.NotNil(t, requestBodyReader, "The request body should not be nil")
 	jsonRequestBody, _ := io.ReadAll(requestBodyReader)
-	assert.Equal(t, zoneWithUpdatesJSON, string(jsonRequestBody))
+	assert.JSONEq(t, zoneWithUpdatesJSON, string(jsonRequestBody))
 }
 
 func TestClientGetZone(t *testing.T) {
@@ -193,7 +193,7 @@ func TestClientCreateRecordSuccess(t *testing.T) {
 	assert.Equal(t, Record{ZoneID: "wwwlsksjjenm", ID: "12345678", Name: "zone1.online", TTL: &aTTL, Type: "A", Value: "192.168.1.1"}, *record)
 	assert.NotNil(t, requestBodyReader, "The request body should not be nil")
 	jsonRequestBody, _ := io.ReadAll(requestBodyReader)
-	assert.Equal(t, `{"zone_id":"wwwlsksjjenm","type":"A","name":"zone1.online","value":"192.168.1.1","ttl":3600}`, string(jsonRequestBody))
+	assert.JSONEq(t, `{"zone_id":"wwwlsksjjenm","type":"A","name":"zone1.online","value":"192.168.1.1","ttl":3600}`, string(jsonRequestBody))
 }
 
 func TestClientRecordZone(t *testing.T) {
@@ -226,7 +226,7 @@ func TestClientUpdateRecordSuccess(t *testing.T) {
 	assert.Equal(t, recordWithUpdates, *updatedRecord)
 	assert.NotNil(t, requestBodyReader, "The request body should not be nil")
 	jsonRequestBody, _ := io.ReadAll(requestBodyReader)
-	assert.Equal(t, recordWithUpdatesJSON, string(jsonRequestBody))
+	assert.JSONEq(t, recordWithUpdatesJSON, string(jsonRequestBody))
 }
 
 func TestClientHandleUnauthorizedRequest(t *testing.T) {
