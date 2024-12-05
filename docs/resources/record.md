@@ -77,8 +77,8 @@ resource "hetznerdns_record" "example_com_srv" {
 ### Required
 
 - `name` (String) Name of the DNS record to create
-- `type` (String) DNS record type
-- `value` (String) The value of the record (eg. 192.168.1.1). For TXT records with quoted values, the quotes have to be escaped in Terraform  (eg. "v=spf1 include:\_spf.google.com ~all" is represented by  "\\"v=spf1 include:\_spf.google.com ~all\\"" in Terraform)
+- `type` (String) Type of this DNS record [See supported types](https://docs.hetzner.com/dns-console/dns/general/supported-dns-record-types/)
+- `value` (String) The value of the record (e.g. `192.168.1.1`). For TXT records with quoted values, the quotes have to be escaped in Terraform  (e.g. `"v=spf1 include:\_spf.google.com ~all"` is represented by  `"\\"v=spf1 include:\_spf.google.com ~all\\""` in Terraform)
 - `zone_id` (String) ID of the DNS zone to create the record in.
 
 ### Optional
