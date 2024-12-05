@@ -71,7 +71,7 @@ func (r *recordResource) Schema(ctx context.Context, _ resource.SchemaRequest, r
 			},
 			"type": schema.StringAttribute{
 				MarkdownDescription: "Type of this DNS record " +
-					"[See supported types](https://docs.hetzner.com/dns-console/dns/general/supported-dns-record-types/)",
+					"([See supported types](https://docs.hetzner.com/dns-console/dns/general/supported-dns-record-types/))",
 				Required: true,
 				Validators: []validator.String{
 					stringvalidator.LengthAtLeast(1),
