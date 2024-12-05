@@ -70,8 +70,9 @@ func (r *recordResource) Schema(ctx context.Context, _ resource.SchemaRequest, r
 				},
 			},
 			"type": schema.StringAttribute{
-				MarkdownDescription: "Time to live of this record",
-				Required:            true,
+				MarkdownDescription: "Type of this DNS record " +
+					"([See supported types](https://docs.hetzner.com/dns-console/dns/general/supported-dns-record-types/))",
+				Required: true,
 				Validators: []validator.String{
 					stringvalidator.LengthAtLeast(1),
 				},
@@ -84,10 +85,10 @@ func (r *recordResource) Schema(ctx context.Context, _ resource.SchemaRequest, r
 				},
 			},
 			"value": schema.StringAttribute{
-				Description: "The value of the record (eg. 192.168.1.1)",
-				MarkdownDescription: "The value of the record (eg. 192.168.1.1). For TXT records with quoted values, " +
-					"the quotes have to be escaped in Terraform  (eg. \"v=spf1 include:\\_spf.google.com ~all\" is " +
-					"represented by  \"\\\\\"v=spf1 include:\\_spf.google.com ~all\\\\\"\" in Terraform)",
+				Description: "The value of the record (e.g. 192.168.1.1)",
+				MarkdownDescription: "The value of the record (e.g. `192.168.1.1`). For TXT records with quoted values, " +
+					"the quotes have to be escaped in Terraform  (e.g. `\"v=spf1 include:\\_spf.google.com ~all\"` is " +
+					"represented by  `\"\\\\\"v=spf1 include:\\_spf.google.com ~all\\\\\"\"` in Terraform)",
 				Required: true,
 				Validators: []validator.String{
 					stringvalidator.LengthAtLeast(1),
