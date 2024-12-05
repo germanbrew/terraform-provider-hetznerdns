@@ -14,14 +14,14 @@ import (
 )
 
 // Ensure provider defined types fully satisfy framework interfaces.
-var _ datasource.DataSource = &nameserverDataSource{}
+var _ datasource.DataSource = &nameserversDataSource{}
 
-func NewNameserverDataSource() datasource.DataSource {
-	return &nameserverDataSource{}
+func NewNameserversDataSource() datasource.DataSource {
+	return &nameserversDataSource{}
 }
 
-// nameserverDataSource defines the data source implementation.
-type nameserverDataSource struct {
+// nameserversDataSource defines the data source implementation.
+type nameserversDataSource struct {
 	provider *providerClient
 }
 
@@ -31,8 +31,8 @@ type singleNameserverDataModel struct {
 	IPV6 types.String `tfsdk:"ipv6"`
 }
 
-// nameserverDataSourceModel describes the data source data model.
-type nameserverDataSourceModel struct {
+// nameserversDataSourceModel describes the data source data model.
+type nameserversDataSourceModel struct {
 	Type types.String                `tfsdk:"type"`
 	NS   []singleNameserverDataModel `tfsdk:"ns"`
 }
@@ -41,8 +41,8 @@ func getValidNameserverTypes() []string {
 	return []string{"authoritative", "secondary", "konsoleh"}
 }
 
-func (d *nameserverDataSource) Metadata(_ context.Context, req datasource.MetadataRequest, resp *datasource.MetadataResponse) {
-	resp.TypeName = req.ProviderTypeName + "_nameserver"
+func (d *nameserversDataSource) Metadata(_ context.Context, req datasource.MetadataRequest, resp *datasource.MetadataResponse) {
+	resp.TypeName = req.ProviderTypeName + "_nameservers"
 }
 
 func singleNameserverSchema() map[string]schema.Attribute {
@@ -62,7 +62,7 @@ func singleNameserverSchema() map[string]schema.Attribute {
 	}
 }
 
-func (d *nameserverDataSource) Schema(ctx context.Context, req datasource.SchemaRequest, resp *datasource.SchemaResponse) {
+func (d *nameserversDataSource) Schema(ctx context.Context, req datasource.SchemaRequest, resp *datasource.SchemaResponse) {
 	resp.Schema = schema.Schema{
 		// This description is used by the documentation generator and the language server.
 		MarkdownDescription: "Provides details about name servers used by Hetzner DNS",
@@ -88,7 +88,7 @@ func (d *nameserverDataSource) Schema(ctx context.Context, req datasource.Schema
 	}
 }
 
-func (d *nameserverDataSource) Configure(_ context.Context, req datasource.ConfigureRequest, resp *datasource.ConfigureResponse) {
+func (d *nameserversDataSource) Configure(_ context.Context, req datasource.ConfigureRequest, resp *datasource.ConfigureResponse) {
 	// Prevent panic if the provider has not been configured.
 	if req.ProviderData == nil {
 		return
@@ -120,9 +120,9 @@ func populateNameserverData(data *[]singleNameserverDataModel, nameservers []api
 	return data
 }
 
-func (d *nameserverDataSource) Read(ctx context.Context, req datasource.ReadRequest, resp *datasource.ReadResponse) {
+func (d *nameserversDataSource) Read(ctx context.Context, req datasource.ReadRequest, resp *datasource.ReadResponse) {
 	var (
-		data        nameserverDataSourceModel
+		data        nameserversDataSourceModel
 		nameservers []api.Nameserver
 	)
 
