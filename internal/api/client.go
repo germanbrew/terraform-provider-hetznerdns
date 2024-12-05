@@ -112,7 +112,7 @@ func (c *Client) request(ctx context.Context, method string, path string, bodyJS
 		return nil, fmt.Errorf("error sending request: %w", err)
 	}
 
-	tflog.Debug(ctx, fmt.Sprintf("Rate limit remaining: %s", resp.Header.Get(RateLimitRemainingHeader)))
+	tflog.Debug(ctx, "Rate limit remaining: "+resp.Header.Get(RateLimitRemainingHeader))
 
 	switch resp.StatusCode {
 	case http.StatusUnauthorized:
@@ -131,8 +131,8 @@ func (c *Client) request(ctx context.Context, method string, path string, bodyJS
 
 		return nil, fmt.Errorf("API returned HTTP 422 Unprocessable Entity error with message: '%s'", unprocessableEntityError.Error.Message)
 	case http.StatusTooManyRequests:
-		tflog.Debug(ctx, fmt.Sprintf("Rate limit limit: %s", resp.Header.Get(RateLimitLimitHeader)))
-		tflog.Debug(ctx, fmt.Sprintf("Rate limit reset: %s", resp.Header.Get(RateLimitResetHeader)))
+		tflog.Debug(ctx, "Rate limit limit: "+resp.Header.Get(RateLimitLimitHeader))
+		tflog.Debug(ctx, "Rate limit reset: "+resp.Header.Get(RateLimitResetHeader))
 
 		return nil, fmt.Errorf("API returned HTTP 429 Too Many Requests error: %w", ErrRateLimited)
 	}
