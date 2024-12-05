@@ -48,9 +48,8 @@ If you previously used the `timohirt/hetznerdns` provider, you can easily replac
 
 5. Test if the migration was successful by running `terraform plan` and checking the output for any errors.
 
-6. If you're getting the following error:
+6. If you're getting a rate limit error like below, follow the [Investigating Rate Limits](https://registry.terraform.io/providers/germanbrew/hetznerdns/latest/docs/guides/investigating-rate-limits) guide:
   ```bash
   Error: API Error
-  read record: http status 429 unhandled
+  read record: error getting record 3c2...: API returned HTTP 429 Too Many Requests error: rate limit exceeded
   ```
-  Then try to increase [`max_retries`](https://registry.terraform.io/providers/germanbrew/hetznerdns/latest/docs#max_retries-1)
