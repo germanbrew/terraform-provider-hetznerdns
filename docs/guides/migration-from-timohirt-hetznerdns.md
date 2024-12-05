@@ -47,3 +47,10 @@ If you previously used the `timohirt/hetznerdns` provider, you can easily replac
    You can disable this feature by specifying `enable_txt_formatter = false` in your provider config or setting the env var `HETZNER_DNS_ENABLE_TXT_FORMATTER=false`
 
 5. Test if the migration was successful by running `terraform plan` and checking the output for any errors.
+
+6. If you're getting the following error:
+  ```bash
+  Error: API Error
+  read record: http status 429 unhandled
+  ```
+  Then try to increase [`max_retries`](https://registry.terraform.io/providers/germanbrew/hetznerdns/latest/docs#max_retries-1)
