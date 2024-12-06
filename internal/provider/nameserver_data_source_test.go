@@ -2,8 +2,8 @@ package provider
 
 import (
 	"context"
+	"regexp"
 	"sort"
-	"strings"
 	"testing"
 
 	"github.com/germanbrew/terraform-provider-hetznerdns/internal/api"
@@ -25,7 +25,7 @@ func prepareKnownValues(nameserver []string) []knownvalue.Check {
 	return knownValues
 }
 
-func TestAccNameservers_DataSource(t *testing.T) {
+func TestAccNameserversDataSource(t *testing.T) {
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
 
@@ -65,11 +65,7 @@ func TestAccNameservers_DataSource(t *testing.T) {
 		Steps: []resource.TestStep{
 			// Read testing
 			{
-				Config: strings.Join(
-					[]string{
-						testAccNameserversDataSourceConfig(),
-					}, "\n",
-				),
+				Config: testAccNameserversDataSourceConfig,
 				Check: resource.ComposeAggregateTestCheckFunc(
 					resource.TestCheckResourceAttr("data.hetznerdns_nameservers.primary", "ns.0.name", authorizedNameservers[0]["name"]),
 					resource.TestCheckResourceAttrSet("data.hetznerdns_nameservers.primary", "ns.#"),
@@ -84,8 +80,21 @@ func TestAccNameservers_DataSource(t *testing.T) {
 	})
 }
 
-func testAccNameserversDataSourceConfig() string {
-	return `
+func TestAccNameserversDataSource_InvalidType(t *testing.T) {
+	resource.Test(t, resource.TestCase{
+		PreCheck:                 func() { testAccPreCheck(t) },
+		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
+		Steps: []resource.TestStep{
+			// Read testing
+			{
+				Config:      testAccInvalidTypeNameserversDataSourceConfig,
+				ExpectError: regexp.MustCompile("Attribute type value must be one of"),
+			},
+		},
+	})
+}
+
+const testAccNameserversDataSourceConfig = `
 data "hetznerdns_nameservers" "primary" {
 	type = "authoritative"
 }
@@ -110,4 +119,9 @@ output "secondary_ipv6s" {
 	value = data.hetznerdns_nameservers.secondary.ns.*.ipv6
 }
 `
+
+const testAccInvalidTypeNameserversDataSourceConfig = `
+data "hetznerdns_nameservers" "invalid" {
+ type = "invalid_type"
 }
+`
