@@ -94,6 +94,39 @@ func TestAccNameserversDataSource_InvalidType(t *testing.T) {
 	})
 }
 
+func TestAccNameserversDataSource_DefaultType(t *testing.T) {
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
+
+	authorizedNameservers, err := api.GetAuthoritativeNameservers(ctx)
+	if err != nil {
+		t.Fatalf("error fetching authoritative nameservers: %s", err)
+	}
+
+	nsNames := make([]knownvalue.Check, len(authorizedNameservers))
+
+	for i, ns := range authorizedNameservers {
+		nsNames[i] = knownvalue.StringExact(ns["name"])
+	}
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:                 func() { testAccPreCheck(t) },
+		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
+		Steps: []resource.TestStep{
+			// Read testing
+			{
+				Config: testAccDefaultTypeNameserversDataSourceConfig,
+				Check: resource.ComposeAggregateTestCheckFunc(
+					resource.TestCheckResourceAttrSet("data.hetznerdns_nameservers.primary", "ns.#"),
+				),
+				ConfigStateChecks: []statecheck.StateCheck{
+					statecheck.ExpectKnownOutputValue("primary_names", knownvalue.ListExact(nsNames)),
+				},
+			},
+		},
+	})
+}
+
 const testAccNameserversDataSourceConfig = `
 data "hetznerdns_nameservers" "primary" {
 	type = "authoritative"
@@ -123,5 +156,13 @@ output "secondary_ipv6s" {
 const testAccInvalidTypeNameserversDataSourceConfig = `
 data "hetznerdns_nameservers" "invalid" {
  type = "invalid_type"
+}
+`
+
+const testAccDefaultTypeNameserversDataSourceConfig = `
+data "hetznerdns_nameservers" "primary" {}
+
+output "primary_names" {
+	value = data.hetznerdns_nameservers.primary.ns.*.name
 }
 `
