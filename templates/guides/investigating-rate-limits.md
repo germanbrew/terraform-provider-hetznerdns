@@ -8,7 +8,7 @@ description: |-
 
 # How to investigate and resolve rate limit issues with the Hetzner DNS API
 
-Hetzner DNS API has a default rate limit of 300 requests (See [Hetzner Cloud Docs](https://docs.hetzner.cloud/#rate-limiting)) per minute. If you're getting a rate limit error, you can investigate and resolve it by following these steps:
+Hetzner DNS API has a default rate limit of 300 requests per minute. If you're getting a rate limit error, you can investigate and resolve it by following these steps:
 
 1. If you're getting a rate limit error like below, try to increase the provider config [`max_retries`](https://registry.terraform.io/providers/germanbrew/hetznerdns/latest/docs#max_retries-1) to a higher value like `10`:
     ```bash
