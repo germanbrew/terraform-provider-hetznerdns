@@ -25,7 +25,7 @@ func prepareKnownValues(nameserver []string) []knownvalue.Check {
 	return knownValues
 }
 
-func TestAccNameserversDataSource(t *testing.T) {
+func TestAccNameserversDataSource_Valid(t *testing.T) {
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
 
