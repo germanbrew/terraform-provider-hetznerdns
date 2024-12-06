@@ -1,6 +1,7 @@
 package provider
 
 import (
+	"context"
 	"strings"
 	"testing"
 
@@ -11,7 +12,14 @@ import (
 )
 
 func TestAccNameservers_DataSource(t *testing.T) {
-	authorizedNameservers := api.GetAuthoritativeNameservers()
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
+
+	authorizedNameservers, err := api.GetAuthoritativeNameservers(ctx)
+	if err != nil {
+		t.Fatalf("error fetching authoritative nameservers: %s", err)
+	}
+
 	nsNames := make([]knownvalue.Check, len(authorizedNameservers))
 
 	for i, ns := range authorizedNameservers {

@@ -122,6 +122,7 @@ func populateNameserverData(data *[]singleNameserverDataModel, nameservers []api
 
 func (d *nameserversDataSource) Read(ctx context.Context, req datasource.ReadRequest, resp *datasource.ReadResponse) {
 	var (
+		err         error
 		data        nameserversDataSourceModel
 		nameservers []api.Nameserver
 	)
@@ -136,19 +137,30 @@ func (d *nameserversDataSource) Read(ctx context.Context, req datasource.ReadReq
 	// Get the nameservers based on the type
 	switch data.Type.ValueString() {
 	case "authoritative":
-		nameservers = api.GetAuthoritativeNameservers()
+		nameservers, err = api.GetAuthoritativeNameservers(ctx)
 	case "secondary":
-		nameservers = api.GetSecondaryNameservers()
+		nameservers, err = api.GetSecondaryNameservers(ctx)
 	case "konsoleh":
-		nameservers = api.GetKonsolehNameservers()
+		nameservers, err = api.GetKonsolehNameservers(ctx)
 	default:
 		resp.Diagnostics.AddError(
-			"Invalid nameserver type",
+			"Type Error",
 			fmt.Sprintf("Invalid nameserver type: %s, must be one of %s",
 				data.Type.String(),
 				strings.Join(getValidNameserverTypes(), ", "),
 			),
 		)
+
+		return
+	}
+
+	if err != nil {
+		resp.Diagnostics.AddError(
+			"API Error",
+			fmt.Sprintf("Error while getting nameservers: %s", err),
+		)
+
+		return
 	}
 
 	// Populate the data model
