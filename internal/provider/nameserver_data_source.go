@@ -70,9 +70,9 @@ func (d *nameserversDataSource) Schema(ctx context.Context, req datasource.Schem
 		Attributes: map[string]schema.Attribute{
 			"type": schema.StringAttribute{
 				MarkdownDescription: fmt.Sprintf(
-					"Type of name servers to get data from. Possible values: `%s`",
+					"Type of name servers to get data from. Default: `authoritative` Possible values: `%s`",
 					strings.Join(getValidNameserverTypes(), "`, `")),
-				Required: true,
+				Optional: true,
 				Validators: []validator.String{
 					stringvalidator.OneOf(getValidNameserverTypes()...),
 				},
@@ -132,6 +132,10 @@ func (d *nameserversDataSource) Read(ctx context.Context, req datasource.ReadReq
 
 	if resp.Diagnostics.HasError() {
 		return
+	}
+
+	if data.Type.IsNull() {
+		data.Type = types.StringValue("authoritative")
 	}
 
 	// Get the nameservers based on the type
