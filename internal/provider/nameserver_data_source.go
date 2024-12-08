@@ -37,6 +37,9 @@ type nameserversDataSourceModel struct {
 	NS   []singleNameserverDataModel `tfsdk:"ns"`
 }
 
+// defaultNameserverType is the default value for the `type` attribute.
+const defaultNameserverType = "authoritative"
+
 func getValidNameserverTypes() []string {
 	return []string{"authoritative", "secondary", "konsoleh"}
 }
@@ -70,7 +73,8 @@ func (d *nameserversDataSource) Schema(ctx context.Context, req datasource.Schem
 		Attributes: map[string]schema.Attribute{
 			"type": schema.StringAttribute{
 				MarkdownDescription: fmt.Sprintf(
-					"Type of name servers to get data from. Default: `authoritative` Possible values: `%s`",
+					"Type of name servers to get data from. Default: `%s` Possible values: `%s`",
+					defaultNameserverType,
 					strings.Join(getValidNameserverTypes(), "`, `")),
 				Optional: true,
 				Validators: []validator.String{
@@ -134,8 +138,9 @@ func (d *nameserversDataSource) Read(ctx context.Context, req datasource.ReadReq
 		return
 	}
 
+	// If the type attribute is not set, set it to the default value
 	if data.Type.IsNull() {
-		data.Type = types.StringValue("authoritative")
+		data.Type = types.StringValue(defaultNameserverType)
 	}
 
 	// Get the nameservers based on the type
