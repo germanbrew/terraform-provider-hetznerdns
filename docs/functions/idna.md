@@ -8,9 +8,9 @@ description: |-
 
 # function: idna
 
-idna converts a [IDN][1] domain or domain label to its ASCII form (Punnycode). For example, `provider::hetznerdns::idna("bücher.example.com")` is "xn--bcher-kva.example.com", and `provider::hetznerdns::idna("golang")` is "golang". If an error is encountered it will return an error and a (partially) processed result.
+idna converts a [IDN] domain or domain label to its ASCII form (Punnycode). For example, `provider::hetznerdns::idna("bücher.example.com")` is "xn--bcher-kva.example.com", and `provider::hetznerdns::idna("golang")` is "golang". If an error is encountered it will return an error and a (partially) processed result.
 
-[1]: https://en.wikipedia.org/wiki/Internationalized_domain_name
+[IDN]: https://en.wikipedia.org/wiki/Internationalized_domain_name
 
 ## Example Usage
 
