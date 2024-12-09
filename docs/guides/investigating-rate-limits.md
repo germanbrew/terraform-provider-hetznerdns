@@ -16,9 +16,9 @@ Hetzner DNS API has a default rate limit of 300 requests per minute. If you're g
     read record: error getting record 3c21...75fb: API returned HTTP 429 Too Many Requests error: rate limit exceeded
     ```
 
-2. You can view the ratelimit usage in the terraform logs by running terraform plan or apply with the `TF_LOG` environment variable set to `DEBUG`:
+2. You can view the ratelimit usage in the terraform logs by running `terraform plan` or `apply` with the `TF_LOG` environment variable set to `DEBUG`. Since the output is probably too long for the terminal, you might want to redirect it to some file like this:
     ```bash
-    TF_LOG=DEBUG terraform apply
+    TF_LOG=DEBUG TF_LOG_PATH=tf_log_debug.log terraform plan
     ```
     The http client will then log the entire http response including all headers. In the headers you will find rate limit details:
 
