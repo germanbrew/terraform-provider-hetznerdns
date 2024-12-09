@@ -23,7 +23,7 @@ data "hetznerdns_nameservers" "primary" {}
 resource "hetznerdns_record" "mydomain_de-NS" {
   for_each = toset(data.hetznerdns_nameservers.primary.ns.*.name)
 
-  zone_id = hetznerdns_zone.de.id
+  zone_id = hetznerdns_zone.mydomain_de.id
   name    = "@"
   type    = "NS"
   value   = each.value
