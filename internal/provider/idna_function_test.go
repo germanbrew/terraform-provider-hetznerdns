@@ -22,9 +22,14 @@ func TestIdnaFunction_Valid(t *testing.T) {
 				Config: `
                 output "domain" {
                     value = provider::hetznerdns::idna("bücher.example.com")
-                }`,
+                }
+
+				output "emoji_domain" {
+					value = provider::hetznerdns::idna("😂😂👍.com")
+				}`,
 				ConfigStateChecks: []statecheck.StateCheck{
 					statecheck.ExpectKnownOutputValue("domain", knownvalue.StringExact("xn--bcher-kva.example.com")),
+					statecheck.ExpectKnownOutputValue("emoji_domain", knownvalue.StringExact("xn--yp8hj1aa.com")),
 				},
 			},
 		},
