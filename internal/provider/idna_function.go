@@ -26,10 +26,11 @@ func (r idnaFunction) Definition(_ context.Context, _ function.DefinitionRequest
 	resp.Definition = function.Definition{
 		Summary:     "idna function",
 		Description: "idna converts a IDN domain or domain label to its ASCII form (Punnycode).",
-		MarkdownDescription: "idna converts a [IDN](https://en.wikipedia.org/wiki/Internationalized_domain_name) domain or domain label to its ASCII form (Punnycode). " +
+		MarkdownDescription: "idna converts a [IDN][1] domain or domain label to its ASCII form (Punnycode). " +
 			"For example, `provider::hetznerdns::idna(\"bücher.example.com\")` is " +
 			"\"xn--bcher-kva.example.com\", and `provider::hetznerdns::idna(\"golang\")` is \"golang\". " +
-			"If an error is encountered it will return an error and a (partially) processed result.",
+			"If an error is encountered it will return an error and a (partially) processed result.\n\n" +
+			"[1]: https://en.wikipedia.org/wiki/Internationalized_domain_name",
 		Parameters: []function.Parameter{
 			function.StringParameter{
 				Name:                "domain",
