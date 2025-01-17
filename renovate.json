@@ -3,6 +3,11 @@
   "extends": [
     "config:best-practices"
   ],
+  "timezone": "Europe/Berlin",
+  "schedule": [
+    "after 1am",
+    "before 6am"
+  ],
   "dependencyDashboardLabels": ["Kind/Dependency"],
   "labels": ["Kind/Dependency"],
   "postUpdateOptions": ["gomodTidy", "gomodUpdateImportPaths"],
