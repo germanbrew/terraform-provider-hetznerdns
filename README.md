@@ -7,8 +7,6 @@
 
 You can find resources and data sources [documentation](https://registry.terraform.io/providers/germanbrew/hetznerdns/latest/docs) there or [here](docs).
 
-> This project has been forked from [timohirt/terraform-provider-hetznerdns](https://github.com/timohirt/terraform-provider-hetznerdns), which is no longer maintained.
-
 ## Requirements
 
 -   [Terraform](https://www.terraform.io/downloads.html) > v1.0
@@ -80,6 +78,10 @@ export HETZNER_DNS_TOKEN=<your api token>
 ```
 
 The provider uses this token, and you don't have to enter it anymore.
+
+## Credits
+
+This project is a continuation of [timohirt/terraform-provider-hetznerdns](https://github.com/timohirt/terraform-provider-hetznerdns)
 
 ## Development
 
