@@ -311,6 +311,15 @@ func (r *recordResource) Update(ctx context.Context, req resource.UpdateRequest,
 		value = utils.PlainToTXTRecordValue(value)
 	}
 
+	if plan.Type.ValueString() == "A" || plan.Type.ValueString() == "AAAA" {
+		err := utils.CheckIPAddress(value)
+		if err != nil {
+			resp.Diagnostics.AddError("Invalid IP address", err.Error())
+
+			return
+		}
+	}
+
 	if !plan.Name.Equal(state.Name) || !plan.TTL.Equal(state.TTL) || !plan.Type.Equal(state.Type) || !plan.Value.Equal(state.Value) {
 		updateTimeout, diags := plan.Timeouts.Update(ctx, 5*time.Minute)
 		resp.Diagnostics.Append(diags...)
