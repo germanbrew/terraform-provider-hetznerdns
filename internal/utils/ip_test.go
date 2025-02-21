@@ -26,6 +26,11 @@ func TestCheckIPAddress(t *testing.T) {
 			isValid: false,
 		},
 		{
+			name:    "invalid IPv4 with space",
+			ip:      "9.9.9.9 ",
+			isValid: false,
+		},
+		{
 			name:    "valid IPv6",
 			ip:      "2001:4860:4860::8888",
 			isValid: true,
@@ -33,6 +38,11 @@ func TestCheckIPAddress(t *testing.T) {
 		{
 			name:    "invalid IPv6",
 			ip:      "2001:4860:4860:::8888",
+			isValid: false,
+		},
+		{
+			name:    "invalid IPv6 with space",
+			ip:      "2001:4860:4860::8888 ",
 			isValid: false,
 		},
 		{
