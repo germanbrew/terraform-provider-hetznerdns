@@ -179,6 +179,15 @@ func (r *recordResource) Create(ctx context.Context, req resource.CreateRequest,
 		}
 	}
 
+	if plan.Type.ValueString() == "A" || plan.Type.ValueString() == "AAAA" {
+		err := utils.CheckIPAddress(value)
+		if err != nil {
+			resp.Diagnostics.AddError("Invalid IP address", err.Error())
+
+			return
+		}
+	}
+
 	var (
 		err     error
 		record  *api.Record
