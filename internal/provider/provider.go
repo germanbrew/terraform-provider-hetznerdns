@@ -35,12 +35,14 @@ type hetznerDNSProviderModel struct {
 	ApiToken           types.String `tfsdk:"api_token"`
 	MaxRetries         types.Int64  `tfsdk:"max_retries"`
 	EnableTxtFormatter types.Bool   `tfsdk:"enable_txt_formatter"`
+	EnableIPValidation types.Bool   `tfsdk:"enable_ip_validation"`
 }
 
 type providerClient struct {
 	apiClient    *api.Client
 	maxRetries   int64
 	txtFormatter bool
+	ipValidation bool
 }
 
 func (p *hetznerDNSProvider) Metadata(_ context.Context, _ provider.MetadataRequest, resp *provider.MetadataResponse) {
@@ -71,6 +73,11 @@ func (p *hetznerDNSProvider) Schema(_ context.Context, _ provider.SchemaRequest,
 					"Values greater than 255 bytes get split into multiple quoted chunks " +
 					"([RFC4408](https://datatracker.ietf.org/doc/html/rfc4408#section-3.1.3)). " +
 					"You can pass it using the env variable `HETZNER_DNS_ENABLE_TXT_FORMATTER` as well.",
+				Optional: true,
+			},
+			"enable_ip_validation": schema.BoolAttribute{
+				Description: "`Default: true` Toggles the validation of IP addresses in A and AAAA records. " +
+					"You can pass it using the env variable `HETZNER_DNS_ENABLE_IP_VALIDATION` as well.",
 				Optional: true,
 			},
 		},
@@ -120,6 +127,11 @@ func (p *hetznerDNSProvider) Configure(ctx context.Context, req provider.Configu
 	client.txtFormatter, err = utils.ConfigureBoolAttribute(data.EnableTxtFormatter, "HETZNER_DNS_MAX_RETRIES", true)
 	if err != nil {
 		resp.Diagnostics.AddAttributeError(path.Root("enable_txt_formatter"), "must be a boolean", err.Error())
+	}
+
+	client.ipValidation, err = utils.ConfigureBoolAttribute(data.EnableIPValidation, "HETZNER_DNS_ENABLE_IP_VALIDATION", true)
+	if err != nil {
+		resp.Diagnostics.AddAttributeError(path.Root("enable_ip_validation"), "must be a boolean", err.Error())
 	}
 
 	if resp.Diagnostics.HasError() {

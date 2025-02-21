@@ -179,7 +179,7 @@ func (r *recordResource) Create(ctx context.Context, req resource.CreateRequest,
 		}
 	}
 
-	if plan.Type.ValueString() == "A" || plan.Type.ValueString() == "AAAA" {
+	if (plan.Type.ValueString() == "A" || plan.Type.ValueString() == "AAAA") && r.provider.ipValidation {
 		err := utils.CheckIPAddress(value)
 		if err != nil {
 			resp.Diagnostics.AddError("Invalid IP address", err.Error())
@@ -311,7 +311,7 @@ func (r *recordResource) Update(ctx context.Context, req resource.UpdateRequest,
 		value = utils.PlainToTXTRecordValue(value)
 	}
 
-	if plan.Type.ValueString() == "A" || plan.Type.ValueString() == "AAAA" {
+	if (plan.Type.ValueString() == "A" || plan.Type.ValueString() == "AAAA") && r.provider.ipValidation {
 		err := utils.CheckIPAddress(value)
 		if err != nil {
 			resp.Diagnostics.AddError("Invalid IP address", err.Error())
