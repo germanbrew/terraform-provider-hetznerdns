@@ -179,6 +179,15 @@ func (r *recordResource) Create(ctx context.Context, req resource.CreateRequest,
 		}
 	}
 
+	if (plan.Type.ValueString() == "A" || plan.Type.ValueString() == "AAAA") && r.provider.ipValidation {
+		err := utils.CheckIPAddress(value)
+		if err != nil {
+			resp.Diagnostics.AddError("Invalid IP address", err.Error())
+
+			return
+		}
+	}
+
 	var (
 		err     error
 		record  *api.Record
@@ -300,6 +309,15 @@ func (r *recordResource) Update(ctx context.Context, req resource.UpdateRequest,
 	value := plan.Value.ValueString()
 	if plan.Type.ValueString() == "TXT" && r.provider.txtFormatter {
 		value = utils.PlainToTXTRecordValue(value)
+	}
+
+	if (plan.Type.ValueString() == "A" || plan.Type.ValueString() == "AAAA") && r.provider.ipValidation {
+		err := utils.CheckIPAddress(value)
+		if err != nil {
+			resp.Diagnostics.AddError("Invalid IP address", err.Error())
+
+			return
+		}
 	}
 
 	if !plan.Name.Equal(state.Name) || !plan.TTL.Equal(state.TTL) || !plan.Type.Equal(state.Type) || !plan.Value.Equal(state.Value) {
