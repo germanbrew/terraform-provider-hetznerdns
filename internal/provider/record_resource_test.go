@@ -183,7 +183,7 @@ func TestAccRecord_Invalid(t *testing.T) {
 						testAccRecordResourceConfigWithTTL("record1", aName, aType, value, ttl),
 					}, "\n",
 				),
-				ExpectError: regexp.MustCompile("invalid A record"),
+				ExpectError: regexp.MustCompile(utils.ErrInvalidIPAddress.Error()),
 			},
 			// Delete testing automatically occurs in TestCase
 		},
