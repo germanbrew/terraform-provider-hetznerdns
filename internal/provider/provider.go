@@ -117,7 +117,7 @@ func (p *hetznerDNSProvider) Configure(ctx context.Context, req provider.Configu
 		resp.Diagnostics.AddAttributeError(path.Root("max_retries"), "must be an integer", err.Error())
 	}
 
-	client.txtFormatter, err = utils.ConfigureBoolAttribute(data.EnableTxtFormatter, "HETZNER_DNS_MAX_RETRIES", true)
+	client.txtFormatter, err = utils.ConfigureBoolAttribute(data.EnableTxtFormatter, "HETZNER_DNS_ENABLE_TXT_FORMATTER", true)
 	if err != nil {
 		resp.Diagnostics.AddAttributeError(path.Root("enable_txt_formatter"), "must be a boolean", err.Error())
 	}
