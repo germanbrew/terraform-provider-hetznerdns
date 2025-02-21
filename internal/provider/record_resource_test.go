@@ -162,11 +162,67 @@ func TestAccRecord_ResourcesWithDeprecatedApiToken(t *testing.T) {
 	})
 }
 
-func TestAccRecord_Invalid(t *testing.T) {
+func TestAccRecord_InvalidIP(t *testing.T) {
 	zoneName := acctest.RandString(10) + ".online"
 	aZoneTTL := 60
 
 	value := "-"
+	aName := acctest.RandString(10)
+	aType := "A"
+	ttl := aZoneTTL * 2
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:                 func() { testAccPreCheck(t) },
+		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
+		Steps: []resource.TestStep{
+			// Create and Read testing
+			{
+				Config: strings.Join(
+					[]string{
+						testAccZoneResourceConfig("test", zoneName, aZoneTTL),
+						testAccRecordResourceConfigWithTTL("record1", aName, aType, value, ttl),
+					}, "\n",
+				),
+				ExpectError: regexp.MustCompile(utils.ErrInvalidIPAddress.Error()),
+			},
+			// Delete testing automatically occurs in TestCase
+		},
+	})
+}
+
+func TestAccRecord_InvalidIPv4(t *testing.T) {
+	zoneName := acctest.RandString(10) + ".online"
+	aZoneTTL := 60
+
+	value := "9.9.9.999"
+	aName := acctest.RandString(10)
+	aType := "A"
+	ttl := aZoneTTL * 2
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:                 func() { testAccPreCheck(t) },
+		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
+		Steps: []resource.TestStep{
+			// Create and Read testing
+			{
+				Config: strings.Join(
+					[]string{
+						testAccZoneResourceConfig("test", zoneName, aZoneTTL),
+						testAccRecordResourceConfigWithTTL("record1", aName, aType, value, ttl),
+					}, "\n",
+				),
+				ExpectError: regexp.MustCompile(utils.ErrInvalidIPAddress.Error()),
+			},
+			// Delete testing automatically occurs in TestCase
+		},
+	})
+}
+
+func TestAccRecord_InvalidIPv6(t *testing.T) {
+	zoneName := acctest.RandString(10) + ".online"
+	aZoneTTL := 60
+
+	value := "2001:4860:4860:::8888"
 	aName := acctest.RandString(10)
 	aType := "A"
 	ttl := aZoneTTL * 2
