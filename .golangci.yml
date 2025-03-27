@@ -1,74 +1,85 @@
-# yaml-language-server: $schema: https://golangci-lint.run/jsonschema/golangci.jsonschema.json
-
-# Visit https://golangci-lint.run/ for usage documentation
-# and information on other useful linters
-issues:
-  max-issues-per-linter: 0
-  max-same-issues: 0
-  exclude-rules:
-    - path: _test\.go
-      linters:
-        - funlen
-        - dupword
-
+version: "2"
 linters:
-  disable-all: true
+  default: none
   enable:
     - asciicheck
     - contextcheck
-    - durationcheck
-    - dupword
-    - errcheck
     - copyloopvar
-    - forcetypeassert
+    - dupword
+    - durationcheck
+    - errcheck
     - forbidigo
-    - gci
-    - gochecknoglobals
+    - forcetypeassert
     - gocheckcompilerdirectives
+    - gochecknoglobals
     - gochecknoinits
     - gocognit
     - gocritic
     - godot
-    - gofmt
-    - gofumpt
-    - goimports
     - gomoddirectives
-    - gosimple
     - gosec
     - govet
     - ineffassign
     - lll
     - makezero
-    - misspell
     - mirror
+    - misspell
     - nilerr
     - nlreturn
     - noctx
     - nolintlint
     - nonamedreturns
-    - prealloc
     - perfsprint
+    - prealloc
     - predeclared
     - staticcheck
     - tagalign
     - tagliatelle
-    - tenv
     - testifylint
     - unconvert
     - unparam
     - unused
     - wastedassign
-    - wsl
     - wrapcheck
-
-linters-settings:
-  lll:
-    line-length: 160
-    tab-width: 4
-
-  tagliatelle:
-    case:
-      use-field-name: true
-      rules:
-        json: snake
-        tfsdk: snake
+    - wsl
+  settings:
+    lll:
+      line-length: 160
+      tab-width: 4
+    tagliatelle:
+      case:
+        rules:
+          json: snake
+          tfsdk: snake
+        use-field-name: true
+  exclusions:
+    generated: lax
+    presets:
+      - comments
+      - common-false-positives
+      - legacy
+      - std-error-handling
+    rules:
+      - linters:
+          - dupword
+          - funlen
+        path: _test\.go
+    paths:
+      - third_party$
+      - builtin$
+      - examples$
+issues:
+  max-issues-per-linter: 0
+  max-same-issues: 0
+formatters:
+  enable:
+    - gci
+    - gofmt
+    - gofumpt
+    - goimports
+  exclusions:
+    generated: lax
+    paths:
+      - third_party$
+      - builtin$
+      - examples$
