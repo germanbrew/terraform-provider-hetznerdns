@@ -1,6 +1,5 @@
 name: Spell checking
 
-# Trigger on pull requests, and pushes to master branch.
 on:
   push:
     branches:
@@ -8,6 +7,9 @@ on:
   pull_request:
     branches:
       - main
+
+permissions:
+  contents: read
 
 jobs:
   codespell:
