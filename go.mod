@@ -2,7 +2,7 @@ module github.com/germanbrew/terraform-provider-hetznerdns
 
 go 1.23.0
 
-toolchain go1.24.3
+toolchain go1.24.4
 
 require (
 	github.com/golangci/golangci-lint/v2 v2.1.6
