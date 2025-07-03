@@ -112,6 +112,8 @@ Valid time units are "s" (seconds), "m" (minutes), "h" (hours). Default: 5m
 
 Import is supported using the following syntax:
 
+The [`terraform import` command](https://developer.hashicorp.com/terraform/cli/commands/import) can be used, for example:
+
 ```shell
 # A Record can be imported using its `id`. Use the API to get all records of
 # a zone and then copy the id.
