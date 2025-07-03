@@ -1,7 +1,8 @@
+GO_BIN?=$(shell pwd)/.bin
 BINARY_DIR=bin
 BINARY_NAME=terraform-provider-hetznerdns
 
-.PHONY: build testacc test lint generate docs fmt
+.PHONY: build testacc test lint generate docs fmt tools
 
 build:
 	mkdir -p $(BINARY_DIR)
@@ -22,16 +23,17 @@ generate docs:
 
 fmt:
 	go fmt ./...
-	-go run mvdan.cc/gofumpt@latest -l -w .
-	-go run golang.org/x/tools/cmd/goimports@latest -l -w .
-	-go run github.com/bombsimon/wsl/v4/cmd...@latest -strict-append -test=true -fix ./...
-	-go run github.com/catenacyber/perfsprint@latest -fix ./...
-	-go run github.com/bflad/tfproviderlint/cmd/tfproviderlintx@latest -fix ./...
+	-go tool gofumpt -l -w .
+	-go tool goimports -l -w .
+	-go tool wsl -strict-append -test=true -fix ./...
+	-go tool perfsprint -fix ./...
+	-go tool tfproviderlintx -fix ./...
 
 download:
 	@echo Download go.mod dependencies
 	@go mod download
 
-install-devtools: download
-	@echo Installing tools from tools.go
-	@cat tools/tools.go | grep _ | awk -F'"' '{print $$2}' | xargs -tI % go install %
+tools:
+	mkdir -p ${GO_BIN}
+	curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/HEAD/install.sh | sh -s -- -b ${GO_BIN} latest
+	GOBIN=${GO_BIN} go install tool
