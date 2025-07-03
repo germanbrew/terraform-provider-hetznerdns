@@ -87,6 +87,8 @@ Valid time units are "s" (seconds), "m" (minutes), "h" (hours). Default: 5m
 
 Import is supported using the following syntax:
 
+The [`terraform import` command](https://developer.hashicorp.com/terraform/cli/commands/import) can be used, for example:
+
 ```shell
 terraform import hetznerdns_zone.zone1 rMu2waTJPbHr4
 ```
