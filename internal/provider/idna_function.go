@@ -48,7 +48,6 @@ func (r idnaFunction) Run(ctx context.Context, req function.RunRequest, resp *fu
 	)
 
 	resp.Error = function.ConcatFuncErrors(req.Arguments.Get(ctx, &domain))
-
 	if resp.Error != nil {
 		return
 	}

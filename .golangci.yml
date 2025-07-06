@@ -41,7 +41,7 @@ linters:
     - unused
     - wastedassign
     - wrapcheck
-    - wsl
+    - wsl_v5
   settings:
     lll:
       line-length: 160
@@ -52,6 +52,10 @@ linters:
           json: snake
           tfsdk: snake
         use-field-name: true
+    wsl_v5:
+      allow-first-in-block: true
+      allow-whole-block: false
+      branch-max-lines: 2
   exclusions:
     generated: lax
     presets:

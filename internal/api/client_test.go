@@ -48,6 +48,7 @@ func TestClientCreateZoneInvalidTLD(t *testing.T) {
 	t.Parallel()
 
 	var irrelevantConfig RequestConfig
+
 	client := createTestClient(t, irrelevantConfig)
 	opts := CreateZoneOpts{Name: "thisisinvalid", TTL: 3600}
 	_, err := client.CreateZone(context.Background(), opts)
