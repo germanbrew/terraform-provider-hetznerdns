@@ -1,7 +1,7 @@
 # Terraform Provider for Hetzner DNS
 
 [![Terraform](https://img.shields.io/badge/Terraform-844FBA.svg?style=for-the-badge&logo=Terraform&logoColor=white)](https://registry.terraform.io/providers/germanbrew/hetznerdns/latest)
-[![OpenTofu](https://img.shields.io/badge/OpenTofu-FFDA18.svg?style=for-the-badge&logo=OpenTofu&logoColor=black)](https://github.com/opentofu/registry/blob/main/providers/g/germanbrew/hetznerdns.json)
+[![OpenTofu](https://img.shields.io/badge/OpenTofu-FFDA18.svg?style=for-the-badge&logo=OpenTofu&logoColor=black)](https://search.opentofu.org/provider/germanbrew/hetznerdns/latest)
 [![GitHub Release](https://img.shields.io/github/v/release/germanbrew/terraform-provider-hetznerdns?sort=date&display_name=release&style=for-the-badge&logo=github&link=https%3A%2F%2Fgithub.com%2Fgermanbrew%2Fterraform-provider-hetznerdns%2Freleases%2Flatest)](https://github.com/germanbrew/terraform-provider-hetznerdns/releases/latest)
 [![GitHub Actions Workflow Status](https://img.shields.io/github/actions/workflow/status/germanbrew/terraform-provider-hetznerdns/test.yaml?branch=main&style=for-the-badge&logo=github&label=Tests&link=https%3A%2F%2Fgithub.com%2Fgermanbrew%2Fterraform-provider-hetznerdns%2Factions%2Fworkflows%2Ftest.yaml)](https://github.com/germanbrew/terraform-provider-hetznerdns/actions/workflows/test.yaml)
 
