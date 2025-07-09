@@ -73,6 +73,9 @@ func (r *recordResource) Schema(ctx context.Context, _ resource.SchemaRequest, r
 				MarkdownDescription: "Type of this DNS record " +
 					"([See supported types](https://docs.hetzner.com/dns-console/dns/general/supported-dns-record-types/))",
 				Required: true,
+				PlanModifiers: []planmodifier.String{
+					stringplanmodifier.RequiresReplaceIfConfigured(),
+				},
 				Validators: []validator.String{
 					stringvalidator.LengthAtLeast(1),
 				},
