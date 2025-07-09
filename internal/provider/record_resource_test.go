@@ -512,3 +512,111 @@ resource "hetznerdns_record" "%s" {
     }
 }`, resourceName, name, recordType, value)
 }
+
+func TestAccRecord_UpdateResourceType(t *testing.T) {
+	zoneName := acctest.RandString(10) + ".online"
+	aZoneTTL := 60
+
+	aName := acctest.RandString(10)
+	oldType := "AAAA"
+	oldValue := "2001:4860:4860::8888"
+	newType := "A"
+	newValue := "1.1.1.1"
+	ttl := aZoneTTL * 2
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:                 func() { testAccPreCheck(t) },
+		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
+		Steps: []resource.TestStep{
+			// Create and Read testing
+			{
+				Config: strings.Join(
+					[]string{
+						testAccZoneResourceConfig("test", zoneName, aZoneTTL),
+						testAccRecordResourceConfigWithTTL("record1", aName, oldType, oldValue, ttl),
+					}, "\n",
+				),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttrSet(
+						"hetznerdns_record.record1", "id"),
+					resource.TestCheckResourceAttr(
+						"hetznerdns_record.record1", "type", oldType),
+					resource.TestCheckResourceAttr(
+						"hetznerdns_record.record1", "name", aName),
+					resource.TestCheckResourceAttr(
+						"hetznerdns_record.record1", "value", oldValue),
+					resource.TestCheckResourceAttr(
+						"hetznerdns_record.record1", "ttl", strconv.Itoa(ttl)),
+				),
+			},
+			// ImportState testing
+			{
+				ResourceName:      "hetznerdns_record.record1",
+				ImportState:       true,
+				ImportStateVerify: true,
+			},
+			// Update and Read testing
+			{
+				Config: strings.Join(
+					[]string{
+						testAccZoneResourceConfig("test", zoneName, aZoneTTL),
+						testAccRecordResourceConfigWithTTL("record1", aName, oldType, oldValue, ttl*2),
+					}, "\n",
+				),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					resource.TestCheckResourceAttr(
+						"hetznerdns_record.record1", "ttl", strconv.Itoa(ttl*2)),
+				),
+			},
+			// Update record type and value
+			{
+				Config: strings.Join(
+					[]string{
+						testAccZoneResourceConfig("test", zoneName, aZoneTTL),
+						testAccRecordResourceConfigWithTTL("record1", aName, newType, newValue, ttl*2),
+					}, "\n",
+				),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttrSet(
+						"hetznerdns_record.record1", "id"),
+					resource.TestCheckResourceAttr(
+						"hetznerdns_record.record1", "type", newType),
+					resource.TestCheckResourceAttr(
+						"hetznerdns_record.record1", "name", aName),
+					resource.TestCheckResourceAttr(
+						"hetznerdns_record.record1", "value", newValue),
+					resource.TestCheckResourceAttr(
+						"hetznerdns_record.record1", "ttl", strconv.Itoa(ttl*2)),
+				),
+			},
+			// ImportState testing
+			{
+				ResourceName:      "hetznerdns_record.record1",
+				ImportState:       true,
+				ImportStateVerify: true,
+			},
+			// Update and Read testing
+			{
+				Config: strings.Join(
+					[]string{
+						testAccZoneResourceConfig("test", zoneName, aZoneTTL),
+						testAccRecordResourceConfigWithTTL("record1", aName, newType, newValue, ttl*2),
+					}, "\n",
+				),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttrSet(
+						"hetznerdns_record.record1", "id"),
+					resource.TestCheckResourceAttr(
+						"hetznerdns_record.record1", "type", newType),
+					resource.TestCheckResourceAttr(
+						"hetznerdns_record.record1", "name", aName),
+					resource.TestCheckResourceAttr(
+						"hetznerdns_record.record1", "value", newValue),
+					resource.TestCheckResourceAttr(
+						"hetznerdns_record.record1", "ttl", strconv.Itoa(ttl*2)),
+				),
+			},
+			// Delete testing automatically occurs in TestCase
+		},
+	})
+}
