@@ -93,6 +93,7 @@ func TestAccRecord_ResourcesWithDeprecatedApiToken(t *testing.T) {
 				// Unset new API token and set deprecated API token instead
 				PreConfig: func() {
 					apiToken := os.Getenv("HETZNER_DNS_TOKEN")
+
 					err := os.Setenv("HETZNER_DNS_API_TOKEN", apiToken)
 					if err != nil {
 						t.Errorf("Error while setting HETZNER_DNS_API_TOKEN: %s", err)
@@ -145,6 +146,7 @@ func TestAccRecord_ResourcesWithDeprecatedApiToken(t *testing.T) {
 				// Undo the changes to the API token
 				PreConfig: func() {
 					apiToken := os.Getenv("HETZNER_DNS_API_TOKEN")
+
 					err := os.Setenv("HETZNER_DNS_TOKEN", apiToken)
 					if err != nil {
 						t.Errorf("Error while setting HETZNER_DNS_TOKEN: %s", err)
@@ -451,18 +453,22 @@ func TestAccRecord_StaleResources(t *testing.T) {
 
 					apiToken = utils.ConfigureStringAttribute(data.ApiToken, "HETZNER_DNS_TOKEN", "")
 					httpClient := logging.NewLoggingHTTPTransport(http.DefaultTransport)
+
 					apiClient, err = api.New("https://dns.hetzner.com", apiToken, httpClient)
 					if err != nil {
 						t.Fatalf("Error while creating API apiClient: %s", err)
 					}
+
 					zone, err := apiClient.GetZoneByName(ctx, zoneName)
 					if err != nil {
 						t.Fatalf("Error while fetching zone: %s", err)
 					}
+
 					record, err := apiClient.GetRecordByName(ctx, zone.ID, aName)
 					if err != nil {
 						t.Fatalf("Error while fetching record: %s", err)
 					}
+
 					err = apiClient.DeleteRecord(ctx, record.ID)
 					if err != nil {
 						t.Fatalf("Error while deleting record: %s", err)
