@@ -1,6 +1,6 @@
 module github.com/germanbrew/terraform-provider-hetznerdns
 
-go 1.24.4
+go 1.25.1
 
 require (
 	github.com/hashicorp/terraform-plugin-framework v1.16.0
@@ -93,7 +93,7 @@ require (
 	google.golang.org/protobuf v1.36.9 // indirect
 	gopkg.in/yaml.v2 v2.4.0 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
-	mvdan.cc/gofumpt v0.8.0 // indirect
+	mvdan.cc/gofumpt v0.9.1 // indirect
 )
 
 tool (
