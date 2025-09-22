@@ -1,6 +1,6 @@
 module github.com/germanbrew/terraform-provider-hetznerdns
 
-go 1.24.4
+go 1.25.1
 
 require (
 	github.com/hashicorp/terraform-plugin-framework v1.16.0
