@@ -198,14 +198,17 @@ func TestAccZone_StaleZone(t *testing.T) {
 
 					apiToken = utils.ConfigureStringAttribute(data.ApiToken, "HETZNER_DNS_TOKEN", "")
 					httpClient := logging.NewLoggingHTTPTransport(http.DefaultTransport)
+
 					apiClient, err = api.New("https://dns.hetzner.com", apiToken, httpClient)
 					if err != nil {
 						t.Fatalf("Error while creating API apiClient: %s", err)
 					}
+
 					zone, err := apiClient.GetZoneByName(ctx, aZoneName)
 					if err != nil {
 						t.Fatalf("Error while fetching zone: %s", err)
 					}
+
 					err = apiClient.DeleteZone(ctx, zone.ID)
 					if err != nil {
 						t.Fatalf("Error while deleting zone: %s", err)
