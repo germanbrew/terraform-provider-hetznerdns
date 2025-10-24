@@ -1,4 +1,9 @@
-# Terraform Provider for Hetzner DNS
+# Terraform Provider for Hetzner DNS (Deprecated)
+
+> [!CAUTION]
+> This provider is deprecated as of 10 Nov 2025.
+> Please migrate to the official [Hetzner Cloud Terraform Provider](https://registry.terraform.io/providers/hetznercloud/hcloud/latest)
+> which now also supports managing DNS records since version [1.54.0](https://github.com/hetznercloud/terraform-provider-hcloud/releases/tag/v1.54.0).
 
 [![Terraform](https://img.shields.io/badge/Terraform-844FBA.svg?style=for-the-badge&logo=Terraform&logoColor=white)](https://registry.terraform.io/providers/germanbrew/hetznerdns/latest)
 [![OpenTofu](https://img.shields.io/badge/OpenTofu-FFDA18.svg?style=for-the-badge&logo=OpenTofu&logoColor=black)](https://search.opentofu.org/provider/germanbrew/hetznerdns/latest)
