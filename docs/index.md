@@ -3,11 +3,13 @@
 page_title: "hetznerdns Provider"
 description: |-
   This providers helps you automate management of DNS zones and records at Hetzner DNS.
+  WARNING: This provider is deprecated as of 10 Nov 2025 with the release of the hcloud Console DNS, please migrate to the official Hetzner hcloud provider
 ---
 
 # hetznerdns Provider
 
-This providers helps you automate management of DNS zones and records at Hetzner DNS.
+This providers helps you automate management of DNS zones and records at Hetzner DNS. 
+WARNING: This provider is deprecated as of 10 Nov 2025 with the release of the hcloud Console DNS, please migrate to the official Hetzner hcloud provider
 
 ## Example Usage
 
