@@ -53,7 +53,8 @@ func (p *hetznerDNSProvider) Metadata(_ context.Context, _ provider.MetadataRequ
 func (p *hetznerDNSProvider) Schema(_ context.Context, _ provider.SchemaRequest, resp *provider.SchemaResponse) {
 	resp.Schema = schema.Schema{
 		Description: "This providers helps you automate management of DNS zones and records at Hetzner DNS. \n" +
-			"WARNING: This provider is deprecated as of 10 Nov 2025 with the release of the hcloud Console DNS, please migrate to the official Hetzner hcloud provider",
+			"WARNING: This provider is deprecated as of 10 Nov 2025 with the release of the hcloud Console DNS, " +
+			"please migrate to the official Hetzner hcloud provider",
 		Attributes: map[string]schema.Attribute{
 			"api_token": schema.StringAttribute{
 				Description: "The Hetzner DNS API token. You can pass it using the env variable `HETZNER_DNS_TOKEN` as well. " +
